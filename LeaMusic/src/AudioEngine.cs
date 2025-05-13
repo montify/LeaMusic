@@ -121,21 +121,27 @@ namespace LeaMusic.src
         }
 
 
-        public static Project LoadProjectFromFile(string path)
+        public async static Task<Project> LoadProjectFromFile(string path)
         {
-            var file = File.ReadAllText(path);
+            var file = await File.ReadAllTextAsync(path);
+
             var project = JsonSerializer.Deserialize<Project>(file);
 
             var projectPath = Path.GetDirectoryName(path);
 
-            for (int i = 0; i < project.Tracks.Count; i++)
+            await  Task.Run(() =>
             {
-                var originalFilePath = project.Tracks[i].OriginFilePath;
+                for (int i = 0; i < project.Tracks.Count; i++)
+                {
+                    var originalFilePath = project.Tracks[i].OriginFilePath;
 
-                project.Tracks[i] = new Track(originalFilePath);
+                    project.Tracks[i] = new Track(originalFilePath);
 
-            }
+                }
+            });
+           
             project.WaveFormat = project.Tracks[0].Waveformat;
+
             return project;
         }
 

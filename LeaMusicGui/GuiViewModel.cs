@@ -316,7 +316,7 @@ namespace LeaMusicGui
             if(dialog.ShowDialog() == DialogResult.OK)
             {
                 
-                var project = AudioEngine.LoadProjectFromFile(dialog.FileName);
+                var project = await AudioEngine.LoadProjectFromFile(dialog.FileName);
                 audioEngine.LoadProject(project);
                 Project = project;
 
