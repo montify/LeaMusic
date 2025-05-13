@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35825.156
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeaMusic", "LeaMusic\LeaMusic.csproj", "{FED8AD4F-F5F2-4CA6-B98C-FF28BC8E0FFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeaMusicGui", "LeaMusicGui\LeaMusicGui.csproj", "{047638E4-67BF-4818-8289-C6540A80BFBA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FED8AD4F-F5F2-4CA6-B98C-FF28BC8E0FFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FED8AD4F-F5F2-4CA6-B98C-FF28BC8E0FFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FED8AD4F-F5F2-4CA6-B98C-FF28BC8E0FFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FED8AD4F-F5F2-4CA6-B98C-FF28BC8E0FFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{047638E4-67BF-4818-8289-C6540A80BFBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{047638E4-67BF-4818-8289-C6540A80BFBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{047638E4-67BF-4818-8289-C6540A80BFBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{047638E4-67BF-4818-8289-C6540A80BFBA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E431FCF5-551F-4CB8-AEC6-05A1E9D10834}
+	EndGlobalSection
+EndGlobal

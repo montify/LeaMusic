@@ -1,0 +1,35 @@
+﻿<UserControl x:Class="LeaMusicGui.Controls.TrackControl_.TrackControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:LeaMusicGui.Controls.TrackControl_" 
+             xmlns:controls="clr-namespace:LeaMusicGui.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="1250">
+    <Grid Height="120" >
+        <StackPanel Orientation="Horizontal">
+            <Grid Width="100" Background="#282B28">
+                <StackPanel>
+                    <Button Command="{Binding DataContext.MuteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                            CommandParameter="{Binding}">Mute</Button>
+                    <Button Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                            CommandParameter="{Binding}">Delete</Button>
+                    <Label Content="{Binding TrackID}"> </Label>
+                    
+                </StackPanel>
+            </Grid>
+            
+            <controls:WaveformControl 
+                    Height="120" 
+                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}}"
+                    WaveformData="{Binding WaveformData, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    WaveformHeightMulti="{Binding HeightScaleFactor, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                
+                    ParentViewModel="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
+                />
+
+
+        </StackPanel>
+    </Grid>
+</UserControl>
