@@ -3,6 +3,8 @@ using System.Diagnostics;
 
 namespace LeaMusic.src
 {
+
+    //Project is Data, ProjectManager is the Controller of it 
     public class Project
     {
         public string Name { get; set; }
@@ -11,7 +13,7 @@ namespace LeaMusic.src
         public WaveFormat WaveFormat { get; set; }
         public TimeSpan Duration { get; set; }
 
-        public List<Marker> Markers { get; set; } = new List<Marker>();
+        public List<Marker> BeatMarkers { get; set; } = new List<Marker>();
 
 
         public Project(string name)
@@ -37,6 +39,11 @@ namespace LeaMusic.src
  
         public void AddTrack(Track track)
         {
+            if (track == null || track.ClipDuration == null)
+            {
+                throw new Exception("");
+            }
+
             if(WaveFormat == null)
             {
                 WaveFormat = track.Waveformat;
@@ -75,6 +82,7 @@ namespace LeaMusic.src
             foreach (var track in Tracks)
             {
                 track.rubberBandWaveStream.Reset();
+               
             }
         }
 
@@ -100,7 +108,7 @@ namespace LeaMusic.src
 
         public void AddMarker(Marker marker)
         {
-            Markers.Add(marker);
+            BeatMarkers.Add(marker);
         }
 
     }

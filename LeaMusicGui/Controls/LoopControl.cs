@@ -14,12 +14,12 @@ namespace LeaMusicGui.Controls
         private SKSurface surface;
         private SKPaint paint;
 
-        private int width;
+        public int width;
         private int height;
 
         public LoopControl()
         {
-            WriteableBitmap = CreateImage(1, 300);
+            WriteableBitmap = new WriteableBitmap(1, 300, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
             width = (int)WriteableBitmap.Width;
             height = (int)WriteableBitmap.Height;
 
@@ -36,31 +36,24 @@ namespace LeaMusicGui.Controls
             };
 
             UpdateImage();
-          //  CompositionTarget.Rendering += Update;
-
         }
-
-        //private void Update(object? sender, EventArgs e)
-        //{
-        // //  UpdateImage();
-        //}
 
         public void UpdateImage()
         {
+            Debug.WriteLine(width);
             canvas = surface.Canvas;
             canvas.Clear(new SKColor(0, 0, 0,0));
 
             for (int i = 0; i < width; i++)
             {
                 paint.Style = SKPaintStyle.StrokeAndFill;
-               
 
-
+                paint.Color = SKColors.Green;
+                var rect = new SKRect(0, 0, width, 30);
+                canvas.DrawRect(rect, paint);
                 paint.Color = SKColors.DarkRed.WithAlpha(70);
 
-                 //   var rect = new SKRect((SelectionStartPercentage / 100.0f) * width, 0, (SelectionEndPercentage / 100.0f) * width, height);
-
-               var rect = new SKRect(0, 0, width, height);
+                rect = new SKRect(0, 0, width, height);
                 canvas.DrawRect(rect, paint);
 
             }
@@ -101,7 +94,7 @@ namespace LeaMusicGui.Controls
             set => SetValue(SelectionEndProperty, value);
         }
 
-
+       
         private static void OnLoopChange(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is LoopControl control)
@@ -121,13 +114,5 @@ namespace LeaMusicGui.Controls
         DependencyProperty.Register(nameof(SelectionEndPercentage), typeof(float),
         typeof(LoopControl),
         new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, OnLoopChange));
-
-
-
-        public WriteableBitmap CreateImage(int width, int height)
-        {
-            return new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
-        }
-
     }
 }

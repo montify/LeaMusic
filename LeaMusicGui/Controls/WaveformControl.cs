@@ -1,10 +1,10 @@
-﻿using LeaMusicGui.Controls.TrackControl_;
-using SkiaSharp;
+﻿using SkiaSharp;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace LeaMusicGui.Controls
 {
@@ -17,6 +17,7 @@ namespace LeaMusicGui.Controls
 
         private int width;
         private int height;
+        private readonly DispatcherTimer _resizeTimer;
 
         public WaveformControl()
         {
@@ -36,8 +37,27 @@ namespace LeaMusicGui.Controls
                 StrokeWidth = 1
             };
 
-          
-         //   CompositionTarget.Rendering += Update;
+            _resizeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(20) };
+
+
+
+            _resizeTimer.Tick += (s, e) =>
+            {
+                _resizeTimer.Stop();
+                Resize(); // Nur hier wird das Bitmap neu erstellt
+
+            };
+
+            this.SizeChanged += (s, e) =>
+            {
+                if (_resizeTimer.IsEnabled)
+                    return;
+
+                _resizeTimer.Stop();
+                _resizeTimer.Start();
+            };
+
+            //   CompositionTarget.Rendering += Update;
         }
 
         bool updateOnce = false;
@@ -52,6 +72,7 @@ namespace LeaMusicGui.Controls
 
         public WriteableBitmap CreateImage(int width, int height)
         {
+            Debug.WriteLine(width);
             return new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
         }
 
@@ -60,6 +81,7 @@ namespace LeaMusicGui.Controls
             canvas = surface.Canvas;
             canvas.Clear(SKColor.Parse("#424651"));
 
+            Debug.WriteLine(WaveformData.Length);
             for (int i = 0; i < width; i++)
             {
                 paint.Style = SKPaintStyle.Stroke;
@@ -70,17 +92,18 @@ namespace LeaMusicGui.Controls
 
                 float heightMulti = 40 * WaveformHeightMulti;
 
-                
+
                 float middle = height / 2;
 
                 var start = new SKPoint(i, middle);
 
-               
+
 
                 float sample = 0;
 
-               
-                sample = WaveformData.Span[Math.Min(i, WaveformData.Length-1)];
+
+
+                sample = WaveformData.Span[Math.Min(i, WaveformData.Length - 1)];
 
                 var end = new SKPoint(i, middle + sample * heightMulti);
                 var end2 = new SKPoint(i, middle - sample * heightMulti);
@@ -88,23 +111,10 @@ namespace LeaMusicGui.Controls
                 canvas.DrawLine(start, end, paint);
                 canvas.DrawLine(start, end2, paint);
 
-                paint.Color = new SKColor(1, 0, 0);
+                paint.Color = new SKColor(1, 1, 1);
+                paint.StrokeWidth = 2;
                 canvas.DrawPoint(end, paint);
                 canvas.DrawPoint(end2, paint);
-                ////Progress
-                //var progress = (Percentage / 100.0f) * width;
-                //var progressStart = new SKPoint(progress, -height);
-                //var progressEnd = new SKPoint(progress, height);
-
-                //paint.Color = SKColor.Parse("#913d23");
-                //canvas.DrawLine(progressStart, progressEnd, paint);
-
-
-                //paint.Color = SKColors.Blue;
-
-                //var rect = new SKRect((SelectionStartPercentage / 100.0f) * width, 0, (SelectionEndPercentage / 100.0f) * width, height);
-                //canvas.DrawRect(rect, paint);
-
             }
 
             using (SKImage image = surface.Snapshot())
@@ -137,7 +147,7 @@ namespace LeaMusicGui.Controls
             get => (ReadOnlyMemory<float>)GetValue(WaveformDataProperty);
             set => SetValue(WaveformDataProperty, value);
         }
-       
+
         public float Percentage
         {
             get => (float)GetValue(PercentageProperty);
@@ -166,12 +176,12 @@ namespace LeaMusicGui.Controls
             set => SetValue(SelectionEndProperty, value);
         }
 
-        
+
         private static void WaveFormRedraw(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is WaveformControl control)
             {
-                if(e.OldValue != e.NewValue)
+                if (e.OldValue != e.NewValue)
                 {
                     Debug.WriteLine("Redraw Waveform");
                     control.InvalidateVisual();
@@ -180,26 +190,28 @@ namespace LeaMusicGui.Controls
             }
         }
 
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            Debug.WriteLine($"WaveFormControl renderSize Change Width: {sizeInfo.NewSize.Width}");
+        double oldZoom;
 
-            if (sizeInfo.NewSize.Width == 0)
+        private void Resize()
+        {
+            Debug.WriteLine($"WaveFormControl renderSize Change Width: {renderWidth}");
+
+            if (renderWidth == 0)
                 return;
 
             //ViewModel fetch new Waveform
 
-            var vm = ParentViewModel as GuiViewModel;
+            var vm = ParentViewModel as MainViewModel;
             if (vm != null)
             {
-                vm.UpdateWaveform(sizeInfo.NewSize.Width);
+                vm.UpdateWaveform(renderWidth);
 
 
                 surface.Dispose();
                 WriteableBitmap = null;
                 GC.Collect();
 
-                WriteableBitmap = CreateImage((int)sizeInfo.NewSize.Width, 300);
+                WriteableBitmap = CreateImage((int)renderWidth, 300);
                 width = (int)WriteableBitmap.Width;
                 height = (int)WriteableBitmap.Height;
 
@@ -210,8 +222,21 @@ namespace LeaMusicGui.Controls
                 InvalidateVisual();
                 UpdateImage();
 
+                oldZoom = vm.Zoom;
+
+
+                vm.Zoom = 1.1f;
+                vm.Zoom = oldZoom;
+
             }
-                base.OnRenderSizeChanged(sizeInfo);
+        }
+        private double renderWidth;
+
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+            renderWidth = sizeInfo.NewSize.Width;
+
+            base.OnRenderSizeChanged(sizeInfo);
         }
 
         public static readonly DependencyProperty WaveformHeightMultiProperty =
@@ -255,7 +280,7 @@ namespace LeaMusicGui.Controls
 
 
         public static readonly DependencyProperty ParentViewModelProperty =
-    DependencyProperty.Register(nameof(ParentViewModel), typeof(GuiViewModel), typeof(WaveformControl));
+    DependencyProperty.Register(nameof(ParentViewModel), typeof(MainViewModel), typeof(WaveformControl));
 
     }
 }

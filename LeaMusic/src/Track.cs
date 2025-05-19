@@ -1,51 +1,48 @@
 ﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using System.Diagnostics;
 
 namespace LeaMusic.src
 {
-    
     public class Track
     {
-        public WaveStream audio;
-        public RubberBandWaveStream rubberBandWaveStream;
-        public LoopStream loopStream;
-        public WaveformProvider waveformProvider;
+        public static int UNIQUE_ID = 0;
 
+        internal WaveStream audio;
+        internal RubberBandWaveStream rubberBandWaveStream;
+        internal LoopStream loopStream;
+        internal WaveformProvider waveformProvider;
 
         public VolumeSampleProvider volumeStream;
-        public TimeSpan ClipDuration { get; }
+        public TimeSpan ClipDuration { get; set; }
         public WaveFormat Waveformat { get; set; }
         public string RelativePath { get;  set; }
         public string FileName { get;  set; }
-
         public string OriginFilePath { get; set; }
-
         public int ID { get; set; }
-
-        public static int UNIQUE_ID = 0;
         public bool IsMuted { get; set; }
+        public string WaveformBinaryFilePath { get; set; }
 
+       
         public Track()
-        {
-            
+        { 
         }
 
-        public Track(string path)
+        public void ImportTrack(string path, LeaResourceManager resourceManager)
         {
             OriginFilePath = path;
             RelativePath = path;
             FileName = Path.GetFileName(path);
-            audio = ConvertMp3ToWav(path);
-            waveformProvider = new WaveformProvider(audio.ToSampleProvider(), (int)audio.TotalTime.TotalSeconds);
-            ClipDuration = audio.TotalTime;
+
+            audio = resourceManager.LoadAudioFile(path);
+
             Waveformat = audio.WaveFormat;
+            ClipDuration = audio.TotalTime;
+
             loopStream = new LoopStream(audio, 0, ClipDuration.TotalSeconds);
-            rubberBandWaveStream = new RubberBandWaveStream(new WaveFloatTo16Provider(loopStream));
+            rubberBandWaveStream = new RubberBandWaveStream(loopStream);
             volumeStream = new VolumeSampleProvider(rubberBandWaveStream.ToSampleProvider());
 
-           ID = ++UNIQUE_ID;
-           
+            ID = ++UNIQUE_ID;
         }
 
         public void JumpToPosition(TimeSpan position)
@@ -57,30 +54,5 @@ namespace LeaMusic.src
         {
             volumeStream.Volume = volume;
         }
-
-        private static WaveStream ConvertMp3ToWav(string inputPath)
-        {
-            var outputPath = Path.GetDirectoryName(inputPath);
-            var fileName = Path.GetFileNameWithoutExtension(inputPath);
-            outputPath = outputPath + $"\\{fileName}_AUTO_CONVERT_TO_WAV.wav";
-
-            if (Path.Exists(outputPath))
-            {
-                Debug.WriteLine("No Conversation needed, .wav exists");
-                return new AudioFileReader(outputPath);
-            }
-
-
-            using (Mp3FileReader mp3 = new Mp3FileReader(inputPath))
-            {
-                using (WaveStream pcm = WaveFormatConversionStream.CreatePcmStream(mp3))
-                {
-                    WaveFileWriter.CreateWaveFile(outputPath, pcm);
-                }
-            }
-
-            return new AudioFileReader(outputPath);
-        }
- 
     }
 }

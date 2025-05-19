@@ -5,33 +5,41 @@ namespace LeaMusic
     public class WaveformProvider
     {
         public float[] waveformBuffer;
-        public List<float> selectedSamples;
-        private ISampleProvider sampleProvider;
+        private WaveFormat WaveFormat;
 
         public WaveformProvider(ISampleProvider sampleProvider, int totalTimeInSec)
         {
             int totalSamples = sampleProvider.WaveFormat.SampleRate * sampleProvider.WaveFormat.Channels * totalTimeInSec;
             waveformBuffer = new float[totalSamples];
+
             sampleProvider.Read(waveformBuffer, 0, waveformBuffer.Length);
-            this.sampleProvider = sampleProvider;
+          
+            WaveFormat = sampleProvider.WaveFormat;
+        }
+
+        public WaveformProvider(float[] waveform, WaveFormat waveFormat)
+        {
+            waveformBuffer = waveform;
+            WaveFormat = waveFormat;
+          
         }
 
         public Memory<float> RequestSamples(double startInSec, double endInSec, int widthInPixel)
         {
-            double startSampleIndex =  startInSec * sampleProvider.WaveFormat.SampleRate * sampleProvider.WaveFormat.Channels;
-            double endSampleIndex = endInSec * sampleProvider.WaveFormat.SampleRate * sampleProvider.WaveFormat.Channels;
+            double startSampleIndex = startInSec * WaveFormat.SampleRate * WaveFormat.Channels;
+            double endSampleIndex = endInSec * WaveFormat.SampleRate * WaveFormat.Channels;
 
 
             double totalSamplesInRange = endSampleIndex - startSampleIndex;
             double samplesPerPixel = totalSamplesInRange / widthInPixel;
 
-       
+
             var resultSamples = new float[widthInPixel];
 
-            for (int i = 0; i < resultSamples.Length ; i++)
+            for (int i = 0; i < resultSamples.Length; i++)
             {
-          
-                double sliceStart = Math.Max(startSampleIndex + i * samplesPerPixel,0);
+
+                double sliceStart = Math.Max(startSampleIndex + i * samplesPerPixel, 0);
                 double sliceEnd = Math.Min(sliceStart + samplesPerPixel, endSampleIndex);
 
                 int start = (int)sliceStart;

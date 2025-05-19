@@ -1,26 +1,25 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LeaMusic;
 using LeaMusic.src;
+using LeaMusicGui.Views;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media;
+using Application = System.Windows.Application;
 
 namespace LeaMusicGui
 {
-
     public partial class TrackDTO : ObservableObject
     {
         [ObservableProperty]
         private ReadOnlyMemory<float> _waveform;
 
         public int TrackID { get; set; }
-
     }
 
-    public partial class MarkerWrapper : ObservableObject
+    public partial class MarkerDTO : ObservableObject
     {
         [ObservableProperty]
         private double positionRelativeView;
@@ -32,7 +31,7 @@ namespace LeaMusicGui
         public bool visible = true;
     }
 
-    public partial class GuiViewModel : ObservableObject
+    public partial class MainViewModel : ObservableObject
     {
         private AudioEngine audioEngine;
         private TimelineService TimelineService;
@@ -70,46 +69,31 @@ namespace LeaMusicGui
         [ObservableProperty]
         public int renderWidth;
 
+        private LeaResourceManager resourceManager;
+
         public Project Project { get; private set; }
         public ObservableCollection<TrackDTO> WaveformWrappers { get; set; } = new ObservableCollection<TrackDTO>();
-        public ObservableCollection<MarkerWrapper> TestMarkers { get; set; } = new ObservableCollection<MarkerWrapper>();
+        public ObservableCollection<MarkerDTO> TestMarkers { get; set; } = new ObservableCollection<MarkerDTO>();
 
-       
-        public GuiViewModel()
+        public MainViewModel()
         {
+            resourceManager = new LeaResourceManager();
             audioEngine = new AudioEngine();
+
             TimelineService = new TimelineService(audioEngine);
-
-            //Project = new Project("HALLO");
-
-            //Project.AddTrack(new Track("C:/t/Hairflip.mp3"));
-            //Project.AddTrack(new Track("C:/t/Hairflip.mp3"));
-            //audioEngine.LoadProject(Project);
-
-            
 
             //Create Empty Project for StartUp
             Project = Project.CreateEmptyProject("TEST");
-            Project.AddTrack(new Track("C:\\Users\\alexlapi\\Desktop\\v1\\AudioFiles\\1_Josh Smith - Wheres My Baby(No Other).mp3"));
-            audioEngine.LoadProject(Project);
-            CreateTrackDTO();
-            ////Init WaveformLoad Startup
-            //CreateWaveFormWrapper();
-            //CreateMarkerWrapper();
+           // Project.AddTrack(new Track("C:\\Users\\alexlapi\\Desktop\\v1\\AudioFiles\\Hairflip.mp3"));
 
-            //audioEngine.AddMarker(TimeSpan.FromSeconds(11), "TestMarker 1");
-            //audioEngine.AddMarker(TimeSpan.FromSeconds(audioEngine.Project.Duration.TotalSeconds/2), "TestMarker 2");
-
-
+            audioEngine.MountProject(Project);
 
             audioEngine.OnUpdate += AudioEngine_OnPlayHeadChange;
             audioEngine.OnProgressChange += AudioEngine_OnProgressChange;
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;
 
-       
+
             CompositionTarget.Rendering += (sender, e) => audioEngine.Update();
-
-
         }
 
         public void UpdateWaveform(double newWidth)
@@ -124,15 +108,12 @@ namespace LeaMusicGui
             UpdateTrackDTO(trackDTOList);
         }
 
-
         private void CreateTrackDTO()
         {
             var trackDTOList = new List<Memory<float>>();
 
             for (int i = 0; i < Project.Tracks.Count; i++)
-            {
                 trackDTOList.Add(TimelineService.RequestSample(i, 1200));
-            }
 
             UpdateTrackDTO(trackDTOList);
         }
@@ -144,21 +125,20 @@ namespace LeaMusicGui
         }
 
         private void AudioEngine_OnPlayHeadChange(TimeSpan positionInSeconds)
-        {     
+        {
             PlayheadPercentage = CalculateSecRelativeToViewWindowPercentage(positionInSeconds, audioEngine.ViewStartTime, audioEngine.ViewDuration);
-
             UpdateMarkers();
         }
 
         //Maybe Create if the Marker Count > WrapperCount?!
-        private void CreateMarkerWrapper()
+        private void CreateMarkerDTO()
         {
             TestMarkers.Clear();
-            for (int i = 0; i < audioEngine.Project.Markers.Count; i++)
+            for (int i = 0; i < audioEngine.Project.BeatMarkers.Count; i++)
             {
-                var marker = audioEngine.Project.Markers[i];
+                var marker = audioEngine.Project.BeatMarkers[i];
 
-                var w = new MarkerWrapper();
+                var w = new MarkerDTO();
                 w.Marker = marker;
                 w.PositionRelativeView = CalculateSecRelativeToViewWindowPercentage(marker.Position, audioEngine.ViewStartTime, audioEngine.ViewDuration);
                 TestMarkers.Add(w);
@@ -181,7 +161,7 @@ namespace LeaMusicGui
             }
         }
 
-        private bool IsMarkerVisible(MarkerWrapper testMarker)
+        private bool IsMarkerVisible(MarkerDTO testMarker)
         {
             if (testMarker.Marker.Position < audioEngine.ViewStartTime || testMarker.Marker.Position > audioEngine.ViewEndTime)
                 return false;
@@ -189,30 +169,27 @@ namespace LeaMusicGui
             return true;
         }
 
-      
-
         private void UpdateTrackDTO(List<Memory<float>> waveforms)
         {
             for (int i = 0; i < waveforms.Count; i++)
             {
                 if (WaveformWrappers.Count < waveforms.Count)
-                    WaveformWrappers.Add(new TrackDTO());     
-   
+                    WaveformWrappers.Add(new TrackDTO());
+
                 WaveformWrappers[i].Waveform = waveforms[i];
-               
+
                 WaveformWrappers[i].TrackID = audioEngine.Project.Tracks[i].ID;
-               
             }
         }
 
         private void AudioEngine_OnProgressChange(TimeSpan positionInSec)
         {
-            ProgressInPercentage = CalculateSecRelativeToViewWindowPercentage(positionInSec, audioEngine.ViewStartTime, audioEngine.ViewDuration);
+            ProgressInPercentage = (audioEngine.CurrentPosition.TotalSeconds / audioEngine.TotalDuration.TotalSeconds) * 100;
 
             //scroll view when Playhead reach the end of the view
             if (audioEngine.CurrentPosition >= audioEngine.ViewEndTime)
             {
-                OnZoomChanged(Zoom); //HACK?? :D
+                OnZoomChanged(Zoom); //HACK?? :D   
             }
         }
 
@@ -234,16 +211,13 @@ namespace LeaMusicGui
 
         partial void OnScrollChanged(double value)
         {
-
             audioEngine.ScrollWaveForm(value);
 
-           
             UpdateWaveform(RenderWidth);
-
         }
+
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-
             RenderWidth = (int)e.NewSize.Width;
         }
 
@@ -251,24 +225,13 @@ namespace LeaMusicGui
         {
             audioEngine.ZoomWaveForm(value);
 
-            //var trackDTOList = new List<Memory<float>>();
-
-            //for (int i = 0; i < Project.Tracks.Count; i++)
-            //{
-            //    trackDTOList.Add(TimelineService.RequestSample(i, RenderWidth));
-            //}
-
             UpdateWaveform(RenderWidth);
-
-            //UpdateTrackDTO(trackDTOList);
-            //CreateTrackDTO();
-
         }
-      
+
         public void SetTextMarker()
         {
-            audioEngine.AddMarker(audioEngine.CurrentPosition, "MAKER CREATE WITH T");
-            CreateMarkerWrapper();
+            audioEngine.AddMarker(audioEngine.CurrentPosition, "B");
+            CreateMarkerDTO();
         }
 
         partial void OnSpeedChanged(double value)
@@ -276,75 +239,38 @@ namespace LeaMusicGui
             audioEngine.ChangeSpeed(value);
         }
 
-        [RelayCommand]
-        private async Task Pause()
-        {
-            audioEngine.Pause();
-
-        }
-
-        [RelayCommand]
-        private async Task Replay()
-        {
-           audioEngine.Replay();
-        }
-
-
-        [RelayCommand]
-        private async Task SaveProject()
-        {
-            var saveDialog = new FolderBrowserDialog();
-
-            if(saveDialog.ShowDialog() == DialogResult.OK)
-            {
-                //Maybe Stop audioEngine here
-                audioEngine.SaveProject(saveDialog.SelectedPath);
-
-                Debug.WriteLine("PROJECT SAVED");
-            }
-        }
-
-        [RelayCommand]
-        private async Task LoadProject()
-        {
-
-            var dialog = new OpenFileDialog
-            {
-                Filter = "Project (*.prj)|*.prj"
-            };
-
-            if(dialog.ShowDialog() == DialogResult.OK)
-            {
-                
-                var project = await AudioEngine.LoadProjectFromFile(dialog.FileName);
-                audioEngine.LoadProject(project);
-                Project = project;
-
-                audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
-                
-
-                CreateTrackDTO();
-                CreateMarkerWrapper();
-
-                Debug.WriteLine("PROJECT LOADED");
-            }
-        }
-
-       
         public void MouseClick(Point p, double width)
         {
-            
             var second = ConvertPixelToSecond(p.X, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)width);
+
             audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(second));
 
-            audioEngine.AddMarker(TimeSpan.FromSeconds(second), "lol");
+            //audioEngine.AddMarker(TimeSpan.FromSeconds(second), "lol");
 
-            CreateMarkerWrapper();
+            CreateMarkerDTO();
         }
 
         public void LoopSelection(double startPixel, double endPixel, double renderWidth)
         {
+            Debug.WriteLine($"LoopStart: {startPixel}, Loop end {endPixel}");
+
             var startSec = ConvertPixelToSecond(startPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth);
+            var endSec = ConvertPixelToSecond(endPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth);
+
+            audioEngine.Loop(TimeSpan.FromSeconds(startSec), TimeSpan.FromSeconds(endSec));
+        }
+
+        public void LoopSelectionStart(double startPixel, double renderWidth)
+        {
+            var startSec = ConvertPixelToSecond(startPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth);
+            var endSec = audioEngine.LoopEnd.TotalSeconds;
+
+            audioEngine.Loop(TimeSpan.FromSeconds(startSec), TimeSpan.FromSeconds(endSec));
+        }
+
+        public void LoopSelectionEnd(double endPixel, double renderWidth)
+        {
+            var startSec = audioEngine.LoopStart.TotalSeconds;
             var endSec = ConvertPixelToSecond(endPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth);
 
             audioEngine.Loop(TimeSpan.FromSeconds(startSec), TimeSpan.FromSeconds(endSec));
@@ -359,28 +285,104 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
+        private async Task Replay()
+        {
+            audioEngine.Replay();
+        }
+
+
+        [RelayCommand]
+        private async Task SaveProject()
+        {
+            var saveDialog = new FolderBrowserDialog();
+
+            if (saveDialog.ShowDialog() == DialogResult.OK)
+            {
+                //Maybe Stop audioEngine here, and play again if previous state was play
+
+                resourceManager.SaveProject(Project, saveDialog.SelectedPath);
+            }
+        }
+
+        [RelayCommand]
+        private async Task Pause()
+        {
+            audioEngine.Pause();
+        }
+
+        [ObservableProperty]
+        bool isLoading;
+
+        [RelayCommand]
+        private async Task LoadProject()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "Project (*.prj)|*.prj"
+            };
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                IsLoading = true;
+                //var project = await AudioEngine.LoadProjectFromFile(dialog.FileName);
+                var project = await resourceManager.LoadProjectFromFileAsync(dialog.FileName);
+
+                audioEngine.MountProject(project);
+                Project = project;
+
+                audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
+
+
+                CreateTrackDTO();
+                CreateMarkerDTO();
+
+                //Prevent when user doubleclick, that WPF register as a mouseclick
+                await Task.Delay(100);
+
+                Debug.WriteLine("PROJECT LOADED");
+                IsLoading = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task CreateProject()
+        {
+            var projectWindow = new LoadProjectWindow();
+            var ownerWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+
+            if (ownerWindow == null)
+                throw new NullReferenceException("Cant find Parent window");
+
+
+            var vm = new CreateProjectViewModel((MainViewModel)ownerWindow.DataContext);
+
+            projectWindow.DataContext = vm;
+            projectWindow.Owner = ownerWindow;
+            projectWindow.Show();
+        }
+
+        [RelayCommand]
         private async Task AddTrack()
         {
-            var fileDialog = new OpenFileDialog();
+            var fileDialog = new OpenFileDialog
+            {
+                Filter = "Mp3 (*.mp3)|*.mp3"
+            };
 
-            if(fileDialog.ShowDialog() == DialogResult.OK)
+            if (fileDialog.ShowDialog() == DialogResult.OK)
             {
                 audioEngine.Stop();
 
-                var track = new Track(fileDialog.FileName);
-
-                track.JumpToPosition(audioEngine.CurrentPosition);
+                var track = resourceManager.LoadOrImportTrackFromFile(fileDialog.FileName);
 
                 Project.AddTrack(track);
-                
+                Project.SetTempo(Speed);
                 CreateTrackDTO();
-              
-                //Check if audioengine is playing while addTrack, when true continue playing
-                audioEngine.LoadProject(Project);
-                audioEngine.AudioJumpToSec(audioEngine.CurrentPosition);
 
-                audioEngine.Play();
-            }       
+                //Check if audioengine is playing while addTrack, when true continue playing
+                audioEngine.MountProject(Project);
+                audioEngine.AudioJumpToSec(audioEngine.CurrentPosition);
+            }
         }
 
         [RelayCommand]
@@ -396,7 +398,6 @@ namespace LeaMusicGui
             {
                 audioEngine.MuteTrack(wrapper.TrackID);
             }
-               
         }
 
         [RelayCommand]
@@ -405,13 +406,15 @@ namespace LeaMusicGui
 
             if (param is TrackDTO wrapper)
             {
-                var ass = audioEngine.Project.Tracks.Where(t => t.ID == wrapper.TrackID).First();
-                audioEngine.Project.Tracks.Remove(ass);
-                WaveformWrappers.Remove(wrapper);
+                var track = audioEngine.Project.Tracks.Where(t => t.ID == wrapper.TrackID).FirstOrDefault();
 
-               // CreateTrackDTO();
-                audioEngine.ReloadMixerInputs();
+                if (track != null)
+                {
+                    audioEngine.Project.Tracks.Remove(track);
+                    WaveformWrappers.Remove(wrapper);
 
+                    audioEngine.ReloadMixerInputs();
+                }
             }
         }
 

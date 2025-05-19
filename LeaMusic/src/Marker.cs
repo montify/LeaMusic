@@ -1,5 +1,6 @@
 ﻿namespace LeaMusic.src
 {
+    //TODO: Maybe make this abstract, so i can have Beatmarkers, Textmarkers,...
     public class Marker
     {
         public TimeSpan Position { get; set; }

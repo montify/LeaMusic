@@ -1,7 +1,6 @@
 ﻿using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Diagnostics;
-using System.Text.Json;
 
 namespace LeaMusic.src
 {
@@ -32,10 +31,8 @@ namespace LeaMusic.src
         public double Zoom { get; set; } = 1;
         private double m_oldZoom = -1;
 
-  
         public AudioEngine()
         {
-         
         }
 
         public void ReloadMixerInputs()
@@ -48,28 +45,28 @@ namespace LeaMusic.src
             }
         }
 
-
-        public void LoadProject(Project project)
+        public void MountProject(Project project)
         {
+            Zoom = 1;
+
             waveOut?.Stop();
             waveOut =  new WaveOutEvent();
             Project = project;
-            //if (audioTrack.ClipDuration != audioTrack2.ClipDuration)
-            //    throw new Exception("Clip must be the same Length");
-
+           
             TotalDuration = TimeSpan.FromSeconds(Project.Duration.TotalSeconds);
 
-            mixer = new MixingSampleProvider(Project.WaveFormat);
+            mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
             
             ReloadMixerInputs();
 
             ViewStartTime = TimeSpan.Zero;
             ViewEndTime = TotalDuration;
-            waveOut.DesiredLatency = 150;
+            waveOut.DesiredLatency = 250;
 
             Debug.WriteLine($"WavOut Latency: {waveOut.DesiredLatency}");
            
             //TODO: Init can happen only once in wavOut Lifetime, this is a Hack lol
+
             try
             {
                 waveOut.Init(mixer);
@@ -78,71 +75,6 @@ namespace LeaMusic.src
             catch (Exception)
             {              
             }
-        }
-
-
-        public void SaveProject(string projectPathFolder)
-        {
-            DirectoryInfo projectDirectory = new DirectoryInfo(projectPathFolder);
-           
-            if (!projectDirectory.Exists)
-            {
-                projectDirectory = Directory.CreateDirectory($"{projectPathFolder}");
-            }
-
-            DirectoryInfo audioFilesDirectory = new DirectoryInfo($"{projectDirectory.FullName}/AudioFiles");
-            
-            if (!audioFilesDirectory.Exists)
-            {
-                audioFilesDirectory = Directory.CreateDirectory($"{audioFilesDirectory.FullName}");
-            }
-       
-
-            foreach (var track in Project.Tracks)
-            {
-                track.RelativePath = audioFilesDirectory.Name;
-
-                var oldPath = track.OriginFilePath;
-
-                track.OriginFilePath = audioFilesDirectory.FullName + "/" + track.FileName;
-
-                waveOut.Stop();
-
-                if(!File.Exists(audioFilesDirectory.FullName + "/" + track.FileName))
-                    File.Copy(oldPath, audioFilesDirectory.FullName + "/" + track.FileName, overwrite: true);
-
-            }
-
-            JsonSerializerOptions o = new JsonSerializerOptions();
-            o.WriteIndented = true;
-
-            var metaData = JsonSerializer.Serialize(Project, o);
-            File.WriteAllText(Path.Combine(projectDirectory.ToString(), Project.Name + ".prj"), metaData);
-        }
-
-
-        public async static Task<Project> LoadProjectFromFile(string path)
-        {
-            var file = await File.ReadAllTextAsync(path);
-
-            var project = JsonSerializer.Deserialize<Project>(file);
-
-            var projectPath = Path.GetDirectoryName(path);
-
-            await  Task.Run(() =>
-            {
-                for (int i = 0; i < project.Tracks.Count; i++)
-                {
-                    var originalFilePath = project.Tracks[i].OriginFilePath;
-
-                    project.Tracks[i] = new Track(originalFilePath);
-
-                }
-            });
-           
-            project.WaveFormat = project.Tracks[0].Waveformat;
-
-            return project;
         }
 
         public void Update()
@@ -170,9 +102,10 @@ namespace LeaMusic.src
             TimeSpan deltaRealTime = now - LastUpdateTime;
 
             AccumulatedProgress += deltaRealTime * Speed;
+          
             LastUpdateTime = now;
 
-            CurrentPosition = (AccumulatedProgress ) + InitStart;
+            CurrentPosition = InitStart + AccumulatedProgress;
         }
 
         public void ZoomWaveForm(double zoomFactor)
@@ -196,6 +129,9 @@ namespace LeaMusic.src
                 ViewStartTime = TimeSpan.Zero;
                 ViewEndTime = TotalDuration;          
             }
+
+            
+            OnLoopChange?.Invoke(LoopStart, LoopEnd);
         }
 
         double oldScrollValue = 0;
@@ -242,7 +178,24 @@ namespace LeaMusic.src
         {
             Speed = speed;
 
-            Project.SetTempo(Speed);
+
+            var old = CurrentPosition;
+            var oldPlaybackState = waveOut.PlaybackState;
+
+            if (waveOut.PlaybackState == PlaybackState.Playing)
+                Pause();
+
+
+            ////hm this keeps palyhead in sync when slowdown while play
+            AudioJumpToSec(TimeSpan.FromSeconds(CurrentPosition.TotalMilliseconds + 1));
+
+            Project.SetTempo(Math.Round(Speed, 2));
+
+            AudioJumpToSec(old);
+
+            if (oldPlaybackState == PlaybackState.Playing)
+                Play();
+
         }
 
         public void ChangePitch(int semitones)
@@ -299,8 +252,9 @@ namespace LeaMusic.src
             sw.Reset();
             InitStart = sec;
 
- 
+            
             Project.JumpToSeconds(sec);
+       
             LastUpdateTime = TimeSpan.Zero;
             AccumulatedProgress = TimeSpan.Zero;
         }
@@ -318,9 +272,9 @@ namespace LeaMusic.src
 
             LoopStart = startSec;
             LoopEnd = endSec;
-
-            AudioJumpToSec(startSec);
-            Play();
+            OnLoopChange?.Invoke(LoopStart, LoopEnd);
+          //   AudioJumpToSec(startSec);
+            // Play();
         }
 
         private void UpdateLoop()
@@ -358,8 +312,6 @@ namespace LeaMusic.src
             var m = new Marker(position, text);
             Project.AddMarker(m);
         }
-
-      
 
         public event Action<TimeSpan> OnUpdate;
         public event Action<TimeSpan> OnProgressChange;

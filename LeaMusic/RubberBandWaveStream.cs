@@ -23,7 +23,7 @@ namespace LeaMusic
         {
             if (source.WaveFormat.BitsPerSample != 16)
                 throw new FormatException("Can't process bit depth of " + source.WaveFormat.BitsPerSample);
-
+            
             _source = source;
           
             this.WaveFormatIEEE = WaveFormat.CreateIeeeFloatWaveFormat(_source.WaveFormat.SampleRate, _source.WaveFormat.Channels);
@@ -158,8 +158,8 @@ namespace LeaMusic
                             _sourceSamples[channel][i] = sampleValue * (1.0f / 32768.0f);
                         }
                     }
-
                     _stretcher.Process(_sourceSamples, numberOfSourceSamplesPerChannel, final: false);
+
                 }
                 else
                 {

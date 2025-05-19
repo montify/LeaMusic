@@ -89,7 +89,7 @@ namespace LeaMusicGui.Controls.TrackControl_
 
 
         public static readonly DependencyProperty ParentViewModelProperty =
-    DependencyProperty.Register(nameof(ParentViewModel), typeof(GuiViewModel), typeof(TrackControl));
+    DependencyProperty.Register(nameof(ParentViewModel), typeof(MainViewModel), typeof(TrackControl));
 
 
 

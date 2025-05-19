@@ -83,27 +83,10 @@ namespace LeaMusicGui.Controls
             base.OnRender(drawingContext);
         }
 
-
         public WriteableBitmap CreateImage(int width, int height)
         {
             return new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
         }
 
-
-        //public float Percentage
-        //{
-        //    get => (float)GetValue(PercentageProperty);
-        //    set => SetValue(PercentageProperty, value);
-        //}
-
-        //public static readonly DependencyProperty PercentageProperty =
-        //   DependencyProperty.Register(nameof(Percentage), typeof(float),
-        //   typeof(PlayheadControl),
-        //   new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, OnWaveformChanged));
-
-        //private static void OnWaveformChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        //{
-           
-        //}
     }
 }
