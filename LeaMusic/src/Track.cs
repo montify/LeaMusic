@@ -15,23 +15,23 @@ namespace LeaMusic.src
         public VolumeSampleProvider volumeStream;
         public TimeSpan ClipDuration { get; set; }
         public WaveFormat Waveformat { get; set; }
-        public string RelativePath { get;  set; }
-        public string FileName { get;  set; }
-        public string OriginFilePath { get; set; }
         public int ID { get; set; }
+        public string AudioFileName { get; set; }
+        public string AudioRelativePath { get; set; }
+        public string WaveformRelativePath { get; set; }
+        public string OriginFilePath { get; set; }
         public bool IsMuted { get; set; }
-        public string WaveformBinaryFilePath { get; set; }
 
-       
+
         public Track()
         { 
         }
 
-        public void ImportTrack(string path, LeaResourceManager resourceManager)
+        public void LoadAudioFile(string path, LeaResourceManager resourceManager)
         {
             OriginFilePath = path;
-            RelativePath = path;
-            FileName = Path.GetFileName(path);
+            //AudioRelativePath = path;
+            AudioFileName = Path.GetFileName(path);
 
             audio = resourceManager.LoadAudioFile(path);
 

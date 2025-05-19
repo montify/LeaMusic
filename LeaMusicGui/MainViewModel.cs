@@ -373,7 +373,7 @@ namespace LeaMusicGui
             {
                 audioEngine.Stop();
 
-                var track = resourceManager.LoadOrImportTrackFromFile(fileDialog.FileName);
+                var track = resourceManager.ImportTrack(fileDialog.FileName);
 
                 Project.AddTrack(track);
                 Project.SetTempo(Speed);
