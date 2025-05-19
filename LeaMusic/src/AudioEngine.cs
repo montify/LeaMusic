@@ -108,7 +108,8 @@ namespace LeaMusic.src
             CurrentPosition = InitStart + AccumulatedProgress;
         }
 
-        public void ZoomWaveForm(double zoomFactor)
+       // public TimeSpan ZoomPositon { get; set; }
+        public void ZoomWaveForm(double zoomFactor, TimeSpan zoomPosition)
         {
             Zoom = zoomFactor;
 
@@ -118,8 +119,8 @@ namespace LeaMusic.src
                 TimeSpan timeWindow = baseWindow / Zoom;
                 TimeSpan halfWindow = timeWindow / 2.0f;
 
-                ViewStartTime = CurrentPosition - halfWindow;
-                ViewEndTime = CurrentPosition + halfWindow;
+                ViewStartTime = zoomPosition - halfWindow;
+                ViewEndTime = zoomPosition + halfWindow;
 
                 ViewStartTime = TimeSpan.FromSeconds(Math.Max(0, ViewStartTime.TotalSeconds));
                 ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds));
@@ -130,7 +131,7 @@ namespace LeaMusic.src
                 ViewEndTime = TotalDuration;          
             }
 
-            
+
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
         }
 

@@ -140,6 +140,7 @@ public partial class MainWindow : Window
         
     }
 
+    bool isZoom;
     private void TrackControl_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         var childControl = sender as FrameworkElement;
@@ -149,12 +150,29 @@ public partial class MainWindow : Window
             var viewModel = (MainViewModel)DataContext;
 
             if(mousePosition.Y > 30)
-                viewModel.MouseClick(mousePosition, childControl.ActualWidth);
-
-
-            Console.WriteLine();
+            {
+                isZoom = true;   
+            }
         }
     }
+
+    private void MainCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        //ZOOM
+        if(isZoom)
+        {
+            var childControl = sender as FrameworkElement;
+            if (childControl != null)
+            {
+                Point mousePosition = e.GetPosition(childControl);
+                var viewModel = (MainViewModel)DataContext;
+
+                viewModel.ZoomWaveformMouse(mousePosition, childControl.ActualWidth);
+            }
+        }
+
+    }
+
 
     bool isLoopBeginDragLeftHandle;
     bool isLoopBeginDragRightHandle;
@@ -180,7 +198,6 @@ public partial class MainWindow : Window
         if (e.ChangedButton != MouseButton.Right)
             return;
 
-
         var viewModel = (MainViewModel)DataContext;
 
         var control = (Canvas)sender;
@@ -199,8 +216,11 @@ public partial class MainWindow : Window
             isLoopBeginDragRightHandle = false;
         }
 
-
-
+        if(isZoom)
+        {
+            viewModel.ResetZoomParameter();
+            isZoom = false; 
+        }
     }
 
     private double GetScaleX(UIElement element)

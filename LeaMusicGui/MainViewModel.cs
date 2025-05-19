@@ -75,6 +75,9 @@ namespace LeaMusicGui
         public ObservableCollection<TrackDTO> WaveformWrappers { get; set; } = new ObservableCollection<TrackDTO>();
         public ObservableCollection<MarkerDTO> TestMarkers { get; set; } = new ObservableCollection<MarkerDTO>();
 
+        //is used when Zoom with mouse, to prevent to fetch waveform twice
+        private bool supressZoom;
+
         public MainViewModel()
         {
             resourceManager = new LeaResourceManager();
@@ -223,9 +226,16 @@ namespace LeaMusicGui
 
         partial void OnZoomChanged(double value)
         {
-            audioEngine.ZoomWaveForm(value);
+            // supressZoom Prevents OnZoomChanged from being called when Zoom is set manually (e.g. during mouse zoom),
+            // so we don't zoom twice or from the wrong position.
+            //I set Zoom in ZoomWaveformMouse() to reflect the ZoomValue in the UI
+            //Supress is false when i zoom with Slider in the UI, because we want zoom in the CurrentPosition, not in the ZoomPosition(mouse)
+            if (!supressZoom)
+            {
+                audioEngine.ZoomWaveForm(value, audioEngine.CurrentPosition);
 
-            UpdateWaveform(RenderWidth);
+                UpdateWaveform(RenderWidth);
+            }
         }
 
         public void SetTextMarker()
@@ -239,15 +249,59 @@ namespace LeaMusicGui
             audioEngine.ChangeSpeed(value);
         }
 
-        public void MouseClick(Point p, double width)
-        {
-            var second = ConvertPixelToSecond(p.X, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)width);
+        private TimeSpan zoomMouseStartPosition;
+        private double oldZoomFactor = 1.0f;
+        private double zoomStartMouseY;
 
-            audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(second));
+        private bool zoomStartPositionSetOnce;
+        public void ResetZoomParameter()
+        {
+           zoomStartPositionSetOnce = false;
+        }
+
+        public void ZoomWaveformMouse(Point p, double width)
+        {
+            if (!zoomStartPositionSetOnce)
+            {
+                zoomMouseStartPosition = TimeSpan.FromSeconds(ConvertPixelToSecond(p.X, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)width));
+                zoomStartPositionSetOnce = true;
+                zoomStartMouseY = p.Y;
+            }
+
+            double zoomSensitivity = 0.002f;
+            double maxZoom = 60;
+            double minZoom = 1;
+            double zoomRange = maxZoom - minZoom;
+
+            var delta = p.Y - zoomStartMouseY;
+
+            double relativeScale  = 1 + (delta * zoomSensitivity);
+
+            //Avoid crazy Zoom :D
+            relativeScale = Math.Clamp(relativeScale, 0.5, 2.0); 
+
+            double newZoomFactor = oldZoomFactor * relativeScale;
+
+            newZoomFactor = Math.Clamp(newZoomFactor, minZoom, maxZoom);
+            // audioEngine.Zoom = newZoomFactor;
+
+            supressZoom = true;
+            Zoom = newZoomFactor;
+            supressZoom = false;
+            //Debug.WriteLine($"relativeScale: {relativeScale}");
+            //Debug.WriteLine($"oldZoomFactor: {oldZoomFactor}");
+            //Debug.WriteLine($"newZoomFactor: {newZoomFactor}");
+
+           // audioEngine.ZoomPositon = zoomStartPosition;
+            audioEngine.ZoomWaveForm(newZoomFactor, zoomMouseStartPosition);
+
+
+            UpdateWaveform(RenderWidth);
 
             //audioEngine.AddMarker(TimeSpan.FromSeconds(second), "lol");
 
             CreateMarkerDTO();
+            oldZoomFactor = newZoomFactor;
         }
 
         public void LoopSelection(double startPixel, double endPixel, double renderWidth)
@@ -258,6 +312,7 @@ namespace LeaMusicGui
             var endSec = ConvertPixelToSecond(endPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth);
 
             audioEngine.Loop(TimeSpan.FromSeconds(startSec), TimeSpan.FromSeconds(endSec));
+            audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(startSec));
         }
 
         public void LoopSelectionStart(double startPixel, double renderWidth)
