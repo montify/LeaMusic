@@ -54,8 +54,6 @@ namespace LeaMusic.src
             return project;
         }
 
-     
-
         public void SaveProject(Project project, string projectPathFolder)
         {
             var projectDirectory = OpenOrCreateDirectory(projectPathFolder);
@@ -74,7 +72,10 @@ namespace LeaMusic.src
 
                 var waveform = track.waveformProvider.waveformBuffer;
 
-                WriteWaveformBinary(waveform, waveformDirectory.FullName + $"\\{track.AudioFileName}.waveformat");
+                var waveFormFilePath = waveformDirectory.FullName + $"\\{track.AudioFileName}.waveformat";
+
+                if (!File.Exists(waveFormFilePath))
+                    WriteWaveformBinary(waveform, waveFormFilePath);
             }
 
             JsonSerializerOptions o = new JsonSerializerOptions();
@@ -97,7 +98,7 @@ namespace LeaMusic.src
             track.waveformProvider = ImportWaveform(track);
 
 
-            Debug.WriteLine($"Import new Track: {track.AudioFileName}");
+            Debug.WriteLine($"Create new Track, : {track.AudioFileName}");
             return track;
         }
 
@@ -178,6 +179,8 @@ namespace LeaMusic.src
                     writer.Write(sample);
                 }
             }
+
+            Debug.WriteLine($"Write WaveformBinary to: {path}");
         }
     }
 }
