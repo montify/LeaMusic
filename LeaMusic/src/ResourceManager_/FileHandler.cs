@@ -97,7 +97,7 @@ namespace LeaMusic.src.ResourceManager_
                     for (int i = 0; i < project.Tracks.Count; i++)
                     {
                         var track = project.Tracks[i];
-                        var originalFilePath = track.OriginFilePath;
+                        //var originalFilePath = track.OriginFilePath;
 
                         var trackPath = Path.Combine(projectPath, track.AudioRelativePath);
 
@@ -167,11 +167,8 @@ namespace LeaMusic.src.ResourceManager_
         {
             var waveformPath = Path.Combine(projectPath, track.WaveformRelativePath);
 
-            if (track == null || string.IsNullOrEmpty(track.OriginFilePath))
-                throw new NullReferenceException("Cant load Track");
-
             WaveformProvider waveformProvider;
-            string projectFolder = track.OriginFilePath;
+        
             var waveFormRelativePath = track.WaveformRelativePath;
 
             if (!Path.Exists(waveformPath))

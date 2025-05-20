@@ -1,6 +1,7 @@
 ﻿using LeaMusic.src.ResourceManager_;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using System.Text.Json.Serialization;
 
 namespace LeaMusic.src
 {
@@ -20,6 +21,8 @@ namespace LeaMusic.src
         public string AudioFileName { get; set; }
         public string AudioRelativePath { get; set; }
         public string WaveformRelativePath { get; set; }
+
+        [JsonIgnore]
         public string OriginFilePath { get; set; }
         public bool IsMuted { get; set; }
 
@@ -31,7 +34,7 @@ namespace LeaMusic.src
         public void LoadAudioFile(string path, LeaResourceManager resourceManager)
         {
             OriginFilePath = path;
-            //AudioRelativePath = path;
+         
             AudioFileName = Path.GetFileName(path);
 
             audio = resourceManager.LoadAudioFile(path);
