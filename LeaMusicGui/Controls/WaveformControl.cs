@@ -72,7 +72,7 @@ namespace LeaMusicGui.Controls
 
         public WriteableBitmap CreateImage(int width, int height)
         {
-            Debug.WriteLine(width);
+         //   Debug.WriteLine(width);
             return new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
         }
 
@@ -81,7 +81,7 @@ namespace LeaMusicGui.Controls
             canvas = surface.Canvas;
             canvas.Clear(SKColor.Parse("#424651"));
 
-            Debug.WriteLine(WaveformData.Length);
+           // Debug.WriteLine(WaveformData.Length);
             for (int i = 0; i < width; i++)
             {
                 paint.Style = SKPaintStyle.Stroke;
@@ -183,7 +183,7 @@ namespace LeaMusicGui.Controls
             {
                 if (e.OldValue != e.NewValue)
                 {
-                    Debug.WriteLine("Redraw Waveform");
+                   // Debug.WriteLine("Redraw Waveform");
                     control.InvalidateVisual();
                     control.UpdateImage();
                 }
@@ -194,7 +194,7 @@ namespace LeaMusicGui.Controls
 
         private void Resize()
         {
-            Debug.WriteLine($"WaveFormControl renderSize Change Width: {renderWidth}");
+           // Debug.WriteLine($"WaveFormControl renderSize Change Width: {renderWidth}");
 
             if (renderWidth == 0)
                 return;

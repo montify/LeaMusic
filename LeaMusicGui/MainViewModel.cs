@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LeaMusic.src;
+using LeaMusic.src.ResourceManager_;
 using LeaMusicGui.Views;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -78,6 +79,7 @@ namespace LeaMusicGui
         //is used when Zoom with mouse, to prevent to fetch waveform twice
         private bool supressZoom;
 
+        private IHandler handler;
         public MainViewModel()
         {
             resourceManager = new LeaResourceManager();
@@ -96,6 +98,8 @@ namespace LeaMusicGui
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;
 
 
+            handler = new FileHandler();
+            //handler = new DatabaseHandler("1.1.1.1", "alex", "123");
             CompositionTarget.Rendering += (sender, e) => audioEngine.Update();
         }
 
@@ -353,9 +357,8 @@ namespace LeaMusicGui
 
             if (saveDialog.ShowDialog() == DialogResult.OK)
             {
-                //Maybe Stop audioEngine here, and play again if previous state was play
-
-                resourceManager.SaveProject(Project, saveDialog.SelectedPath);
+                //Maybe Stop audioEngine here, and play again if previous state was play 
+                resourceManager.SaveProject(Project, new FileLocation(saveDialog.SelectedPath), handler);
             }
         }
 
@@ -380,7 +383,8 @@ namespace LeaMusicGui
             {
                 IsLoading = true;
                 //var project = await AudioEngine.LoadProjectFromFile(dialog.FileName);
-                var project = await resourceManager.LoadProjectFromFileAsync(dialog.FileName);
+                var location = new FileLocation(dialog.FileName);
+                var project = await resourceManager.LoadProjectFromFileAsync(location, handler);
 
                 audioEngine.MountProject(project);
                 Project = project;
@@ -428,7 +432,7 @@ namespace LeaMusicGui
             {
                 audioEngine.Stop();
 
-                var track = resourceManager.ImportTrack(fileDialog.FileName);
+                var track = resourceManager.ImportTrack(new FileLocation(fileDialog.FileName), handler);
 
                 Project.AddTrack(track);
                 Project.SetTempo(Speed);

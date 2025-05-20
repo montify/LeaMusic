@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using LeaMusic.src.ResourceManager_;
+using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace LeaMusic.src
