@@ -5,7 +5,7 @@ namespace LeaMusic.src
 {
 
     //Project is Data, ProjectManager is the Controller of it 
-    public class Project
+    public class Project : IDisposable
     {
         public string Name { get; set; }
         public string ProjectPath { get; set; }
@@ -111,5 +111,12 @@ namespace LeaMusic.src
             BeatMarkers.Add(marker);
         }
 
+        public void Dispose()
+        {
+            foreach (var track in Tracks)
+            {
+                track.Dispose();
+            }
+        }
     }
 }

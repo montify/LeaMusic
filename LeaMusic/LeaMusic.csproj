@@ -16,6 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.69.0.3778" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="rubberband-sharp.NAudio" Version="1.0.0" />
   </ItemGroup>

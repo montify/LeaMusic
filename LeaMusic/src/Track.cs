@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace LeaMusic.src
 {
-    public class Track
+    public class Track : IDisposable
     {
         public static int UNIQUE_ID = 0;
 
@@ -57,6 +57,14 @@ namespace LeaMusic.src
         public void SetVolumte(float volume)
         {
             volumeStream.Volume = volume;
+        }
+
+        public void Dispose()
+        {
+            audio?.Dispose();
+            loopStream?.Dispose();
+            rubberBandWaveStream = null;
+            volumeStream = null;
         }
     }
 }

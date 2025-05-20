@@ -5,13 +5,13 @@ using System.Text.Json;
 
 namespace LeaMusic.src.ResourceManager_
 {
-    public class FileHandler : IHandler
+    public class FileHandler : IResourceHandler
     {
         public FileHandler()
         {
         }
 
-        public void SaveProject(Location projectLocation, Project project)
+        public Task SaveProject(Location projectLocation, Project project)
         {
 
             if (projectLocation is FileLocation fileLoccation)
@@ -43,9 +43,11 @@ namespace LeaMusic.src.ResourceManager_
                 var metaData = JsonSerializer.Serialize(project, o);
                 File.WriteAllText(Path.Combine(projectDirectory.ToString(), project.Name + ".prj"), metaData);
             }
+
+            return Task.CompletedTask;
         }
 
-        public Track ImportTrack(Location trackLocation, LeaResourceManager resourceManager)
+        public Track? ImportTrack(Location trackLocation, LeaResourceManager resourceManager)
         {
             if (trackLocation is FileLocation location)
             {
@@ -62,6 +64,7 @@ namespace LeaMusic.src.ResourceManager_
                 throw new NotSupportedException("Handler is not a FileHandler");
 
         }
+
         public Track LoadAudio(Track track, string projectPath, LeaResourceManager resourceManager)
         {
             var audioFilePath = Path.Combine(projectPath, track.AudioRelativePath);
@@ -73,7 +76,7 @@ namespace LeaMusic.src.ResourceManager_
         }
 
 
-        public async Task<Project> LoadProjectFromFileAsync(Location projectLocation, LeaResourceManager resourceManager)
+        public async Task<Project> LoadProject(Location projectLocation, LeaResourceManager resourceManager)
         {
             if (projectLocation is FileLocation location)
             {

@@ -9,12 +9,12 @@ namespace LeaMusic.src.ResourceManager_
         //TODO: Cache Resources!
         //TODO: Relative Paths!
 
-        public async Task<Project> LoadProjectFromFileAsync(Location projectLocation, IHandler handler)
+        public async Task<Project> LoadProject(Location projectLocation, IResourceHandler handler)
         {
-            return await handler.LoadProjectFromFileAsync(projectLocation, this);
+            return await handler.LoadProject(projectLocation, this);
         }
 
-        public void SaveProject(Project project, Location projectLocation, IHandler handler)
+        public void SaveProject(Project project, Location projectLocation, IResourceHandler handler)
         {
             handler.SaveProject(projectLocation, project);
         }
@@ -22,7 +22,7 @@ namespace LeaMusic.src.ResourceManager_
         //Import: When the Audio IS NOT in the Project/Audio Folder
         //Load: When the Audio IS IN the Project/Audio Folder
         //So Import copy the AudioFile from Source to Project/audioFolder
-        public Track ImportTrack(Location trackLocation, IHandler handler)
+        public Track ImportTrack(Location trackLocation, IResourceHandler handler)
         {
            return  handler.ImportTrack(trackLocation, this); 
         }

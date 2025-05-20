@@ -20,9 +20,14 @@
     {
         public string DatabaseAddres { get; set; }
 
-        public DatabaseLocation(string path)
+        public DatabaseLocation(string path, string username, string userPassword)
         {
 
+        }
+
+        internal bool CheckUserCredentials()
+        {
+            throw new NotImplementedException();
         }
 
     }

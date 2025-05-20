@@ -3,12 +3,14 @@ using CommunityToolkit.Mvvm.Input;
 using LeaMusic.src;
 using LeaMusic.src.ResourceManager_;
 using LeaMusicGui.Views;
+
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media;
 using Application = System.Windows.Application;
+using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
 namespace LeaMusicGui
 {
@@ -79,7 +81,7 @@ namespace LeaMusicGui
         //is used when Zoom with mouse, to prevent to fetch waveform twice
         private bool supressZoom;
 
-        private IHandler handler;
+        private IResourceHandler resourceHandler;
         public MainViewModel()
         {
             resourceManager = new LeaResourceManager();
@@ -98,8 +100,9 @@ namespace LeaMusicGui
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;
 
 
-            handler = new FileHandler();
-            //handler = new DatabaseHandler("1.1.1.1", "alex", "123");
+          // resourceHandler = new FileHandler();
+            resourceHandler = new GoogleDriveHandler("1.1.1.1", "alex", "123", new FileHandler());
+
             CompositionTarget.Rendering += (sender, e) => audioEngine.Update();
         }
 
@@ -353,13 +356,21 @@ namespace LeaMusicGui
         [RelayCommand]
         private async Task SaveProject()
         {
-            var saveDialog = new FolderBrowserDialog();
+            //Maybe Stop audioEngine here, and play again if previous state was play 
 
-            if (saveDialog.ShowDialog() == DialogResult.OK)
+            if (resourceHandler is FileHandler fileHandler)
             {
-                //Maybe Stop audioEngine here, and play again if previous state was play 
-                resourceManager.SaveProject(Project, new FileLocation(saveDialog.SelectedPath), handler);
+                var saveDialog = new FolderBrowserDialog();
+                if (saveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    resourceManager.SaveProject(Project, new FileLocation(saveDialog.SelectedPath), fileHandler);
+                }
             }
+            else if (resourceHandler is GoogleDriveHandler googleDriveHandler)
+            {
+                resourceManager.SaveProject(Project, new DatabaseLocation("", "", ""), googleDriveHandler);
+            }
+
         }
 
         [RelayCommand]
@@ -379,29 +390,61 @@ namespace LeaMusicGui
                 Filter = "Project (*.prj)|*.prj"
             };
 
-            if (dialog.ShowDialog() == DialogResult.OK)
+            Project? project = null;
+
+            
+            Project.Dispose();
+            Project = null;
+
+            if(resourceHandler is FileHandler)
             {
-                IsLoading = true;
-                //var project = await AudioEngine.LoadProjectFromFile(dialog.FileName);
-                var location = new FileLocation(dialog.FileName);
-                var project = await resourceManager.LoadProjectFromFileAsync(location, handler);
-
-                audioEngine.MountProject(project);
-                Project = project;
-
-                audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
-
-
-                CreateTrackDTO();
-                CreateMarkerDTO();
-
-                //Prevent when user doubleclick, that WPF register as a mouseclick
-                await Task.Delay(100);
-
-                Debug.WriteLine("PROJECT LOADED");
-                IsLoading = false;
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    IsLoading = true;
+                    //var project = await AudioEngine.LoadProjectFromFile(dialog.FileName);
+                    var location = new FileLocation(dialog.FileName);
+                    //var project = await resourceManager.LoadProjectFromFileAsync(location, resourceHandler);
+                     project = await LoadProjectFromHandlerAsync(resourceHandler, dialog.FileName);
+                }     
             }
+            else if(resourceHandler is GoogleDriveHandler googleDriveHandler)
+            {
+                 project = await LoadProjectFromHandlerAsync(googleDriveHandler, dialog.FileName);
+            }
+
+
+            if (project == null)
+                throw new Exception("Cant load Project");
+
+            audioEngine.MountProject(project);
+            Project = project;
+
+            audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
+
+
+            CreateTrackDTO();
+            CreateMarkerDTO();
+
+            //Prevent when user doubleclick, that WPF register as a mouseclick
+            await Task.Delay(100);
+
+            Debug.WriteLine("PROJECT LOADED");
+            IsLoading = false;
+
+
         }
+
+        private async Task<Project> LoadProjectFromHandlerAsync(IResourceHandler handler, string path)
+        {
+            Project track = new Project();
+            if (handler is FileHandler fileHandler)
+                track = await resourceManager.LoadProject(new FileLocation(path), fileHandler);
+            else if (handler is GoogleDriveHandler databaseHandler)
+                track = await resourceManager.LoadProject(new DatabaseLocation(path, "", ""), databaseHandler);
+
+            return track;
+        }
+
 
         [RelayCommand]
         private async Task CreateProject()
@@ -432,7 +475,7 @@ namespace LeaMusicGui
             {
                 audioEngine.Stop();
 
-                var track = resourceManager.ImportTrack(new FileLocation(fileDialog.FileName), handler);
+                var track = ImportTrackHandler(resourceHandler, fileDialog.FileName);
 
                 Project.AddTrack(track);
                 Project.SetTempo(Speed);
@@ -442,6 +485,14 @@ namespace LeaMusicGui
                 audioEngine.MountProject(Project);
                 audioEngine.AudioJumpToSec(audioEngine.CurrentPosition);
             }
+        }
+
+        private Track ImportTrackHandler(IResourceHandler resourceHandler, string path)
+        {
+            //DatabaseHandler requiere a FileHandler for Importin track from Disk
+            Track track = resourceManager.ImportTrack(new FileLocation(path), resourceHandler);
+
+            return track;
         }
 
         [RelayCommand]
