@@ -369,7 +369,9 @@ namespace LeaMusicGui
             }
             else if (resourceHandler is GoogleDriveHandler googleDriveHandler)
             {
-                resourceManager.SaveProject(Project, new DatabaseLocation("", "", ""), googleDriveHandler);
+               // var driveLocation = new GDriveLocation("Test");
+
+               // resourceManager.SaveProject(Project, driveLocation, googleDriveHandler);
             }
 
         }
@@ -397,7 +399,7 @@ namespace LeaMusicGui
             Project.Dispose();
             Project = null;
 
-            if(resourceHandler is FileHandler)
+            if(resourceHandler is FileHandler fileHandler)
             {
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
@@ -405,12 +407,20 @@ namespace LeaMusicGui
                     //var project = await AudioEngine.LoadProjectFromFile(dialog.FileName);
                     var location = new FileLocation(dialog.FileName);
                     //var project = await resourceManager.LoadProjectFromFileAsync(location, resourceHandler);
-                     project = await LoadProjectFromHandlerAsync(resourceHandler, dialog.FileName);
+                    Project track = new Project();
+
+                 
+                        track = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
+                  
+                   
                 }     
             }
             else if(resourceHandler is GoogleDriveHandler googleDriveHandler)
             {
-                 project = await LoadProjectFromHandlerAsync(googleDriveHandler, dialog.FileName);
+                var driveLocation = new GDriveLocation(leaRootPath: "Test", localPath: "C:/t", projectName: "aaa.txt");
+                var track = await resourceManager.LoadProject(driveLocation, googleDriveHandler);
+
+               // project = await LoadProjectFromHandlerAsync(googleDriveHandler, dialog.FileName);
             }
 
 
@@ -435,16 +445,21 @@ namespace LeaMusicGui
 
         }
 
-        private async Task<Project> LoadProjectFromHandlerAsync(IResourceHandler handler, string path)
-        {
-            Project track = new Project();
-            if (handler is FileHandler fileHandler)
-                track = await resourceManager.LoadProject(new FileLocation(path), fileHandler);
-            else if (handler is GoogleDriveHandler databaseHandler)
-                track = await resourceManager.LoadProject(new DatabaseLocation(path, "", ""), databaseHandler);
+        //private async Task<Project> LoadProjectFromHandlerAsync(IResourceHandler handler, string path)
+        //{
+        //    Project track = new Project();
+        //    if (handler is FileHandler fileHandler)
+        //    {
+        //        track = await resourceManager.LoadProject(new FileLocation(path), fileHandler);
+        //    }
+        //    else if (handler is GoogleDriveHandler databaseHandler)
+        //    {
+        //        var driveLocation = new GDriveLocation(leaRootPath:"Test",localPath:"C:/t/nana", projectName:"aaa.txt");
+        //        track = await resourceManager.LoadProject(driveLocation, databaseHandler);
+        //    }
 
-            return track;
-        }
+        //    return track;
+        //}
 
 
         [RelayCommand]

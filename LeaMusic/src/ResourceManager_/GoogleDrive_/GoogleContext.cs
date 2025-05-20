@@ -252,5 +252,31 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
             return files.First().Id;
         }
+
+        internal async Task DownloadZipToFolderAsync(string localPath, string id)
+        {
+            var file = await driveService.Files.Get(id).ExecuteAsync();
+            
+            var fullPath = Path.Combine(localPath, file.Name);
+
+            var request = driveService.Files.Get(id);
+            var memoryStream = new MemoryStream();
+
+            // 4. Download the file content into memory
+            await request.DownloadAsync(memoryStream);
+
+            if(System.IO.File.Exists(fullPath))
+                System.IO.File.Delete(fullPath);
+
+            // 5. Save to disk
+            using (var fileStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
+            {
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                await memoryStream.CopyToAsync(fileStream);
+            }
+
+            Debug.WriteLine($"ZIP file downloaded to: {fullPath}");
+
+        }
     }
 }

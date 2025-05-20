@@ -9,9 +9,9 @@ namespace LeaMusic.src.ResourceManager_
         //TODO: Cache Resources!
         //TODO: Relative Paths!
 
-        public async Task<Project> LoadProject(Location projectLocation, IResourceHandler handler)
+        public async Task<Project> LoadProject(Location location, IResourceHandler handler)
         {
-            return await handler.LoadProject(projectLocation, this);
+            return await handler.LoadProject(location, this);
         }
 
         public void SaveProject(Project project, Location projectLocation, IResourceHandler handler)

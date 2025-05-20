@@ -16,19 +16,22 @@
         }
     }
 
-    public class DatabaseLocation : Location
+    public class GDriveLocation : Location
     {
-        public string DatabaseAddres { get; set; }
+        public string LeaRootPath { get; set; }
 
-        public DatabaseLocation(string path, string username, string userPassword)
+        public string ProjectName { get; set; }
+
+        public string LocalPath { get; set; }
+
+        public GDriveLocation(string leaRootPath, string localPath, string projectName)
         {
-
+            LeaRootPath = leaRootPath;
+            ProjectName = projectName;
+            LocalPath = localPath;
         }
 
-        internal bool CheckUserCredentials()
-        {
-            throw new NotImplementedException();
-        }
+      
 
     }
 }
