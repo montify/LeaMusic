@@ -1,7 +1,7 @@
 ﻿using NAudio.Wave;
 using System.Diagnostics;
 
-namespace LeaMusic.src
+namespace LeaMusic.src.AudioEngine_
 {
 
     //Project is Data, ProjectManager is the Controller of it 

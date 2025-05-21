@@ -6,46 +6,46 @@ namespace LeaMusicGui
 {
     public partial class CreateProjectViewModel : ObservableObject
     {
-        public MainViewModel parentViewModel;
+    //    public MainViewModel parentViewModel;
 
-        [ObservableProperty]
-        public string projectName;
-
-
-            [ObservableProperty]
-            public double speed;
+    //    [ObservableProperty]
+    //    public string projectName;
 
 
-        public CreateProjectViewModel(MainViewModel parentViewModel)
-        {
-            this.parentViewModel = parentViewModel;
+    //        [ObservableProperty]
+    //        public double speed;
 
-            parentViewModel.PropertyChanged += ParentViewModel_PropertyChanged;
-        }
 
-        private void ParentViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if(e.PropertyName == nameof(parentViewModel.Speed))
-            {
-                if(Speed != parentViewModel.Speed)
-                {
-                    Speed = parentViewModel.Speed;
-                }
-            }
-        }
+    //    public CreateProjectViewModel(MainViewModel parentViewModel)
+    //    {
+    //        this.parentViewModel = parentViewModel;
 
-        [RelayCommand]
-        private async Task Save()
-        {
+    //        parentViewModel.PropertyChanged += ParentViewModel_PropertyChanged;
+    //    }
+
+    //    private void ParentViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    //    {
+    //        if(e.PropertyName == nameof(parentViewModel.Speed))
+    //        {
+    //            if(Speed != parentViewModel.Speed)
+    //            {
+    //                Speed = parentViewModel.Speed;
+    //            }
+    //        }
+    //    }
+
+    //    [RelayCommand]
+    //    private async Task Save()
+    //    {
            
-            Console.WriteLine();
-        }
+    //        Console.WriteLine();
+    //    }
 
         
-        partial void OnSpeedChanged(double value)
-        {
-            parentViewModel.Speed = value;
+    //    partial void OnSpeedChanged(double value)
+    //    {
+    //        parentViewModel.Speed = value;
          
-        }
+    //    }
     }
 }

@@ -2,7 +2,7 @@
 using NAudio.Wave.SampleProviders;
 using System.Diagnostics;
 
-namespace LeaMusic.src
+namespace LeaMusic.src.AudioEngine_
 {
     public class AudioEngine
     {

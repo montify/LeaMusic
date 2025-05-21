@@ -1,9 +1,10 @@
-﻿using LeaMusic.src.ResourceManager_;
+﻿using LeaMusic.src.AudioEngine_.Streams;
+using LeaMusic.src.ResourceManager_;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Text.Json.Serialization;
 
-namespace LeaMusic.src
+namespace LeaMusic.src.AudioEngine_
 {
     public class Track : IDisposable
     {

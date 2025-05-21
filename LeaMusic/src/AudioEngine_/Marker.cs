@@ -1,4 +1,4 @@
-﻿namespace LeaMusic.src
+﻿namespace LeaMusic.src.AudioEngine_
 {
     //TODO: Maybe make this abstract, so i can have Beatmarkers, Textmarkers,...
     public class Marker

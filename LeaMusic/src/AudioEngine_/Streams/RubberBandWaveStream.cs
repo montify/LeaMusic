@@ -2,7 +2,7 @@
 using RubberBand;
 using System.Diagnostics;
 
-namespace LeaMusic
+namespace LeaMusic.src.AudioEngine_.Streams
 {
     public class RubberBandWaveStream :IWaveProvider
     {
@@ -26,7 +26,7 @@ namespace LeaMusic
             
             _source = source;
           
-            this.WaveFormatIEEE = WaveFormat.CreateIeeeFloatWaveFormat(_source.WaveFormat.SampleRate, _source.WaveFormat.Channels);
+            WaveFormatIEEE = WaveFormat.CreateIeeeFloatWaveFormat(_source.WaveFormat.SampleRate, _source.WaveFormat.Channels);
             _sourceSamples = Enumerable.Range(1, source.WaveFormat.Channels).Select(channel => new float[16384]).ToArray();
             _sourceBuffer = new byte[_sourceSamples.Sum(channel => channel.Length) * 2];
             _stretchedSamples = Enumerable.Range(1, source.WaveFormat.Channels).Select(channel => new float[16384]).ToArray();
@@ -153,7 +153,7 @@ namespace LeaMusic
                             int lo = _sourceBuffer[i * bytesPerFrame + channelOffset];
                             int hi = _sourceBuffer[i * bytesPerFrame + channelOffset + 1];
 
-                            short sampleValue = unchecked((short)((hi << 8) | lo));
+                            short sampleValue = unchecked((short)(hi << 8 | lo));
 
                             _sourceSamples[channel][i] = sampleValue * (1.0f / 32768.0f);
                         }

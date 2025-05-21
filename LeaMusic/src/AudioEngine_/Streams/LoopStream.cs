@@ -1,6 +1,6 @@
 ﻿using NAudio.Wave;
 
-namespace LeaMusic
+namespace LeaMusic.src.AudioEngine_.Streams
 {
     public class LoopStream : WaveStream
     {

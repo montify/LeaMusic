@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LeaMusic.src;
+using LeaMusic.src.AudioEngine_;
 using LeaMusic.src.ResourceManager_;
 using LeaMusic.src.ResourceManager_.GoogleDrive_;
 using LeaMusicGui.Views;

@@ -1,4 +1,6 @@
-﻿namespace LeaMusic.src.ResourceManager_
+﻿using LeaMusic.src.AudioEngine_;
+
+namespace LeaMusic.src.ResourceManager_
 {
     public interface IResourceHandler
     {
