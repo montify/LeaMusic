@@ -7,7 +7,7 @@
         xmlns:control="clr-namespace:LeaMusicGui.Controls" xmlns:local1="clr-namespace:LeaMusicGui.Converters" xmlns:trackcontrol_="clr-namespace:LeaMusicGui.Controls.TrackControl_"
         xmlns:hc="https://handyorg.github.io/handycontrol"
         mc:Ignorable="d"
-        Title="LeaMusic" Height="1021" Width="1334"
+        Title="{Binding ProjectName}" Height="1021" Width="1334"
         KeyDown="ItemsControl_KeyDown">
     <Window.DataContext>
         <local:MainViewModel/>
@@ -51,12 +51,14 @@
             <Button Margin="0,0,10,0" Style="{StaticResource ButtonSuccess}" Content="Play" Command="{Binding Path=PlayCommand}" HorizontalAlignment="Left" VerticalAlignment="Top" />
             <Button Margin="0,0,10,0" Style="{StaticResource ButtonDanger}" Content="Pause" Command="{Binding Path=PauseCommand}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <Button Margin="0,0,10,0" Content="Replay" Command="{Binding Path=ReplayCommand}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-            <Button Margin="0,0,10,0" Content="Load Project" Command="{Binding LoadProjectCommand}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-            <Button Margin="0,0,10,0" Content="Save Project" Command="{Binding SaveProjectCommand}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <Button Margin="0,0,10,0" Content="Load Project Local" Command="{Binding LoadProjectFileCommand}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <Button Margin="0,0,10,0" Content="Save Project Local" Command="{Binding SaveProjectFileCommand}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <TextBox Text="{Binding JumpToPositionInSec}" VerticalAlignment="Top" Width="40"/>
             <Button Margin="0,0,50,0" Content="Jump" Command="{Binding Path=JumpToSecCommand}" Width="50" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <Button Margin="0,0,10,0" Style="{StaticResource ButtonPrimary}" Content="Add Track" Command="{Binding AddTrackCommand}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-            <Button Margin="0,0,10,0" Style="{StaticResource ButtonDashedWarning}" Content="CreateProject" Command="{Binding CreateProjectCommand}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <Button Margin="0,0,10,0" Style="{StaticResource ButtonDashedWarning}" Content="LoadProjectGDrive" Command="{Binding LoadProjectGDriveCommand}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <Button Margin="0,0,10,0" Style="{StaticResource ButtonDashedWarning}" Content="SaveProjectGDrive" Command="{Binding SaveProjectGDriveCommand}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
         </StackPanel>
 
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
@@ -242,6 +244,7 @@
                      Height="18"
                      Width="600"
                      Margin="5"/>
+                
             </StackPanel>
 
             <!-- Zoom Slider in Row 1 -->
@@ -296,7 +299,7 @@
         </Grid>
 
 
-        <Grid Background="#80000000" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}" 
+        <Grid Background="#80000000" Visibility="{Binding IsProjectLoading, Converter={StaticResource BoolToVis}}" 
           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
           Grid.RowSpan="4" Panel.ZIndex="999">
             <TextBlock Text="Loading Project..." 

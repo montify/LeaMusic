@@ -26,18 +26,18 @@
         <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" >
             <StackPanel HorizontalAlignment="Stretch">
                 <TextBlock HorizontalAlignment="Center" Text="Project Name:" Foreground="White"/>
-                <TextBox TextWrapping="NoWrap" Text="{Binding ProjectName}"  IsReadOnly="true" Width="120"/>
+                <TextBox TextWrapping="NoWrap" Text="{Binding ProjectName}"   Width="120"/>
             </StackPanel>
             <Separator/>
-            <StackPanel>
-                <TextBlock HorizontalAlignment="Center" Text="Author:" Foreground="White"/>
-                <TextBox TextWrapping="NoWrap" Text="{Binding Speed}"  Width="120"/>
-            </StackPanel>
+
+            <ListBox SelectedItem="{Binding ProjectName, Mode=TwoWay}" Height="200" ItemsSource="{Binding GoogleDriveProjectList}"/>
+
+            
             <Separator/>
-            <StackPanel>
+            <!--<StackPanel>
                 <TextBlock HorizontalAlignment="Center" Text="Description:" Foreground="White"/>
                 <TextBox TextWrapping="NoWrap" Text="{Binding ProjectName}"  Width="120"/>
-            </StackPanel>
+            </StackPanel>-->
             <Button  Margin="0,20,0,0" Content="Button" Command="{Binding CreateProjectCommand}" HorizontalAlignment="Center" />
         </StackPanel>
      

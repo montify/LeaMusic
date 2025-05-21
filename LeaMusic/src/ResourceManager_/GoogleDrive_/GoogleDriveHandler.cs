@@ -112,5 +112,15 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             await context.UploadZipToFolderAsync(ZipFilePath, rootFolderId);
         
         }
+
+        public List<string> GetAllProjectsName(string folder)
+        {
+            var rootFolderId = context.GetFolderIdByName(folder);
+
+            if (string.IsNullOrEmpty(rootFolderId))
+                throw new Exception("Cant find rootFolder");
+
+            return context.GetAllProjectsName(rootFolderId);
+        }
     }
 }

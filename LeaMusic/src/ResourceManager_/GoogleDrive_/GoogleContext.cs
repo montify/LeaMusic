@@ -118,6 +118,34 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             }
         }
 
+        public List<string> GetAllProjectsName(string folderId)
+        {
+            var result = new List<string>();
+            string pageToken = null;
+
+            do
+            {
+                var request = driveService.Files.List();
+                request.Q = $"'{folderId}' in parents and trashed = false";
+                request.Fields = "nextPageToken, files(id, name)";
+                request.Spaces = "drive";
+                request.PageToken = pageToken;
+
+                var response = request.Execute();
+
+                if (response.Files != null && response.Files.Count > 0)
+                {
+                    foreach (var file in response.Files)
+                    {
+                        result.Add(file.Name);
+                    }
+                }
+
+                pageToken = response.NextPageToken;
+            } while (pageToken != null);
+
+            return result;
+        }
         //check
         public string GetFolderIdByName(string folderName)
         {

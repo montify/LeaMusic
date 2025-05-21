@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,9 +20,18 @@ namespace LeaMusicGui.Views
     /// </summary>
     public partial class LoadProjectWindow : Window
     {
-        public LoadProjectWindow()
+        public LoadProjectWindow(LoadProjectViewModel vm)
         {
             InitializeComponent();
+        
+
+            vm.OnClose += CloseWindow;
         }
+
+        public void CloseWindow()
+        {
+            this.Close();
+        }
+
     }
 }

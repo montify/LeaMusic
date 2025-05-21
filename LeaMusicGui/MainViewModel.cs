@@ -73,6 +73,10 @@ namespace LeaMusicGui
         [ObservableProperty]
         public int renderWidth;
 
+        [ObservableProperty]
+        public string projectName;
+
+
         private LeaResourceManager resourceManager;
 
         public Project Project { get; private set; }
@@ -83,6 +87,8 @@ namespace LeaMusicGui
         private bool supressZoom;
 
         private IResourceHandler resourceHandler;
+
+
         public MainViewModel()
         {
             resourceManager = new LeaResourceManager();
@@ -92,7 +98,8 @@ namespace LeaMusicGui
 
             //Create Empty Project for StartUp
             Project = Project.CreateEmptyProject("TEST");
-           // Project.AddTrack(new Track("C:\\Users\\alexlapi\\Desktop\\v1\\AudioFiles\\Hairflip.mp3"));
+            // Project.AddTrack(new Track("C:\\Users\\alexlapi\\Desktop\\v1\\AudioFiles\\Hairflip.mp3"));
+            ProjectName = "NOT SET";
 
             audioEngine.MountProject(Project);
 
@@ -101,8 +108,8 @@ namespace LeaMusicGui
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;
 
 
-          // resourceHandler = new FileHandler();
-            resourceHandler = new GoogleDriveHandler("1.1.1.1", "alex", "123", new FileHandler());
+            resourceHandler = new FileHandler();
+           // resourceHandler = new GoogleDriveHandler("1.1.1.1", "alex", "123", new FileHandler());
 
             CompositionTarget.Rendering += (sender, e) => audioEngine.Update();
         }
@@ -220,6 +227,11 @@ namespace LeaMusicGui
             audioEngine.ChangePitch(value);
         }
 
+        partial void OnProjectNameChanged(string value)
+        {
+            if(Project != null)
+            Project.Name = value;
+        }
         partial void OnScrollChanged(double value)
         {
             audioEngine.ScrollWaveForm(value);
@@ -353,8 +365,7 @@ namespace LeaMusicGui
             audioEngine.Replay();
         }
 
-
-        [RelayCommand]
+        
         private async Task SaveProject()
         {
             //Maybe Stop audioEngine here, and play again if previous state was play 
@@ -377,44 +388,73 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
+        private async Task SaveProjectFile()
+        {
+            resourceHandler = new FileHandler();
+            await SaveProject();
+        }
+
+        [RelayCommand]
+        private async Task SaveProjectGDrive()
+        {
+            resourceHandler = new GoogleDriveHandler("", "", "", new FileHandler());
+            await SaveProject();
+        }
+
+        [RelayCommand]
         private async Task Pause()
         {
             audioEngine.Pause();
         }
 
         [ObservableProperty]
-        bool isLoading;
+        bool isProjectLoading;
 
-        [RelayCommand]
+       
         private async Task LoadProject()
         {
-            var dialog = new OpenFileDialog
-            {
-                Filter = "Project (*.prj)|*.prj"
-            };
-
             
-            Project.Dispose();
+            Project?.Dispose();
             Project = null;
+            IsProjectLoading = true;
 
-            if(resourceHandler is FileHandler fileHandler)
+            if (resourceHandler == null)
+                throw new Exception("ResourceHandler invalid");
+
+            if (resourceHandler is FileHandler fileHandler)
             {
+                var dialog = new OpenFileDialog
+                {
+                    Filter = "Project (*.prj)|*.prj"
+                };
+
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    IsLoading = true;
-                    var location = new FileLocation(dialog.FileName);
-                    Project track = new Project();
-                    track = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
-                }     
-            }
-            else if(resourceHandler is GoogleDriveHandler googleDriveHandler)
-            {
-                var driveLocation = new GDriveLocation(rootFolder: "LeaRoot", localPath: "C:/t", projectName: "TEST.zip");
-                Project = await resourceManager.LoadProject(driveLocation, googleDriveHandler);
 
-                if (Project == null)
-                    throw new Exception("Cant load Project");
+                    var location = new FileLocation(dialog.FileName);
+
+                    Project = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
+                }
+                else
+                {
+                    IsProjectLoading = false;
+                    return;
+                }
             }
+            else if (resourceHandler is GoogleDriveHandler googleDriveHandler)
+            {
+                if (string.IsNullOrEmpty(ProjectName))
+                    throw new ArgumentNullException("Project cant be null");
+                //TODO: Dynamic Modal window to specify projectname for download
+
+                var driveLocation = new GDriveLocation(rootFolder: "LeaRoot", localPath: "C:/t", projectName: ProjectName);
+                Project = await resourceManager.LoadProject(driveLocation, googleDriveHandler);
+            }
+
+            if (Project == null)
+                throw new Exception("Cant load Project");
+
+            ProjectName = Project.Name;
 
             audioEngine.MountProject(Project);
             audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
@@ -424,27 +464,44 @@ namespace LeaMusicGui
 
             //Prevent when user doubleclick, that WPF register as a mouseclick
             await Task.Delay(100);
+            IsProjectLoading = false;
 
-            Debug.WriteLine("PROJECT LOADED");
-            IsLoading = false;
         }
 
+        
         [RelayCommand]
-        private async Task CreateProject()
+        private async Task LoadProjectGDrive()
         {
-            var projectWindow = new LoadProjectWindow();
+            resourceHandler = new GoogleDriveHandler("", "", "", new FileHandler());
             var ownerWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
 
             if (ownerWindow == null)
                 throw new NullReferenceException("Cant find Parent window");
 
+            var vm = new LoadProjectViewModel((MainViewModel)ownerWindow.DataContext);
 
-            var vm = new CreateProjectViewModel((MainViewModel)ownerWindow.DataContext);
-
+            var projectWindow = new LoadProjectWindow(vm);
             projectWindow.DataContext = vm;
             projectWindow.Owner = ownerWindow;
-            projectWindow.Show();
+            projectWindow.ShowDialog();
+
+            if (ProjectName == null)
+            {
+                return; 
+            }
+
+            await LoadProject();
+
         }
+
+        [RelayCommand]
+        private async Task LoadProjectFile()
+        {
+            resourceHandler = new FileHandler();
+            await LoadProject();
+
+        }
+
 
         [RelayCommand]
         private async Task AddTrack()
@@ -469,7 +526,6 @@ namespace LeaMusicGui
                 audioEngine.AudioJumpToSec(audioEngine.CurrentPosition);
             }
         }
-
         private Track ImportTrackHandler(IResourceHandler resourceHandler, string path)
         {
             //DatabaseHandler requiere a FileHandler for Importin track from Disk
@@ -477,7 +533,7 @@ namespace LeaMusicGui
 
             return track;
         }
-
+        
         [RelayCommand]
         private async Task Play()
         {
@@ -515,6 +571,18 @@ namespace LeaMusicGui
         private async Task JumpToSec()
         {
             audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(JumpToPositionInSec));
+        }
+     
+        public List<string>? GetProjectFromGoogleDrive()
+        {
+            if (resourceHandler is GoogleDriveHandler googleDriveHandler)
+            {
+                var projectNameList = googleDriveHandler.GetAllProjectsName("LeaRoot");
+
+                return projectNameList.ToList();
+            }
+            else
+                throw new Exception("Handler is not a GoogleDriveHandler");
         }
     }
 }
