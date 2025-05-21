@@ -76,14 +76,20 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
         public async Task SaveProject(Location projectLocation, Project project)
         {
-            var localExtractedTmpPath = $"C:/t/tmp/{project.Name}";
+            var localExtractedTmpPath = $"C:/LeaProjects/tmp/{project.Name}";
 
             if (Directory.Exists(localExtractedTmpPath))
-                Directory.Delete(localExtractedTmpPath, recursive:true);
+                Directory.Delete(localExtractedTmpPath, recursive: true);
 
-             await fileHandler.SaveProject(new FileLocation(localExtractedTmpPath), project);
+            await fileHandler.SaveProject(new FileLocation(localExtractedTmpPath), project);
 
-            var ZipFilePath = $"C:/t/tmpZipFiles/{project.Name}.zip";
+            if (!Directory.Exists("C:/LeaProjects"))
+                Directory.CreateDirectory("C:/LeaProjects");
+
+            if (!Directory.Exists("C:/LeaProjects/tmpZipFiles"))
+                Directory.CreateDirectory("C:/LeaProjects/tmpZipFiles");
+
+            var ZipFilePath = $"C:/LeaProjects/tmpZipFiles/{project.Name}.zip";
 
             if (File.Exists(ZipFilePath))
                 File.Delete(ZipFilePath);
@@ -95,12 +101,12 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
             var gDriveLocation = projectLocation as GDriveLocation;
 
-           var rootFolderId = context.GetFolderIdByName(gDriveLocation.rootFolderPath);
+            var rootFolderId = context.GetFolderIdByName(gDriveLocation.rootFolderPath);
 
             //check if .zip file on Gdrive exists, delete it
             var fileId = context.GetFileIdFromFolder($"{project.Name}.zip", gDriveLocation.rootFolderPath);
 
-            if(!string.IsNullOrEmpty(fileId))
+            if (!string.IsNullOrEmpty(fileId))
             {
                 //Delete file
                 context.DeleteFileById(fileId);
@@ -111,7 +117,14 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
                 throw new Exception("cant find rootFolder");
 
             await context.UploadZipToFolderAsync(ZipFilePath, rootFolderId);
-        
+
+            if (File.Exists(ZipFilePath))
+                File.Delete(ZipFilePath);
+
+            if (Directory.Exists(localExtractedTmpPath))
+                Directory.Delete(localExtractedTmpPath, true);
+
+            Console.WriteLine();
         }
 
         public List<string> GetAllProjectsName(string folder)

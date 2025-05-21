@@ -448,7 +448,7 @@ namespace LeaMusicGui
                     throw new ArgumentNullException("Project cant be null");
                 //TODO: Dynamic Modal window to specify projectname for download
 
-                var driveLocation = new GDriveLocation(rootFolder: "LeaRoot", localPath: "C:/t", projectName: ProjectName);
+                var driveLocation = new GDriveLocation(rootFolder: "LeaRoot", localPath: "C:/LeaProjects", projectName: ProjectName);
                 Project = await resourceManager.LoadProject(driveLocation, googleDriveHandler);
             }
 
