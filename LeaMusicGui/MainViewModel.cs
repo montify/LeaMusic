@@ -231,6 +231,7 @@ namespace LeaMusicGui
         {
             if(Project != null)
             Project.Name = value;
+
         }
         partial void OnScrollChanged(double value)
         {

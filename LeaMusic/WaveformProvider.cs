@@ -24,6 +24,7 @@ namespace LeaMusic
           
         }
 
+
         public Memory<float> RequestSamples(double startInSec, double endInSec, int widthInPixel)
         {
             double startSampleIndex = startInSec * WaveFormat.SampleRate * WaveFormat.Channels;
