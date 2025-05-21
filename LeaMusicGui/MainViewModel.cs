@@ -369,11 +369,11 @@ namespace LeaMusicGui
             }
             else if (resourceHandler is GoogleDriveHandler googleDriveHandler)
             {
-               // var driveLocation = new GDriveLocation("Test");
+                //Todo: save rootFolder in GoogleDriveHandler
+                var driveLocation = new GDriveLocation(rootFolder:"LeaRoot", localPath:"", projectName:"");
 
-               // resourceManager.SaveProject(Project, driveLocation, googleDriveHandler);
+                resourceManager.SaveProject(Project, driveLocation, googleDriveHandler);
             }
-
         }
 
         [RelayCommand]
@@ -393,8 +393,6 @@ namespace LeaMusicGui
                 Filter = "Project (*.prj)|*.prj"
             };
 
-            Project? project = null;
-
             
             Project.Dispose();
             Project = null;
@@ -404,34 +402,22 @@ namespace LeaMusicGui
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     IsLoading = true;
-                    //var project = await AudioEngine.LoadProjectFromFile(dialog.FileName);
                     var location = new FileLocation(dialog.FileName);
-                    //var project = await resourceManager.LoadProjectFromFileAsync(location, resourceHandler);
                     Project track = new Project();
-
-                 
-                        track = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
-                  
-                   
+                    track = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
                 }     
             }
             else if(resourceHandler is GoogleDriveHandler googleDriveHandler)
             {
-                var driveLocation = new GDriveLocation(leaRootPath: "Test", localPath: "C:/t", projectName: "aaa.txt");
-                var track = await resourceManager.LoadProject(driveLocation, googleDriveHandler);
+                var driveLocation = new GDriveLocation(rootFolder: "LeaRoot", localPath: "C:/t", projectName: "TEST.zip");
+                Project = await resourceManager.LoadProject(driveLocation, googleDriveHandler);
 
-               // project = await LoadProjectFromHandlerAsync(googleDriveHandler, dialog.FileName);
+                if (Project == null)
+                    throw new Exception("Cant load Project");
             }
 
-
-            if (project == null)
-                throw new Exception("Cant load Project");
-
-            audioEngine.MountProject(project);
-            Project = project;
-
+            audioEngine.MountProject(Project);
             audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
-
 
             CreateTrackDTO();
             CreateMarkerDTO();
@@ -441,26 +427,7 @@ namespace LeaMusicGui
 
             Debug.WriteLine("PROJECT LOADED");
             IsLoading = false;
-
-
         }
-
-        //private async Task<Project> LoadProjectFromHandlerAsync(IResourceHandler handler, string path)
-        //{
-        //    Project track = new Project();
-        //    if (handler is FileHandler fileHandler)
-        //    {
-        //        track = await resourceManager.LoadProject(new FileLocation(path), fileHandler);
-        //    }
-        //    else if (handler is GoogleDriveHandler databaseHandler)
-        //    {
-        //        var driveLocation = new GDriveLocation(leaRootPath:"Test",localPath:"C:/t/nana", projectName:"aaa.txt");
-        //        track = await resourceManager.LoadProject(driveLocation, databaseHandler);
-        //    }
-
-        //    return track;
-        //}
-
 
         [RelayCommand]
         private async Task CreateProject()

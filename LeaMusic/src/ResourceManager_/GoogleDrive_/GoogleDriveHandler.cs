@@ -1,6 +1,4 @@
-﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.Drive.v3;
-
+﻿using System.IO.Compression;
 
 namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 {
@@ -9,12 +7,6 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
         //We Import Database from file, not from Database, we only load Audio from Database
         private readonly FileHandler fileHandler;
 
-
-        string[] scopes = { DriveService.Scope.DriveFile };
-        string applicationName = "Drive API .NET Upload";
-
-       private UserCredential credential;
-       private DriveService driveService;
        private GoogleContext context;
 
         public GoogleDriveHandler(string address, string username, string password, FileHandler fileHandler)
@@ -27,7 +19,12 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
         public Track ImportTrack(Location trackLocation, LeaResourceManager leaResourceManager)
         {
-            throw new NotImplementedException();
+            var track = fileHandler.ImportTrack(trackLocation, leaResourceManager);
+
+            if (track == null)
+                throw new Exception("Cant load Track");
+      
+            return track;
         }
 
         public Track LoadAudio(Track track, string projectPath, LeaResourceManager resourceManager)
@@ -40,49 +37,80 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             //appRootFolder is the Folder, that LeaMusic sees as root. It must be in Gdrives root 
             if (location is GDriveLocation gLocation)
             {
-                var root = context.GetFolderIdByPath(gLocation.LeaRootPath);
-
-                if (string.IsNullOrEmpty(root))
-                    throw new Exception($"Cant find root Location with name {gLocation.LeaRootPath}");
-
-
-                //var s = context.GetFileIdByNameInFolder("aaa.txt", "Test/lol");
-               // var id = context.GetFolderIdByPath("Test/lol");
-                //await context.UpdateFileByNameInFolder("C:t/aaa.txt", s, id);
-                //await context.UploadZipToFolderAsync("C:/t/aaa.rar", id);
+                var rootFolder = context.CreateOrGetFolder(gLocation.rootFolderPath).Id;
+                
+                if (string.IsNullOrEmpty(rootFolder))
+                    throw new Exception($"Cant find root Location with name {gLocation.rootFolderPath}");
 
                 //1) check if file exists in gdrive, if yes delete it
-                string? file = context.GetFileIdByNameInFolder(gLocation.ProjectName, gLocation.LeaRootPath);
-
+                string? file = context.GetFileIdByNameInFolder(gLocation.ProjectName, gLocation.rootFolderPath);
+                
                 if (string.IsNullOrEmpty(file))
                     return null;
 
-                await context.DownloadZipToFolderAsync(gLocation.LocalPath, file);
+                var localfilePath = Path.Combine(gLocation.LocalPath, gLocation.ProjectName);
 
 
-                //2) Download to tmp
-                //3) check if file exists tmp/extracedProjects(Hdd), if yes delete it
-                //3) extrack it to tmp/extracedProjects
-                //4) FileHandler.LoadProject(tmp/extracedProjects/Name.prj
+                using (var stream = await context.DownloadZipToFolderAsync(gLocation.LocalPath, file))
+                {
+                    ZipFile.ExtractToDirectory(stream, gLocation.LocalPath, overwriteFiles: true);
+                }
 
+                var localProjectPath = Path.Combine(gLocation.LocalPath, Path.GetFileNameWithoutExtension(gLocation.ProjectName), Path.GetFileNameWithoutExtension(gLocation.ProjectName) + ".prj");
+               
 
-                Console.WriteLine();
+                var project = await fileHandler.LoadProject(new FileLocation(localProjectPath), resourceManager);
 
-                return default;
+                if (project == null)
+                    throw new Exception("Cant load Project");
+
+                return project;
+
             }
             else
-                { throw new Exception("Cant cast to GDriveLocation"); }
+            {
+                throw new Exception("Cant cast to GDriveLocation");
+            }
         }
 
-        public Task SaveProject(Location projectLocation, Project project)
+        public async Task SaveProject(Location projectLocation, Project project)
         {
-            //1) Save to tmpProject
-            //2) Zip File
-            //3) check if file exists(drive), if yes delete it || or just update ?
-            //4) upload new Zip File
+            var localExtractedTmpPath = $"C:/t/tmp/{project.Name}";
+
+            if (Directory.Exists(localExtractedTmpPath))
+                Directory.Delete(localExtractedTmpPath, recursive:true);
+
+             await fileHandler.SaveProject(new FileLocation(localExtractedTmpPath), project);
+
+            var ZipFilePath = $"C:/t/tmpZipFiles/{project.Name}.zip";
+
+            if (File.Exists(ZipFilePath))
+                File.Delete(ZipFilePath);
+
+            ZipFile.CreateFromDirectory(localExtractedTmpPath, ZipFilePath, CompressionLevel.Optimal, true);
+
+            if (!File.Exists(ZipFilePath))
+                throw new Exception($"cant create Zip file for Project: {project.Name}");
+
+            var gDriveLocation = projectLocation as GDriveLocation;
+
+           var rootFolderId = context.GetFolderIdByName(gDriveLocation.rootFolderPath);
+
+            //check if .zip file on Gdrive exists, delete it
+            var fileId = context.GetFileIdFromFolder($"{project.Name}.zip", gDriveLocation.rootFolderPath);
+
+            if(!string.IsNullOrEmpty(fileId))
+            {
+                //Delete file
+                context.DeleteFileById(fileId);
+            }
 
 
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(rootFolderId))
+                throw new Exception("cant find rootFolder");
+
+            await context.UploadZipToFolderAsync(ZipFilePath, rootFolderId);
+        
         }
     }
 }
