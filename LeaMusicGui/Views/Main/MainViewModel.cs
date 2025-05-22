@@ -479,19 +479,16 @@ namespace LeaMusicGui
             if (ownerWindow == null)
                 throw new NullReferenceException("Cant find Parent window");
 
-            var vm = new LoadProjectViewModel((MainViewModel)ownerWindow.DataContext);
+            var vm = new LoadProjectViewModel(this);
 
             var projectWindow = new LoadProjectWindow(vm);
             projectWindow.DataContext = vm;
             projectWindow.Owner = ownerWindow;
-            projectWindow.ShowDialog();
-
-            if (ProjectName == null)
+            
+            if(projectWindow.ShowDialog() == true)
             {
-                return; 
+                await LoadProject();
             }
-
-            await LoadProject();
 
         }
 

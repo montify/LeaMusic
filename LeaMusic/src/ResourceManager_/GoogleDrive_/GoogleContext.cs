@@ -25,7 +25,7 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
                 return;
 
             //TODO: Store credentials not in GIT
-            using (var stream = new FileStream("D:/credentials.json", FileMode.Open, FileAccess.Read))
+            using (var stream = new FileStream("C:/t/credentials.json", FileMode.Open, FileAccess.Read))
             {
                 string credPath = "credentials.json";
                 credential = GoogleWebAuthorizationBroker.AuthorizeAsync(

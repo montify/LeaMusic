@@ -14,7 +14,7 @@
         ResizeMode="NoResize"
         WindowStyle="ToolWindow"
         Background="#424651"
-        d:DataContext="{d:DesignInstance Type=vm:CreateProjectViewModel, IsDesignTimeCreatable=True}">
+        d:DataContext="{d:DesignInstance Type=vm:LoadProjectViewModel, IsDesignTimeCreatable=True}">
 
 
 
@@ -24,23 +24,23 @@
 
     <Grid>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Center" >
+
             <StackPanel HorizontalAlignment="Stretch">
                 <TextBlock HorizontalAlignment="Center" Text="Project Name:" Foreground="White"/>
-                <TextBox TextWrapping="NoWrap" Text="{Binding ProjectName}"   Width="120"/>
+                <TextBox TextWrapping="NoWrap" Text="{Binding SelectedProject}"   Width="120"/>
             </StackPanel>
+
+            <Separator/>
+            <ListBox SelectedItem="{Binding SelectedProject, Mode=TwoWay}" MinHeight="200" ItemsSource="{Binding GoogleDriveProjectList}"/>
             <Separator/>
 
-            <ListBox SelectedItem="{Binding ProjectName, Mode=TwoWay}" Height="200" ItemsSource="{Binding GoogleDriveProjectList}"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="Load"  Margin="0,0,50,0" Click="LoadButton_Click"></Button>
+                <Button Content="Close" Click="CodeButton_Click"></Button>
 
-            
-            <Separator/>
-            <!--<StackPanel>
-                <TextBlock HorizontalAlignment="Center" Text="Description:" Foreground="White"/>
-                <TextBox TextWrapping="NoWrap" Text="{Binding ProjectName}"  Width="120"/>
-            </StackPanel>-->
-            <Button  Margin="0,20,0,0" Content="Button" Command="{Binding CreateProjectCommand}" HorizontalAlignment="Center" />
+            </StackPanel>
         </StackPanel>
-     
+
 
     </Grid>
 </Window>
