@@ -8,7 +8,7 @@ namespace LeaMusic.src.AudioEngine_
     public class Project : IDisposable
     {
         public string Name { get; set; }
-        public string ProjectFilePath { get; set; }
+       // public string ProjectFilePath { get; set; }
         public List<Track> Tracks { get; set; }
         public WaveFormat WaveFormat { get; set; }
         public TimeSpan Duration { get; set; }

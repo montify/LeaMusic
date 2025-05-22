@@ -373,7 +373,7 @@ namespace LeaMusicGui
             //Maybe Stop audioEngine here, and play again if previous state was play 
             var oldLastSave = Project.LastSaveAt;
             Project.LastSaveAt = DateTime.Now;
-
+            
             try
             {
                 if (resourceHandler is FileHandler fileHandler)

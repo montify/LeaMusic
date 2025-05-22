@@ -92,7 +92,7 @@ namespace LeaMusic.src.ResourceManager_
 
                 var projectPath = Path.GetDirectoryName(location.Path);
 
-                project.ProjectFilePath = Path.Combine(projectPath, project.Name, project.Name + ".prj");
+               // project.ProjectFilePath = Path.Combine(projectPath, project.Name, project.Name + ".prj");
 
                 if (string.IsNullOrEmpty(projectPath))
                     throw new ArgumentNullException($"Cant find Project path {projectPath}");
