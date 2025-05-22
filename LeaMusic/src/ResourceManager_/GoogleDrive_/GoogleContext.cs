@@ -25,7 +25,7 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
                 return;
 
             //TODO: Store credentials not in GIT
-            using (var stream = new FileStream("C:/t/credentials.json", FileMode.Open, FileAccess.Read))
+            using (var stream = new FileStream("D:/credentials.json", FileMode.Open, FileAccess.Read))
             {
                 string credPath = "credentials.json";
                 credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
@@ -146,6 +146,7 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
             return result;
         }
+
         //check
         public string GetFolderIdByName(string folderName)
         {
@@ -183,6 +184,29 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             }
 
             return parentId;
+        }
+
+        public (string? Id, string? Name, DateTime? CreatedTime)? GetFileMetadataByNameInFolder(string fileName, string folderPath)
+        {
+            string? folderId = GetFolderIdByPath(folderPath);
+
+            if (string.IsNullOrEmpty(folderId))
+                return null;
+
+            var fileRequest = driveService.Files.List();
+            fileRequest.Q = $"name = '{fileName}' and '{folderId}' in parents and trashed = false";
+            fileRequest.Fields = "files(id, name, createdTime)";
+
+            var files = fileRequest.Execute().Files;
+
+            var file = files.FirstOrDefault();
+
+            if (file == null)
+                return null;
+
+            var createTime = file.CreatedTimeDateTimeOffset.Value.DateTime;
+             
+            return (file.Id, file.Name, createTime);
         }
 
         //check
@@ -294,11 +318,9 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
         }
 
 
-        internal async Task<Stream> DownloadZipToFolderAsync(string localFolderPath, string id)
+        internal async Task<Stream> GetZipAsStream(string id)
         {
             var file = await driveService.Files.Get(id).ExecuteAsync();
-            
-            var fullPath = Path.Combine(localFolderPath, file.Name);
 
             var request = driveService.Files.Get(id);
             var memoryStream = new MemoryStream();
@@ -306,11 +328,7 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             await request.DownloadAsync(memoryStream);
 
             memoryStream.Seek(0, SeekOrigin.Begin);
- 
-            Debug.WriteLine($"ZIP file downloaded to: {fullPath}");
-
             return memoryStream;
-
         }
     }
 }

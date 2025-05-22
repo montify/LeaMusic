@@ -229,8 +229,8 @@ namespace LeaMusicGui
 
         partial void OnProjectNameChanged(string value)
         {
-            if(Project != null)
-            Project.Name = value;
+            //if(Project != null)
+            //Project.Name = value;
 
         }
         partial void OnScrollChanged(double value)
@@ -366,27 +366,44 @@ namespace LeaMusicGui
             audioEngine.Replay();
         }
 
-        
+        public bool isSyncEnabled { get; set; } = true;
+
         private async Task SaveProject()
         {
             //Maybe Stop audioEngine here, and play again if previous state was play 
+            var oldLastSave = Project.LastSaveAt;
+            Project.LastSaveAt = DateTime.Now;
 
-            if (resourceHandler is FileHandler fileHandler)
+            try
             {
-                var saveDialog = new FolderBrowserDialog();
-
-                if (saveDialog.ShowDialog() == DialogResult.OK)
+                if (resourceHandler is FileHandler fileHandler)
                 {
-                    resourceManager.SaveProject(Project, new FileLocation(saveDialog.SelectedPath), fileHandler);
+                    var saveDialog = new FolderBrowserDialog();
+
+                    if (saveDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        resourceManager.SaveProject(Project, new FileLocation(saveDialog.SelectedPath), fileHandler);
+                    }
+
+
+                    //ifSyncEnabled && isTokenValid(Auth Token google)
+                    if (isSyncEnabled)
+                    {
+                        var gDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
+                        //Todo: save rootFolder in GoogleDriveHandler
+                        // var gDriveLocation = new GDriveLocation(gDriveRootFolder: "", gDrivelocalPath: "", projectName: "");
+                        resourceManager.SaveProject(Project, default, gDriveHandler);
+                        Debug.WriteLine("Uploaded Project to Google Drive!");
+                    }
                 }
             }
-            else if (resourceHandler is GoogleDriveHandler googleDriveHandler)
+            catch (Exception e)
             {
-                //Todo: save rootFolder in GoogleDriveHandler
-                var gDriveLocation = new GDriveLocation(gDriveRootFolder:"LeaRoot", localPath:"", projectName:"");
-
-                resourceManager.SaveProject(Project, gDriveLocation, googleDriveHandler);
+                Project.LastSaveAt = oldLastSave;
+                throw;
             }
+            
+          
         }
 
         [RelayCommand]
@@ -396,12 +413,6 @@ namespace LeaMusicGui
             await SaveProject();
         }
 
-        [RelayCommand]
-        private async Task SaveProjectGDrive()
-        {
-            resourceHandler = new GoogleDriveHandler("", "", "", new FileHandler());
-            await SaveProject();
-        }
 
         [RelayCommand]
         private async Task Pause()
@@ -415,7 +426,8 @@ namespace LeaMusicGui
        
         private async Task LoadProject()
         {
-            
+            Project newProject = null;
+
             Project?.Dispose();
             Project = null;
             IsProjectLoading = true;
@@ -435,24 +447,40 @@ namespace LeaMusicGui
 
                     var location = new FileLocation(dialog.FileName);
 
-                    Project = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
-                }
-                else
-                {
-                    IsProjectLoading = false;
-                    return;
-                }
-            }
-            else if (resourceHandler is GoogleDriveHandler googleDriveHandler)
-            {
-                if (string.IsNullOrEmpty(ProjectName))
-                    throw new ArgumentNullException("Project cant be null");
-                //TODO: Dynamic Modal window to specify projectname for download
+                    newProject = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
+                    Debug.WriteLine("Project Loaded from file");
 
-                var driveLocation = new GDriveLocation(gDriveRootFolder: "LeaRoot", localPath: "C:/LeaProjects", projectName: ProjectName);
+                    Project = newProject;
+                   
 
-                Project = await resourceManager.LoadProject(driveLocation, googleDriveHandler);
+                    if (isSyncEnabled)
+                    {
+                        var googleDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
+                        var metaData = googleDriveHandler.GetMetaData(newProject.Name + ".zip");
+                        if (metaData != null)
+                        {
+                            //If the Project is on Google File and LastSavedAt is > localProject.LastSaveAt
+                            if (metaData.Value.LastSavedAt != null && metaData.Value.LastSavedAt > newProject.LastSaveAt)
+                            {
+                                var gdriveLocation = new GDriveLocation("LeaRoot", dialog.FileName, newProject.Name);
+
+                                newProject.Dispose();
+                                newProject = null;
+
+                                newProject = await resourceManager.LoadProject(gdriveLocation, googleDriveHandler);
+                                Debug.WriteLine("GoogleDrive Project is newer, DOWNLOAD IT!");
+
+                                Project = newProject;
+                               
+                            }
+                        }
+
+                    }
+                  
+                } 
             }
+         
+
 
             if (Project == null)
                 throw new Exception("Cant load Project");
@@ -471,11 +499,11 @@ namespace LeaMusicGui
 
         }
 
-        
-        [RelayCommand]
+
         private async Task LoadProjectGDrive()
         {
-            resourceHandler = new GoogleDriveHandler("", "", "", new FileHandler());
+            var googleDriveHandler = new GoogleDriveHandler("LeaRoot", new FileHandler());
+
             var ownerWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
 
             if (ownerWindow == null)
@@ -486,8 +514,8 @@ namespace LeaMusicGui
             var projectWindow = new LoadProjectWindow(vm);
             projectWindow.DataContext = vm;
             projectWindow.Owner = ownerWindow;
-            
-            if(projectWindow.ShowDialog() == true)
+
+            if (projectWindow.ShowDialog() == true)
             {
                 await LoadProject();
             }
@@ -567,16 +595,16 @@ namespace LeaMusicGui
             audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(JumpToPositionInSec));
         }
      
-        public List<string>? GetProjectFromGoogleDrive()
-        {
-            if (resourceHandler is GoogleDriveHandler googleDriveHandler)
-            {
-                var projectNameList = googleDriveHandler.GetAllProjectsName("LeaRoot");
+        //public List<string>? GetProjectFromGoogleDrive()
+        //{
+        //    //if (resourceHandler is GoogleDriveHandler googleDriveHandler)
+        //    //{
+        //    //    var projectNameList = googleDriveHandler.GetAllProjectsName("LeaRoot");
 
-                return projectNameList.ToList();
-            }
-            else
-                throw new Exception("Handler is not a GoogleDriveHandler");
-        }
+        //    //    return projectNameList.ToList();
+        //    //}
+        //    //else
+        //    //    throw new Exception("Handler is not a GoogleDriveHandler");
+        //}
     }
 }

@@ -15,9 +15,9 @@ namespace LeaMusic.src.ResourceManager_
             return await handler.LoadProject(location, this);
         }
 
-        public void SaveProject(Project project, Location projectLocation, IResourceHandler handler)
+        public void SaveProject(Project project, Location projectFilePath, IResourceHandler handler)
         {
-            handler.SaveProject(projectLocation, project);
+            handler.SaveProject(projectFilePath, project);
         }
 
         //Import: When the Audio IS NOT in the Project/Audio Folder

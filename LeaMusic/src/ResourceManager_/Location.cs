@@ -22,13 +22,13 @@
 
         public string ProjectName { get; set; }
 
-        public string LocalPath { get; set; }
+        public string LocalProjectFilePath { get; set; }
 
-        public GDriveLocation(string gDriveRootFolder, string localPath, string projectName)
+        public GDriveLocation(string gDriveRootFolder, string localProjectFilePath, string projectName)
         {
             this.gDriverootFolderPath = gDriveRootFolder;
             ProjectName = projectName;
-            LocalPath = localPath;
+            LocalProjectFilePath = localProjectFilePath;
         }
 
       

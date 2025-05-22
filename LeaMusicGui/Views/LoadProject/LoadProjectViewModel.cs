@@ -24,11 +24,6 @@ namespace LeaMusicGui
                 throw new NullReferenceException("Please set ParentViewModel");
 
             this.parentViewModel = parentViewModel;
-
-            foreach (var projectName in parentViewModel.GetProjectFromGoogleDrive())
-            {
-                GoogleDriveProjectList.Add(projectName);
-            }
         }
 
         partial void OnSelectedProjectChanged(string value)

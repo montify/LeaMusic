@@ -22,9 +22,10 @@ namespace LeaMusic.src.AudioEngine_
         public string AudioFileName { get; set; }
         public string AudioRelativePath { get; set; }
         public string WaveformRelativePath { get; set; }
-
+       
         [JsonIgnore]
         public string OriginFilePath { get; set; }
+
         public bool IsMuted { get; set; }
 
 
