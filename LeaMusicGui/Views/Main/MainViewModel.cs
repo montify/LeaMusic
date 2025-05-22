@@ -374,6 +374,7 @@ namespace LeaMusicGui
             if (resourceHandler is FileHandler fileHandler)
             {
                 var saveDialog = new FolderBrowserDialog();
+
                 if (saveDialog.ShowDialog() == DialogResult.OK)
                 {
                     resourceManager.SaveProject(Project, new FileLocation(saveDialog.SelectedPath), fileHandler);
@@ -382,9 +383,9 @@ namespace LeaMusicGui
             else if (resourceHandler is GoogleDriveHandler googleDriveHandler)
             {
                 //Todo: save rootFolder in GoogleDriveHandler
-                var driveLocation = new GDriveLocation(rootFolder:"LeaRoot", localPath:"", projectName:"");
+                var gDriveLocation = new GDriveLocation(gDriveRootFolder:"LeaRoot", localPath:"", projectName:"");
 
-                resourceManager.SaveProject(Project, driveLocation, googleDriveHandler);
+                resourceManager.SaveProject(Project, gDriveLocation, googleDriveHandler);
             }
         }
 
@@ -448,7 +449,8 @@ namespace LeaMusicGui
                     throw new ArgumentNullException("Project cant be null");
                 //TODO: Dynamic Modal window to specify projectname for download
 
-                var driveLocation = new GDriveLocation(rootFolder: "LeaRoot", localPath: "C:/LeaProjects", projectName: ProjectName);
+                var driveLocation = new GDriveLocation(gDriveRootFolder: "LeaRoot", localPath: "C:/LeaProjects", projectName: ProjectName);
+
                 Project = await resourceManager.LoadProject(driveLocation, googleDriveHandler);
             }
 
@@ -513,7 +515,8 @@ namespace LeaMusicGui
             {
                 audioEngine.Stop();
 
-                var track = ImportTrackHandler(resourceHandler, fileDialog.FileName);
+                var projectfilePath = fileDialog.FileName;
+                var track = resourceManager.ImportTrack(new FileLocation(projectfilePath), resourceHandler);
 
                 Project.AddTrack(track);
                 Project.SetTempo(Speed);
@@ -524,14 +527,7 @@ namespace LeaMusicGui
                 audioEngine.AudioJumpToSec(audioEngine.CurrentPosition);
             }
         }
-        private Track ImportTrackHandler(IResourceHandler resourceHandler, string path)
-        {
-            //DatabaseHandler requiere a FileHandler for Importin track from Disk
-            Track track = resourceManager.ImportTrack(new FileLocation(path), resourceHandler);
-
-            return track;
-        }
-        
+  
         [RelayCommand]
         private async Task Play()
         {

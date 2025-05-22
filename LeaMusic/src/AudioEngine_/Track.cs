@@ -32,13 +32,13 @@ namespace LeaMusic.src.AudioEngine_
         { 
         }
 
-        public void LoadAudioFile(string path, LeaResourceManager resourceManager)
+        public void LoadAudioFile(string audioFilePath, LeaResourceManager resourceManager)
         {
-            OriginFilePath = path;
+            OriginFilePath = audioFilePath;
          
-            AudioFileName = Path.GetFileName(path);
+            AudioFileName = Path.GetFileName(audioFilePath);
 
-            audio = resourceManager.LoadAudioFile(path);
+            audio = resourceManager.LoadAudioFile(audioFilePath);
 
             Waveformat = audio.WaveFormat;
             ClipDuration = audio.TotalTime;

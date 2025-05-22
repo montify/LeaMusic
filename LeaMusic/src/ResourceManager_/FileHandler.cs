@@ -12,12 +12,11 @@ namespace LeaMusic.src.ResourceManager_
         {
         }
 
-        public Task SaveProject(Location projectLocation, Project project)
+        public Task SaveProject(Location location, Project project)
         {
-
-            if (projectLocation is FileLocation fileLoccation)
+            if (location is FileLocation projectDirectoryPath)
             {
-                var projectDirectory = OpenOrCreateDirectory(fileLoccation.Path);
+                var projectDirectory = OpenOrCreateDirectory(projectDirectoryPath.Path);
                 var audioFilesDirectory = OpenOrCreateDirectory($"{projectDirectory.FullName}/AudioFiles");
                 var waveformDirectory = OpenOrCreateDirectory($"{projectDirectory.FullName}/Waveforms");
 
@@ -48,13 +47,13 @@ namespace LeaMusic.src.ResourceManager_
             return Task.CompletedTask;
         }
 
-        public Track? ImportTrack(Location trackLocation, LeaResourceManager resourceManager)
+        public Track? ImportTrack(Location location, LeaResourceManager resourceManager)
         {
-            if (trackLocation is FileLocation location)
+            if (location is FileLocation projectFilePath)
             {
                 var track = new Track();
-                track.OriginFilePath = location.Path;
-                track.LoadAudioFile(location.Path, resourceManager);
+                track.OriginFilePath = projectFilePath.Path;
+                track.LoadAudioFile(projectFilePath.Path, resourceManager);
                 track.waveformProvider = ImportWaveform(track);
 
                 Debug.WriteLine($"Create new Track, : {track.AudioFileName}");
@@ -92,6 +91,8 @@ namespace LeaMusic.src.ResourceManager_
                     throw new NullReferenceException($"Cant load Project Path: {location.Path}");
 
                 var projectPath = Path.GetDirectoryName(location.Path);
+
+                project.ProjectFilePath = Path.Combine(projectPath, project.Name, project.Name + ".prj");
 
                 if (string.IsNullOrEmpty(projectPath))
                     throw new ArgumentNullException($"Cant find Project path {projectPath}");

@@ -18,15 +18,15 @@
 
     public class GDriveLocation : Location
     {
-        public string rootFolderPath { get; set; }
+        public string gDriverootFolderPath { get; set; }
 
         public string ProjectName { get; set; }
 
         public string LocalPath { get; set; }
 
-        public GDriveLocation(string rootFolder, string localPath, string projectName)
+        public GDriveLocation(string gDriveRootFolder, string localPath, string projectName)
         {
-            this.rootFolderPath = rootFolder;
+            this.gDriverootFolderPath = gDriveRootFolder;
             ProjectName = projectName;
             LocalPath = localPath;
         }
