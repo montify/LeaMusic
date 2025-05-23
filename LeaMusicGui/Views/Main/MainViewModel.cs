@@ -3,43 +3,17 @@ using CommunityToolkit.Mvvm.Input;
 using LeaMusic.src.AudioEngine_;
 using LeaMusic.src.ResourceManager_;
 using LeaMusic.src.ResourceManager_.GoogleDrive_;
-using LeaMusicGui.Views;
-
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media;
-using Application = System.Windows.Application;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
 namespace LeaMusicGui
 {
-    public partial class TrackDTO : ObservableObject
-    {
-        [ObservableProperty]
-        private ReadOnlyMemory<float> _waveform;
-
-        public int TrackID { get; set; }
-    }
-
-    public partial class MarkerDTO : ObservableObject
-    {
-        [ObservableProperty]
-        private double positionRelativeView;
-
-        [ObservableProperty]
-        private Marker marker;
-
-        [ObservableProperty]
-        public bool visible = true;
-    }
-
     public partial class MainViewModel : ObservableObject
     {
-        private AudioEngine audioEngine;
-        private TimelineService TimelineService;
-
         [ObservableProperty]
         public double speed = 1;
 
@@ -75,19 +49,21 @@ namespace LeaMusicGui
 
         [ObservableProperty]
         public string projectName;
-
-
-        private LeaResourceManager resourceManager;
-
-        public Project Project { get; private set; }
         public ObservableCollection<TrackDTO> WaveformWrappers { get; set; } = new ObservableCollection<TrackDTO>();
         public ObservableCollection<MarkerDTO> TestMarkers { get; set; } = new ObservableCollection<MarkerDTO>();
 
+        private AudioEngine audioEngine;
+        private TimelineService TimelineService;
+        private LeaResourceManager resourceManager;
+        private Project Project { get; set; }
+        private bool isSyncEnabled { get; set; } = true;
         //is used when Zoom with mouse, to prevent to fetch waveform twice
         private bool supressZoom;
-
         private IResourceHandler resourceHandler;
-
+        private TimeSpan zoomMouseStartPosition;
+        private double oldZoomFactor = 1.0f;
+        private double zoomStartMouseY;
+        private bool zoomStartPositionSetOnce;
 
         public MainViewModel()
         {
@@ -107,11 +83,111 @@ namespace LeaMusicGui
             audioEngine.OnProgressChange += AudioEngine_OnProgressChange;
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;
 
-
             resourceHandler = new FileHandler();
-           // resourceHandler = new GoogleDriveHandler("1.1.1.1", "alex", "123", new FileHandler());
-
+         
             CompositionTarget.Rendering += (sender, e) => audioEngine.Update();
+        }
+
+        private async Task SaveProject()
+        {
+            //Maybe Stop audioEngine here, and play again if previous state was play 
+            var oldLastSave = Project.LastSaveAt;
+            Project.LastSaveAt = DateTime.Now;
+
+            try
+            {
+                if (resourceHandler is FileHandler fileHandler)
+                {
+                    var saveDialog = new FolderBrowserDialog();
+
+                    if (saveDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        resourceManager.SaveProject(Project, new FileLocation(saveDialog.SelectedPath), fileHandler);
+                    }
+
+                    //ifSyncEnabled && isTokenValid(Auth Token google)
+                    if (isSyncEnabled)
+                    {
+                        var gDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
+                        //Todo: save rootFolder in GoogleDriveHandler
+                        // var gDriveLocation = new GDriveLocation(gDriveRootFolder: "", gDrivelocalPath: "", projectName: "");
+                        resourceManager.SaveProject(Project, default, gDriveHandler);
+                        Debug.WriteLine("Uploaded Project to Google Drive!");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Project.LastSaveAt = oldLastSave;
+                throw;
+            }
+        }
+
+        private async Task LoadProject()
+        {
+            Project newProject = null;
+
+            Project?.Dispose();
+            Project = null;
+            IsProjectLoading = true;
+
+            if (resourceHandler == null)
+                throw new Exception("ResourceHandler invalid");
+
+            if (resourceHandler is FileHandler fileHandler)
+            {
+                var dialog = new OpenFileDialog
+                {
+                    Filter = "Project (*.prj)|*.prj"
+                };
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    var location = new FileLocation(dialog.FileName);
+
+                    newProject = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
+                    Debug.WriteLine("Project Loaded from file");
+
+                    Project = newProject;
+
+                    if (isSyncEnabled)
+                    {
+                        var googleDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
+                        var metaData = googleDriveHandler.GetMetaData(newProject.Name + ".zip");
+                        if (metaData != null)
+                        {
+                            //If the Project is on Google File and LastSavedAt is > localProject.LastSaveAt
+                            if (metaData.Value.LastSavedAt != null && metaData.Value.LastSavedAt > newProject.LastSaveAt)
+                            {
+                                var gdriveLocation = new GDriveLocation("LeaRoot", dialog.FileName, newProject.Name);
+
+                                newProject.Dispose();
+                                newProject = null;
+
+                                newProject = await resourceManager.LoadProject(gdriveLocation, googleDriveHandler);
+                                Debug.WriteLine("GoogleDrive Project is newer, DOWNLOAD IT!");
+
+                                Project = newProject;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (Project == null)
+                throw new Exception("Cant load Project");
+
+            ProjectName = Project.Name;
+
+            audioEngine.MountProject(Project);
+            audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
+
+            CreateTrackDTO();
+            CreateMarkerDTO();
+
+            //Prevent when user doubleclick, that WPF register as a mouseclick
+            await Task.Delay(100);
+            IsProjectLoading = false;
         }
 
         public void UpdateWaveform(double newWidth)
@@ -124,43 +200,6 @@ namespace LeaMusicGui
             }
 
             UpdateTrackDTO(trackDTOList);
-        }
-
-        private void CreateTrackDTO()
-        {
-            var trackDTOList = new List<Memory<float>>();
-
-            for (int i = 0; i < Project.Tracks.Count; i++)
-                trackDTOList.Add(TimelineService.RequestSample(i, 1200));
-
-            UpdateTrackDTO(trackDTOList);
-        }
-
-        private void AudioEngine_OnLoopChange(TimeSpan startSec, TimeSpan endSec)
-        {
-            SelectionStartPercentage = CalculateSecRelativeToViewWindowPercentage(startSec, audioEngine.ViewStartTime, audioEngine.ViewDuration);
-            SelectionEndPercentage = CalculateSecRelativeToViewWindowPercentage(endSec, audioEngine.ViewStartTime, audioEngine.ViewDuration);
-        }
-
-        private void AudioEngine_OnPlayHeadChange(TimeSpan positionInSeconds)
-        {
-            PlayheadPercentage = CalculateSecRelativeToViewWindowPercentage(positionInSeconds, audioEngine.ViewStartTime, audioEngine.ViewDuration);
-            UpdateMarkers();
-        }
-
-        //Maybe Create if the Marker Count > WrapperCount?!
-        private void CreateMarkerDTO()
-        {
-            TestMarkers.Clear();
-            for (int i = 0; i < audioEngine.Project.BeatMarkers.Count; i++)
-            {
-                var marker = audioEngine.Project.BeatMarkers[i];
-
-                var w = new MarkerDTO();
-                w.Marker = marker;
-                w.PositionRelativeView = CalculateSecRelativeToViewWindowPercentage(marker.Position, audioEngine.ViewStartTime, audioEngine.ViewDuration);
-                TestMarkers.Add(w);
-            }
         }
 
         private void UpdateMarkers()
@@ -179,14 +218,6 @@ namespace LeaMusicGui
             }
         }
 
-        private bool IsMarkerVisible(MarkerDTO testMarker)
-        {
-            if (testMarker.Marker.Position < audioEngine.ViewStartTime || testMarker.Marker.Position > audioEngine.ViewEndTime)
-                return false;
-
-            return true;
-        }
-
         private void UpdateTrackDTO(List<Memory<float>> waveforms)
         {
             for (int i = 0; i < waveforms.Count; i++)
@@ -198,6 +229,39 @@ namespace LeaMusicGui
 
                 WaveformWrappers[i].TrackID = audioEngine.Project.Tracks[i].ID;
             }
+        }
+
+        private void CreateTrackDTO()
+        {
+            var trackDTOList = new List<Memory<float>>();
+
+            for (int i = 0; i < Project.Tracks.Count; i++)
+                trackDTOList.Add(TimelineService.RequestSample(i, 1200));
+
+            UpdateTrackDTO(trackDTOList);
+        }
+
+        //Maybe Create if the Marker Count > WrapperCount?!
+        private void CreateMarkerDTO()
+        {
+            TestMarkers.Clear();
+            for (int i = 0; i < audioEngine.Project.BeatMarkers.Count; i++)
+            {
+                var marker = audioEngine.Project.BeatMarkers[i];
+
+                var w = new MarkerDTO();
+                w.Marker = marker;
+                w.PositionRelativeView = CalculateSecRelativeToViewWindowPercentage(marker.Position, audioEngine.ViewStartTime, audioEngine.ViewDuration);
+                TestMarkers.Add(w);
+            }
+        }
+
+        private bool IsMarkerVisible(MarkerDTO testMarker)
+        {
+            if (testMarker.Marker.Position < audioEngine.ViewStartTime || testMarker.Marker.Position > audioEngine.ViewEndTime)
+                return false;
+
+            return true;
         }
 
         private void AudioEngine_OnProgressChange(TimeSpan positionInSec)
@@ -222,6 +286,18 @@ namespace LeaMusicGui
             return relativePercentage * 100;
         }
 
+        private void AudioEngine_OnLoopChange(TimeSpan startSec, TimeSpan endSec)
+        {
+            SelectionStartPercentage = CalculateSecRelativeToViewWindowPercentage(startSec, audioEngine.ViewStartTime, audioEngine.ViewDuration);
+            SelectionEndPercentage = CalculateSecRelativeToViewWindowPercentage(endSec, audioEngine.ViewStartTime, audioEngine.ViewDuration);
+        }
+
+        private void AudioEngine_OnPlayHeadChange(TimeSpan positionInSeconds)
+        {
+            PlayheadPercentage = CalculateSecRelativeToViewWindowPercentage(positionInSeconds, audioEngine.ViewStartTime, audioEngine.ViewDuration);
+            UpdateMarkers();
+        }
+
         partial void OnPitchChanged(int value)
         {
             audioEngine.ChangePitch(value);
@@ -233,6 +309,7 @@ namespace LeaMusicGui
             //Project.Name = value;
 
         }
+
         partial void OnScrollChanged(double value)
         {
             audioEngine.ScrollWaveForm(value);
@@ -240,9 +317,9 @@ namespace LeaMusicGui
             UpdateWaveform(RenderWidth);
         }
 
-        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        partial void OnSpeedChanged(double value)
         {
-            RenderWidth = (int)e.NewSize.Width;
+            audioEngine.ChangeSpeed(value);
         }
 
         partial void OnZoomChanged(double value)
@@ -265,19 +342,9 @@ namespace LeaMusicGui
             CreateMarkerDTO();
         }
 
-        partial void OnSpeedChanged(double value)
-        {
-            audioEngine.ChangeSpeed(value);
-        }
-
-        private TimeSpan zoomMouseStartPosition;
-        private double oldZoomFactor = 1.0f;
-        private double zoomStartMouseY;
-
-        private bool zoomStartPositionSetOnce;
         public void ResetZoomParameter()
         {
-           zoomStartPositionSetOnce = false;
+            zoomStartPositionSetOnce = false;
         }
 
         public void ZoomWaveformMouse(Point p, double width)
@@ -296,32 +363,23 @@ namespace LeaMusicGui
 
             var delta = p.Y - zoomStartMouseY;
 
-            double relativeScale  = 1 + (delta * zoomSensitivity);
+            double relativeScale = 1 + (delta * zoomSensitivity);
 
             //Avoid crazy Zoom :D
-            relativeScale = Math.Clamp(relativeScale, 0.5, 2.0); 
+            relativeScale = Math.Clamp(relativeScale, 0.5, 2.0);
 
             double newZoomFactor = oldZoomFactor * relativeScale;
-
             newZoomFactor = Math.Clamp(newZoomFactor, minZoom, maxZoom);
-            // audioEngine.Zoom = newZoomFactor;
 
             supressZoom = true;
             Zoom = newZoomFactor;
             supressZoom = false;
-            //Debug.WriteLine($"relativeScale: {relativeScale}");
-            //Debug.WriteLine($"oldZoomFactor: {oldZoomFactor}");
-            //Debug.WriteLine($"newZoomFactor: {newZoomFactor}");
 
-           // audioEngine.ZoomPositon = zoomStartPosition;
             audioEngine.ZoomWaveForm(newZoomFactor, zoomMouseStartPosition);
 
-
             UpdateWaveform(RenderWidth);
-
-            //audioEngine.AddMarker(TimeSpan.FromSeconds(second), "lol");
-
             CreateMarkerDTO();
+
             oldZoomFactor = newZoomFactor;
         }
 
@@ -360,50 +418,15 @@ namespace LeaMusicGui
             return timeInSeconds;
         }
 
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            RenderWidth = (int)e.NewSize.Width;
+        }
+
         [RelayCommand]
         private async Task Replay()
         {
             audioEngine.Replay();
-        }
-
-        public bool isSyncEnabled { get; set; } = true;
-
-        private async Task SaveProject()
-        {
-            //Maybe Stop audioEngine here, and play again if previous state was play 
-            var oldLastSave = Project.LastSaveAt;
-            Project.LastSaveAt = DateTime.Now;
-            
-            try
-            {
-                if (resourceHandler is FileHandler fileHandler)
-                {
-                    var saveDialog = new FolderBrowserDialog();
-
-                    if (saveDialog.ShowDialog() == DialogResult.OK)
-                    {
-                        resourceManager.SaveProject(Project, new FileLocation(saveDialog.SelectedPath), fileHandler);
-                    }
-
-
-                    //ifSyncEnabled && isTokenValid(Auth Token google)
-                    if (isSyncEnabled)
-                    {
-                        var gDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
-                        //Todo: save rootFolder in GoogleDriveHandler
-                        // var gDriveLocation = new GDriveLocation(gDriveRootFolder: "", gDrivelocalPath: "", projectName: "");
-                        resourceManager.SaveProject(Project, default, gDriveHandler);
-                        Debug.WriteLine("Uploaded Project to Google Drive!");
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Project.LastSaveAt = oldLastSave;
-                throw;
-            }
-            
-          
         }
 
         [RelayCommand]
@@ -412,7 +435,6 @@ namespace LeaMusicGui
             resourceHandler = new FileHandler();
             await SaveProject();
         }
-
 
         [RelayCommand]
         private async Task Pause()
@@ -423,113 +445,12 @@ namespace LeaMusicGui
         [ObservableProperty]
         bool isProjectLoading;
 
-       
-        private async Task LoadProject()
-        {
-            Project newProject = null;
-
-            Project?.Dispose();
-            Project = null;
-            IsProjectLoading = true;
-
-            if (resourceHandler == null)
-                throw new Exception("ResourceHandler invalid");
-
-            if (resourceHandler is FileHandler fileHandler)
-            {
-                var dialog = new OpenFileDialog
-                {
-                    Filter = "Project (*.prj)|*.prj"
-                };
-
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-
-                    var location = new FileLocation(dialog.FileName);
-
-                    newProject = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
-                    Debug.WriteLine("Project Loaded from file");
-
-                    Project = newProject;
-                   
-
-                    if (isSyncEnabled)
-                    {
-                        var googleDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
-                        var metaData = googleDriveHandler.GetMetaData(newProject.Name + ".zip");
-                        if (metaData != null)
-                        {
-                            //If the Project is on Google File and LastSavedAt is > localProject.LastSaveAt
-                            if (metaData.Value.LastSavedAt != null && metaData.Value.LastSavedAt > newProject.LastSaveAt)
-                            {
-                                var gdriveLocation = new GDriveLocation("LeaRoot", dialog.FileName, newProject.Name);
-
-                                newProject.Dispose();
-                                newProject = null;
-
-                                newProject = await resourceManager.LoadProject(gdriveLocation, googleDriveHandler);
-                                Debug.WriteLine("GoogleDrive Project is newer, DOWNLOAD IT!");
-
-                                Project = newProject;
-                               
-                            }
-                        }
-
-                    }
-                  
-                } 
-            }
-         
-
-
-            if (Project == null)
-                throw new Exception("Cant load Project");
-
-            ProjectName = Project.Name;
-
-            audioEngine.MountProject(Project);
-            audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
-
-            CreateTrackDTO();
-            CreateMarkerDTO();
-
-            //Prevent when user doubleclick, that WPF register as a mouseclick
-            await Task.Delay(100);
-            IsProjectLoading = false;
-
-        }
-
-
-        private async Task LoadProjectGDrive()
-        {
-            var googleDriveHandler = new GoogleDriveHandler("LeaRoot", new FileHandler());
-
-            var ownerWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
-
-            if (ownerWindow == null)
-                throw new NullReferenceException("Cant find Parent window");
-
-            var vm = new LoadProjectViewModel(this);
-
-            var projectWindow = new LoadProjectWindow(vm);
-            projectWindow.DataContext = vm;
-            projectWindow.Owner = ownerWindow;
-
-            if (projectWindow.ShowDialog() == true)
-            {
-                await LoadProject();
-            }
-
-        }
-
         [RelayCommand]
         private async Task LoadProjectFile()
         {
             resourceHandler = new FileHandler();
             await LoadProject();
-
         }
-
 
         [RelayCommand]
         private async Task AddTrack()
@@ -555,7 +476,7 @@ namespace LeaMusicGui
                 audioEngine.AudioJumpToSec(audioEngine.CurrentPosition);
             }
         }
-  
+
         [RelayCommand]
         private async Task Play()
         {
@@ -594,17 +515,5 @@ namespace LeaMusicGui
         {
             audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(JumpToPositionInSec));
         }
-     
-        //public List<string>? GetProjectFromGoogleDrive()
-        //{
-        //    //if (resourceHandler is GoogleDriveHandler googleDriveHandler)
-        //    //{
-        //    //    var projectNameList = googleDriveHandler.GetAllProjectsName("LeaRoot");
-
-        //    //    return projectNameList.ToList();
-        //    //}
-        //    //else
-        //    //    throw new Exception("Handler is not a GoogleDriveHandler");
-        //}
     }
 }
