@@ -23,14 +23,12 @@ namespace LeaMusic.src.AudioEngine_
             var project = new Project(name);
             project.WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
             project.Duration = TimeSpan.FromSeconds(1);
-
-                
+    
            return project;
         }
 
         public Project()
-        {
-            
+        {   
         }
 
         /// <summary>

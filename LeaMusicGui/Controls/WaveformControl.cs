@@ -204,7 +204,7 @@ namespace LeaMusicGui.Controls
             var vm = ParentViewModel as MainViewModel;
             if (vm != null)
             {
-                vm.UpdateWaveform(renderWidth);
+                vm.UpdateWaveformDTO(renderWidth);
 
 
                 surface.Dispose();

@@ -190,7 +190,7 @@ namespace LeaMusicGui
             IsProjectLoading = false;
         }
 
-        public void UpdateWaveform(double newWidth)
+        public void UpdateWaveformDTO(double newWidth)
         {
             var trackDTOList = new List<Memory<float>>();
 
@@ -314,7 +314,7 @@ namespace LeaMusicGui
         {
             audioEngine.ScrollWaveForm(value);
 
-            UpdateWaveform(RenderWidth);
+            UpdateWaveformDTO(RenderWidth);
         }
 
         partial void OnSpeedChanged(double value)
@@ -332,7 +332,7 @@ namespace LeaMusicGui
             {
                 audioEngine.ZoomWaveForm(value, audioEngine.CurrentPosition);
 
-                UpdateWaveform(RenderWidth);
+                UpdateWaveformDTO(RenderWidth);
             }
         }
 
@@ -377,7 +377,7 @@ namespace LeaMusicGui
 
             audioEngine.ZoomWaveForm(newZoomFactor, zoomMouseStartPosition);
 
-            UpdateWaveform(RenderWidth);
+            UpdateWaveformDTO(RenderWidth);
             CreateMarkerDTO();
 
             oldZoomFactor = newZoomFactor;
@@ -437,6 +437,7 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
+
         private async Task Pause()
         {
             audioEngine.Pause();
@@ -495,7 +496,6 @@ namespace LeaMusicGui
         [RelayCommand]
         private async Task Delete(object param)
         {
-
             if (param is TrackDTO wrapper)
             {
                 var track = audioEngine.Project.Tracks.Where(t => t.ID == wrapper.TrackID).FirstOrDefault();
