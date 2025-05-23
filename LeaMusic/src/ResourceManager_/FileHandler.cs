@@ -123,7 +123,7 @@ namespace LeaMusic.src.ResourceManager_
         //PRIVATE STUFF
         private ISampleProvider ResampleWav(WaveStream wavestream)
         {
-            var resampledAudio = new WdlResamplingSampleProvider(wavestream.ToSampleProvider(), 8000);
+            var resampledAudio = new WdlResamplingSampleProvider(wavestream.ToSampleProvider(), 3000);
 
             //  WaveFileWriter.CreateWaveFile("C:/t/re.wav", resampledAudio.ToWaveProvider());
             return resampledAudio;
@@ -180,8 +180,8 @@ namespace LeaMusic.src.ResourceManager_
                 throw new FileNotFoundException($"Cant load Waveform: {waveformPath}");
 
             var waveform = ReadWaveformBinary(waveformPath);
-            waveformProvider = new WaveformProvider(waveform, new WaveFormat(8000, 32, 2));
-
+            waveformProvider = new WaveformProvider(waveform, new WaveFormat(3000, 32, 2));
+          
             Debug.WriteLine($"Load existing Waveform from existing Track: {track.AudioFileName}");
 
             return waveformProvider;
