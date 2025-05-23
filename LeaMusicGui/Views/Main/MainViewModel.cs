@@ -130,7 +130,7 @@ namespace LeaMusicGui
             Project?.Dispose();
             Project = null;
             IsProjectLoading = true;
-
+           
             if (resourceHandler == null)
                 throw new Exception("ResourceHandler invalid");
 
