@@ -271,7 +271,9 @@ namespace LeaMusicGui
             //scroll view when Playhead reach the end of the view
             if (audioEngine.CurrentPosition >= audioEngine.ViewEndTime)
             {
-                OnZoomChanged(Zoom); //HACK?? :D   
+                audioEngine.ZoomWaveForm(Zoom, audioEngine.CurrentPosition + audioEngine.halfViewWindow); 
+
+                UpdateWaveformDTO(RenderWidth);
             }
         }
 

@@ -100,6 +100,7 @@ namespace LeaMusic.src.AudioEngine_
             Project.AddTimeMarker(m);
         }
 
+        public TimeSpan halfViewWindow;
         public void ZoomWaveForm(double zoomFactor, TimeSpan zoomPosition)
         {
             Zoom = zoomFactor;
@@ -108,10 +109,10 @@ namespace LeaMusic.src.AudioEngine_
             {
                 TimeSpan baseWindow = TotalDuration;
                 TimeSpan timeWindow = baseWindow / Zoom;
-                TimeSpan halfWindow = timeWindow / 2.0f;
+                halfViewWindow = timeWindow / 2.0f;
 
-                ViewStartTime = zoomPosition - halfWindow;
-                ViewEndTime = zoomPosition + halfWindow;
+                ViewStartTime = zoomPosition - halfViewWindow;
+                ViewEndTime = zoomPosition + halfViewWindow;
 
                 ViewStartTime = TimeSpan.FromSeconds(Math.Max(0, ViewStartTime.TotalSeconds));
                 ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds));
