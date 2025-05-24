@@ -471,6 +471,10 @@ namespace LeaMusicGui
                 var track = resourceManager.ImportTrack(new FileLocation(projectfilePath), resourceHandler);
 
                 Project.AddTrack(track);
+
+                if (Project.Tracks.Count == 1)
+                    ProjectName = Project.Tracks[0].Name;
+
                 Project.SetTempo(Speed);
                 CreateTrackDTO();
 

@@ -22,7 +22,8 @@ namespace LeaMusic.src.AudioEngine_
         public string AudioFileName { get; set; }
         public string AudioRelativePath { get; set; }
         public string WaveformRelativePath { get; set; }
-       
+
+        public string Name { get; private set; }
         [JsonIgnore]
         public string OriginFilePath { get; set; }
 
@@ -40,6 +41,7 @@ namespace LeaMusic.src.AudioEngine_
             AudioFileName = Path.GetFileName(audioFilePath);
 
             audio = resourceManager.LoadAudioFile(audioFilePath);
+            Name = Path.GetFileNameWithoutExtension(OriginFilePath);
 
             Waveformat = audio.WaveFormat;
             ClipDuration = audio.TotalTime;
