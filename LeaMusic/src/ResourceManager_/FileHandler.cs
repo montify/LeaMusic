@@ -16,7 +16,19 @@ namespace LeaMusic.src.ResourceManager_
         {
             if (location is FileLocation projectDirectoryPath)
             {
-                var projectDirectory = OpenOrCreateDirectory(projectDirectoryPath.Path);
+                DirectoryInfo projectDirectory = null;
+
+                var pathName = Path.GetFileName(projectDirectoryPath.Path);
+
+                //Detect if the user select the project folder or the parentFolder
+                if (pathName == project.Name)
+                    projectDirectory = OpenOrCreateDirectory(projectDirectoryPath.Path);
+                else
+                {
+                    projectDirectory = OpenOrCreateDirectory(Path.Combine(projectDirectoryPath.Path, project.Name));
+                }
+
+
                 var audioFilesDirectory = OpenOrCreateDirectory($"{projectDirectory.FullName}/AudioFiles");
                 var waveformDirectory = OpenOrCreateDirectory($"{projectDirectory.FullName}/Waveforms");
 
