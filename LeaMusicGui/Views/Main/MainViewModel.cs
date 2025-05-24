@@ -307,8 +307,8 @@ namespace LeaMusicGui
 
         partial void OnProjectNameChanged(string value)
         {
-            //if(Project != null)
-            //Project.Name = value;
+            if (Project != null)
+                Project.Name = value;
 
         }
 
