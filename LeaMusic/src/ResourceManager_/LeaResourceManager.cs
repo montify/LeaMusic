@@ -28,6 +28,11 @@ namespace LeaMusic.src.ResourceManager_
            return  handler.ImportTrack(trackLocation, this); 
         }
 
+        public ProjectMetadata? GetProjectMetaData(string projectName, Location location,IResourceHandler handler)
+        {
+            return handler.GetProjectMetadata(projectName,location, this)?.Result;
+        }
+
         internal WaveStream LoadAudioFile(string path)
         {
             return new Mp3FileReader(path);

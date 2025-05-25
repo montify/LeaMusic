@@ -104,7 +104,7 @@ namespace LeaMusic.src.ResourceManager_
 
                 var projectPath = Path.GetDirectoryName(location.Path);
 
-               // project.ProjectFilePath = Path.Combine(projectPath, project.Name, project.Name + ".prj");
+                // project.ProjectFilePath = Path.Combine(projectPath, project.Name, project.Name + ".prj");
 
                 if (string.IsNullOrEmpty(projectPath))
                     throw new ArgumentNullException($"Cant find Project path {projectPath}");
@@ -185,7 +185,7 @@ namespace LeaMusic.src.ResourceManager_
             var waveformPath = Path.Combine(projectPath, track.WaveformRelativePath);
 
             WaveformProvider waveformProvider;
-        
+
             var waveFormRelativePath = track.WaveformRelativePath;
 
             if (!Path.Exists(waveformPath))
@@ -193,10 +193,35 @@ namespace LeaMusic.src.ResourceManager_
 
             var waveform = ReadWaveformBinary(waveformPath);
             waveformProvider = new WaveformProvider(waveform, new WaveFormat(3000, 32, 2));
-          
+
             Debug.WriteLine($"Load existing Waveform from existing Track: {track.AudioFileName}");
 
             return waveformProvider;
+        }
+
+        public async Task<ProjectMetadata> GetProjectMetadata(string projectName, Location projectLocation, LeaResourceManager resourceManager)
+        {
+            if (projectLocation is FileLocation location)
+            {
+                if (string.IsNullOrEmpty(location.Path))
+                    throw new ArgumentNullException("Path cant be null");
+
+                var file =  File.ReadAllText(location.Path);
+
+                var project = JsonSerializer.Deserialize<Project>(file);
+
+                if (project == null)
+                    throw new NullReferenceException($"Cant load Project Path: {location.Path}");
+
+                if (project.LastSaveAt == null)
+                    throw new NullReferenceException("Cant Fetch MetaData from Project");
+
+                var projectMetadata = new ProjectMetadata(project.Name, project.LastSaveAt);
+
+                return projectMetadata;
+            }
+            else
+                throw new NotSupportedException("Handler is not a FileHandler");
         }
     }
 }

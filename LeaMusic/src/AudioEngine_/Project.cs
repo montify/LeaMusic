@@ -10,7 +10,7 @@ namespace LeaMusic.src.AudioEngine_
         public WaveFormat WaveFormat { get; set; }
         public TimeSpan Duration { get; set; }
         public List<Marker> BeatMarkers { get; set; } = new List<Marker>();
-        public DateTime? LastSaveAt { get; set; }
+        public DateTime LastSaveAt { get; set; }
 
         public Project(string name)
         {

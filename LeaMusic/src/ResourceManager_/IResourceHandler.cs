@@ -8,5 +8,6 @@ namespace LeaMusic.src.ResourceManager_
         public Track LoadAudio(Track track, string projectPath, LeaResourceManager resourceManager);
         public Task SaveProject(Location projectLocation, Project project);
         public Task<Project> LoadProject(Location projectLocation, LeaResourceManager resourceManager);
+        public Task<ProjectMetadata> GetProjectMetadata(string projectName, Location location, LeaResourceManager resourceManager);
     }
 }

@@ -5,6 +5,7 @@ using LeaMusic.src.ResourceManager_;
 using LeaMusic.src.ResourceManager_.GoogleDrive_;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media;
@@ -125,69 +126,72 @@ namespace LeaMusicGui
 
         private async Task LoadProject()
         {
-            Project newProject = null;
-
             Project?.Dispose();
             Project = null;
-            IsProjectLoading = true;
-           
-            if (resourceHandler == null)
-                throw new Exception("ResourceHandler invalid");
-
-            if (resourceHandler is FileHandler fileHandler)
+          
+            try
             {
+                IsProjectLoading = true;
+
+                if (resourceHandler == null)
+                    throw new Exception("ResourceHandler invalid");
+
+                if (resourceHandler is not FileHandler fileHandler)
+                    throw new Exception("ResourceHandler is not a FileHandler");
+
                 var dialog = new OpenFileDialog
                 {
                     Filter = "Project (*.prj)|*.prj"
                 };
 
-                if (dialog.ShowDialog() == DialogResult.OK)
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                var location = new FileLocation(dialog.FileName);
+                var projectName = Path.GetFileNameWithoutExtension(location.Path);
+                var googleDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
+
+                //Fetch project Metadata, and compare on Date
+                ProjectMetadata? fileMetaData = resourceManager.GetProjectMetaData($"{projectName}.zip", location, fileHandler);
+                ProjectMetadata? gDriveMetaData = resourceManager.GetProjectMetaData($"{projectName}", null, googleDriveHandler);
+
+                if (isSyncEnabled &&
+                    gDriveMetaData?.lastSavedAt > fileMetaData?.lastSavedAt)
                 {
-                    var location = new FileLocation(dialog.FileName);
+                    Debug.WriteLine($"GoogleDrive Project: {projectName} is newer, DOWNLOAD IT!");
+                    var gdriveLocation = new GDriveLocation("LeaRoot", dialog.FileName, projectName);
 
-                    newProject = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
-                    Debug.WriteLine("Project Loaded from file");
-
-                    Project = newProject;
-
-                    if (isSyncEnabled)
-                    {
-                        var googleDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
-                        var metaData = googleDriveHandler.GetMetaData(newProject.Name + ".zip");
-                        if (metaData != null)
-                        {
-                            //If the Project is on Google File and LastSavedAt is > localProject.LastSaveAt
-                            if (metaData.Value.LastSavedAt != null && metaData.Value.LastSavedAt > newProject.LastSaveAt)
-                            {
-                                var gdriveLocation = new GDriveLocation("LeaRoot", dialog.FileName, newProject.Name);
-
-                                newProject.Dispose();
-                                newProject = null;
-
-                                newProject = await resourceManager.LoadProject(gdriveLocation, googleDriveHandler);
-                                Debug.WriteLine("GoogleDrive Project is newer, DOWNLOAD IT!");
-
-                                Project = newProject;
-                            }
-                        }
-                    }
+                    Project = await resourceManager.LoadProject(gdriveLocation, googleDriveHandler);
                 }
+                else
+                {
+                    Debug.WriteLine("LOCAL Project is newer, NO DOWNLOAD");
+                    Project = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
+                }
+
+
+                if (Project == null)
+                {
+                    //Expose to View
+                    throw new Exception("Cant load Project");
+                }
+
+                ProjectName = Project.Name;
+
+                audioEngine.MountProject(Project);
+                audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
+
+                CreateTrackDTO();
+                CreateMarkerDTO();
+
+                //Prevent when user doubleclick, that WPF register as a mouseclick
+                await Task.Delay(100);
+
             }
-
-            if (Project == null)
-                throw new Exception("Cant load Project");
-
-            ProjectName = Project.Name;
-
-            audioEngine.MountProject(Project);
-            audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
-
-            CreateTrackDTO();
-            CreateMarkerDTO();
-
-            //Prevent when user doubleclick, that WPF register as a mouseclick
-            await Task.Delay(100);
-            IsProjectLoading = false;
+            finally
+            {
+                IsProjectLoading = false;
+            }
         }
 
         public void UpdateWaveformDTO(double newWidth)

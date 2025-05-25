@@ -139,8 +139,6 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
             if (Directory.Exists(localExtractedTmpPath))
                 Directory.Delete(localExtractedTmpPath, true);
-
-            Console.WriteLine();
         }
 
         public (string? Id, string? Name, DateTime? LastSavedAt)? GetMetaData(string projectName)
@@ -150,8 +148,26 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             if (string.IsNullOrEmpty(rootFolderId))
                 throw new Exception("Cant find rootFolder");
 
-            
+
             return context.GetFileMetadataByNameInFolder(projectName, rootFolder);
+        }
+
+        public Task<ProjectMetadata>? GetProjectMetadata(string projectName, Location location, LeaResourceManager resourceManager)
+        {
+            var rootFolderId = context.GetFolderIdByName(rootFolder);
+
+            if (string.IsNullOrEmpty(rootFolderId))
+                throw new Exception("Cant find rootFolder");
+
+            
+            var rawMetaData = context.GetFileMetadataByNameInFolder(projectName+".zip", rootFolder);
+
+            if (rawMetaData == null)
+                return null;
+
+            var metaData = new ProjectMetadata(rawMetaData.Value.Name, rawMetaData.Value.CreatedTime.Value);
+
+            return Task.FromResult(metaData);
         }
     }
 }
