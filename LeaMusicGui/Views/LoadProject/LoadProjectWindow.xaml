@@ -17,17 +17,13 @@
     WindowStartupLocation="CenterOwner"
     WindowStyle="ToolWindow"
     mc:Ignorable="d">
-
-    <!--<Window.DataContext>
-        <local:CreateProjectViewModel/>
-    </Window.DataContext>-->
-
     <Grid>
         <StackPanel
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
             Orientation="Vertical">
 
+            <!--  Project Name  -->
             <StackPanel HorizontalAlignment="Stretch">
                 <TextBlock
                     HorizontalAlignment="Center"
@@ -40,6 +36,8 @@
             </StackPanel>
 
             <Separator />
+
+            <!--  Project List  -->
             <ListBox
                 MinHeight="200"
                 ItemsSource="{Binding GoogleDriveProjectList}"
@@ -52,7 +50,6 @@
                     Click="LoadButton_Click"
                     Content="Load" />
                 <Button Click="CodeButton_Click" Content="Close" />
-
             </StackPanel>
         </StackPanel>
     </Grid>

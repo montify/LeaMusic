@@ -25,31 +25,15 @@
         <local1:MarkerConverter x:Key="MarkerConverter" />
         <local1:SubtractConverter x:Key="SubtractConverter" />
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
-
     </Window.Resources>
 
     <Grid Background="#424651">
-
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="90" />
             <RowDefinition Height="*" />
             <RowDefinition Height="300" />
         </Grid.RowDefinitions>
-
-        <DockPanel>
-            <Menu Background="#424651" DockPanel.Dock="Top">
-                >
-                <MenuItem Header="_File">
-                    <MenuItem Header="_New" />
-                    <MenuItem Header="_Open" />
-                    <MenuItem Header="_Save" />
-                    <MenuItem Header="_Exit" />
-                </MenuItem>
-            </Menu>
-
-        </DockPanel>
-
 
         <StackPanel
             Grid.Row="1"
@@ -108,21 +92,6 @@
                 Command="{Binding AddTrackCommand}"
                 Content="Add Track"
                 Style="{StaticResource ButtonPrimary}" />
-            <Button
-                Margin="0,0,10,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Command="{Binding LoadProjectGDriveCommand}"
-                Content="LoadProjectGDrive"
-                Style="{StaticResource ButtonDashedWarning}" />
-            <Button
-                Margin="0,0,10,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Command="{Binding SaveProjectGDriveCommand}"
-                Content="SaveProjectGDrive"
-                Style="{StaticResource ButtonDashedWarning}" />
-
         </StackPanel>
 
         <ScrollViewer
@@ -193,7 +162,6 @@
                         MouseDown="LoopControl_MouseDown"
                         MouseLeave="LoopControl_MouseLeave"
                         MouseMove="LoopControl_MouseMove">
-
                         <control:LoopControl.RenderTransform>
                             <TransformGroup>
                                 <!--  width  -->
@@ -218,9 +186,7 @@
                                 </TranslateTransform>
                             </TransformGroup>
                         </control:LoopControl.RenderTransform>
-
                     </control:LoopControl>
-
 
                     <!--  MARKERS  -->
                     <ItemsControl ItemsSource="{Binding TestMarkers}">
@@ -229,10 +195,10 @@
                                 <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}" Height="20" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
-
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Canvas>
+
                                     <!--  Rectangle Marker  -->
                                     <Rectangle
                                         Width="1"
@@ -265,9 +231,7 @@
                                 </Canvas>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
-
                     </ItemsControl>
-
 
                     <!--  Playhead  -->
                     <Rectangle
@@ -285,13 +249,9 @@
                             </MultiBinding>
                         </Canvas.Left>
                     </Rectangle>
-
-
                 </Canvas>
             </Canvas>
         </ScrollViewer>
-
-
 
         <Grid Grid.Row="3">
             <Grid.RowDefinitions>
@@ -318,10 +278,9 @@
                     Margin="5"
                     HorizontalAlignment="Left"
                     Value="{Binding Path=ProgressInPercentage}" />
-
             </StackPanel>
 
-            <!--  Zoom Slider in Row 1  -->
+            <!--  Zoom Slider  -->
             <StackPanel Grid.Row="1" HorizontalAlignment="Center">
                 <Label Content="Zoom" />
                 <Slider
@@ -335,12 +294,12 @@
                     Value="{Binding Zoom}" />
             </StackPanel>
 
-            <!--  Zoom Label in Row 2  -->
+            <!--  Zoom Label  -->
             <StackPanel Grid.Row="2" HorizontalAlignment="Center">
                 <Label Content="{Binding Zoom}" />
             </StackPanel>
 
-            <!--  HeightMultiSlider in Row 3  -->
+            <!--  HeightMultiSlider  -->
             <StackPanel Grid.Row="3" HorizontalAlignment="Center">
                 <Label Content="Height Multiplier" />
                 <Slider
@@ -352,7 +311,7 @@
                     Value="1" />
             </StackPanel>
 
-            <!--  Scroll Slider in Row 4  -->
+            <!--  ScrollSlider  -->
             <StackPanel Grid.Row="4" HorizontalAlignment="Center">
                 <Label Content="Scroll" />
                 <Slider
@@ -374,10 +333,9 @@
                     TickFrequency="0.1"
                     Value="{Binding Speed}" />
             </StackPanel>
-
         </Grid>
 
-
+        <!--  Modal "Loading Project" Window  -->
         <Grid
             Grid.RowSpan="4"
             HorizontalAlignment="Stretch"
@@ -385,6 +343,7 @@
             Panel.ZIndex="999"
             Background="#80000000"
             Visibility="{Binding IsProjectLoading, Converter={StaticResource BoolToVis}}">
+
             <TextBlock
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -393,8 +352,5 @@
                 Foreground="White"
                 Text="Loading Project..." />
         </Grid>
-
-
     </Grid>
-
 </Window>
