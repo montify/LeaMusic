@@ -16,6 +16,7 @@ namespace LeaMusic.src.AudioEngine_
         {
             Name = name;
             Tracks = new List<Track>();
+            LastSaveAt = default(DateTime);
         }
 
         public static Project CreateEmptyProject(string name)
@@ -23,7 +24,7 @@ namespace LeaMusic.src.AudioEngine_
             var project = new Project(name);
             project.WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
             project.Duration = TimeSpan.FromSeconds(1);
-    
+            
            return project;
         }
 
