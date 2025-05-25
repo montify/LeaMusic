@@ -1,4 +1,5 @@
 ﻿using LeaMusicGui.Controls;
+using LeaMusicGui.Views.DialogServices;
 using System.Diagnostics;
 using System.Printing;
 using System.Windows;
@@ -30,6 +31,10 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        if (DataContext is MainViewModel vm)
+        {
+            vm.DialogService = new DialogService();
+        }
     }
 
     public record class SelectionRange

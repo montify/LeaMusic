@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using LeaMusic.src.AudioEngine_;
 using LeaMusic.src.ResourceManager_;
 using LeaMusic.src.ResourceManager_.GoogleDrive_;
+using LeaMusicGui.Views.DialogServices;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -66,11 +67,13 @@ namespace LeaMusicGui
         private double zoomStartMouseY;
         private bool zoomStartPositionSetOnce;
 
+        public IDialogService? DialogService { get; set; }
+
         public MainViewModel()
         {
             resourceManager = new LeaResourceManager();
             audioEngine = new AudioEngine();
-
+            
             TimelineService = new TimelineService(audioEngine);
 
             //Create Empty Project for StartUp
@@ -99,11 +102,12 @@ namespace LeaMusicGui
             {
                 if (resourceHandler is FileHandler fileHandler)
                 {
-                    var saveDialog = new FolderBrowserDialog();
+                    string? dialogResult = DialogService.Save();
 
-                    if (saveDialog.ShowDialog() == DialogResult.OK)
+                    if(!string.IsNullOrEmpty(dialogResult))
                     {
-                        resourceManager.SaveProject(Project, new FileLocation(saveDialog.SelectedPath), fileHandler);
+                        resourceManager.SaveProject(Project, new FileLocation(dialogResult), fileHandler);
+                        Debug.WriteLine($"Project is saved Local at: {dialogResult}");
                     }
 
                     //ifSyncEnabled && isTokenValid(Auth Token google)
@@ -139,15 +143,12 @@ namespace LeaMusicGui
                 if (resourceHandler is not FileHandler fileHandler)
                     throw new Exception("ResourceHandler is not a FileHandler");
 
-                var dialog = new OpenFileDialog
-                {
-                    Filter = "Project (*.prj)|*.prj"
-                };
+                var dialogResult = DialogService?.OpenFile("Project (*.prj)|*.prj");
 
-                if (dialog.ShowDialog() != DialogResult.OK)
+                if (string.IsNullOrEmpty(dialogResult))
                     return;
 
-                var location = new FileLocation(dialog.FileName);
+                var location = new FileLocation(dialogResult);
                 var projectName = Path.GetFileNameWithoutExtension(location.Path);
                 var googleDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
 
@@ -159,14 +160,14 @@ namespace LeaMusicGui
                     gDriveMetaData?.lastSavedAt > fileMetaData?.lastSavedAt)
                 {
                     Debug.WriteLine($"GoogleDrive Project: {projectName} is newer, DOWNLOAD IT!");
-                    var gdriveLocation = new GDriveLocation("LeaRoot", dialog.FileName, projectName);
+                    var gdriveLocation = new GDriveLocation("LeaRoot", dialogResult, projectName);
 
                     Project = await resourceManager.LoadProject(gdriveLocation, googleDriveHandler);
                 }
                 else
                 {
                     Debug.WriteLine("LOCAL Project is newer, NO DOWNLOAD");
-                    Project = await resourceManager.LoadProject(new FileLocation(dialog.FileName), fileHandler);
+                    Project = await resourceManager.LoadProject(new FileLocation(dialogResult), fileHandler);
                 }
 
 
