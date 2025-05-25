@@ -108,16 +108,16 @@ namespace LeaMusicGui
                     {
                         resourceManager.SaveProject(Project, new FileLocation(dialogResult), fileHandler);
                         Debug.WriteLine($"Project is saved Local at: {dialogResult}");
-                    }
 
-                    //ifSyncEnabled && isTokenValid(Auth Token google)
-                    if (isSyncEnabled)
-                    {
-                        var gDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
-                        //Todo: save rootFolder in GoogleDriveHandler
-                        // var gDriveLocation = new GDriveLocation(gDriveRootFolder: "", gDrivelocalPath: "", projectName: "");
-                        resourceManager.SaveProject(Project, default, gDriveHandler);
-                        Debug.WriteLine("Uploaded Project to Google Drive!");
+                        //ifSyncEnabled && isTokenValid(Auth Token google)
+                        if (isSyncEnabled)
+                        {
+                            var gDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
+                            //Todo: save rootFolder in GoogleDriveHandler
+                            // var gDriveLocation = new GDriveLocation(gDriveRootFolder: "", gDrivelocalPath: "", projectName: "");
+                            resourceManager.SaveProject(Project, default, gDriveHandler);
+                            Debug.WriteLine("Uploaded Project to Google Drive!");
+                        }
                     }
                 }
             }
