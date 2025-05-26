@@ -43,9 +43,10 @@ public partial class MainWindow : Window
         public float End { get; set; }
     }
 
+
     SelectionRange selectionRange = new SelectionRange();
 
-    private void TrackControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void MainCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         var childControl = sender as UIElement;
         if (childControl != null)
@@ -57,11 +58,26 @@ public partial class MainWindow : Window
             selectionRange.Start = (float)mousePosition.X;
 
             Debug.WriteLine($"MouseDownRIGHT: {mousePosition.X}");
-
         }
     }
 
-    private void TrackControl_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    private void MainCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        //ZOOM
+        if (isZoom)
+        {
+            var childControl = sender as FrameworkElement;
+            if (childControl != null)
+            {
+                Point mousePosition = e.GetPosition(childControl);
+                var viewModel = (MainViewModel)DataContext;
+
+                viewModel.ZoomWaveformMouse(mousePosition, childControl.ActualWidth);
+            }
+        }
+    }
+
+    private void MainCanvas_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         var childControl = sender as FrameworkElement;
         if (childControl != null)
@@ -77,7 +93,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ItemsControl_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         var viewModel = (MainViewModel)DataContext;
 
@@ -85,8 +101,7 @@ public partial class MainWindow : Window
             viewModel.SetTextMarker();
     }
 
-
-    private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+    private void MainCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
     {
 
         if (DataContext is MainViewModel vm)
@@ -96,15 +111,10 @@ public partial class MainWindow : Window
         }
     }
 
- 
     private void LoopControl_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
     {
         Mouse.OverrideCursor = null;
     }
-
-
-
-
 
     private void LoopControl_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
     {
@@ -114,7 +124,6 @@ public partial class MainWindow : Window
             Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeWE;
         else
             Mouse.OverrideCursor = null;
-     
     }
 
     private bool IsOnLefEdgeLoop(object sender, double EdgeThreshold = 20.04f)
@@ -146,7 +155,7 @@ public partial class MainWindow : Window
     }
 
     bool isZoom;
-    private void TrackControl_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    private void MainCanvas_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         var childControl = sender as FrameworkElement;
         if (childControl != null)
@@ -160,24 +169,6 @@ public partial class MainWindow : Window
             }
         }
     }
-
-    private void MainCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
-    {
-        //ZOOM
-        if(isZoom)
-        {
-            var childControl = sender as FrameworkElement;
-            if (childControl != null)
-            {
-                Point mousePosition = e.GetPosition(childControl);
-                var viewModel = (MainViewModel)DataContext;
-
-                viewModel.ZoomWaveformMouse(mousePosition, childControl.ActualWidth);
-            }
-        }
-
-    }
-
 
     bool isLoopBeginDragLeftHandle;
     bool isLoopBeginDragRightHandle;
@@ -195,8 +186,6 @@ public partial class MainWindow : Window
         if(IsOnRightEdgeLoop(control))
             isLoopBeginDragRightHandle = true;
     }
-
-
 
     private void MainCanvas_MouseUp(object sender, MouseButtonEventArgs e)
     {
@@ -226,6 +215,18 @@ public partial class MainWindow : Window
             viewModel.ResetZoomParameter();
             isZoom = false; 
         }
+    }
+
+    private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var control = (Canvas)sender;
+        
+    
+        var mousePos = Mouse.GetPosition(control);
+        var viewModel = (MainViewModel)DataContext;
+        viewModel.MoveTextMarker(mousePos, (int)control.ActualWidth);
+
+        Console.WriteLine();
     }
 
     private double GetScaleX(UIElement element)

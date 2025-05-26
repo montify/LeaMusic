@@ -61,13 +61,16 @@ namespace LeaMusic.src.ResourceManager_
 
         public Track? ImportTrack(Location location, LeaResourceManager resourceManager)
         {
+           
+
             if (location is FileLocation projectFilePath)
             {
-                var track = new Track();
-                track.OriginFilePath = projectFilePath.Path;
+               
+               var  track = new Track();
+                 track.OriginFilePath = projectFilePath.Path;
                 track.LoadAudioFile(projectFilePath.Path, resourceManager);
                 track.waveformProvider = ImportWaveform(track);
-
+                
                 Debug.WriteLine($"Create new Track, : {track.AudioFileName}");
 
                 return track;
@@ -80,6 +83,8 @@ namespace LeaMusic.src.ResourceManager_
         public Track LoadAudio(Track track, string projectPath, LeaResourceManager resourceManager)
         {
             var audioFilePath = Path.Combine(projectPath, track.AudioRelativePath);
+            // track.LoadAudioFile(audioFilePath, resourceManager);
+            //track = new Track(audioFilePath, resourceManager);
             track.LoadAudioFile(audioFilePath, resourceManager);
             track.waveformProvider = LoadWaveform(projectPath, track);
 
@@ -88,7 +93,7 @@ namespace LeaMusic.src.ResourceManager_
         }
 
 
-        public async Task<Project> LoadProject(Location projectLocation, LeaResourceManager resourceManager)
+        public async Task<Project?> LoadProject(Location projectLocation, LeaResourceManager resourceManager)
         {
             if (projectLocation is FileLocation location)
             {
@@ -199,7 +204,7 @@ namespace LeaMusic.src.ResourceManager_
             return waveformProvider;
         }
 
-        public async Task<ProjectMetadata> GetProjectMetadata(string projectName, Location projectLocation, LeaResourceManager resourceManager)
+        public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location projectLocation, LeaResourceManager resourceManager)
         {
             if (projectLocation is FileLocation location)
             {

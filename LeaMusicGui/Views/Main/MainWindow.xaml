@@ -12,7 +12,7 @@
     Title="{Binding ProjectName}"
     Width="1334"
     Height="1021"
-    KeyDown="ItemsControl_KeyDown"
+    KeyDown="Window_KeyDown"
     mc:Ignorable="d">
     <Window.DataContext>
         <local:MainViewModel />
@@ -135,7 +135,6 @@
                     </StackPanel>
                 </ScrollViewer>
 
-
                 <!--  Main CANVAS  -->
                 <Canvas
                     x:Name="MainCanvas"
@@ -146,13 +145,12 @@
                     VerticalAlignment="Center"
                     Background="Transparent"
                     IsHitTestVisible="True"
-                    MouseLeftButtonDown="TrackControl_MouseLeftButtonDown"
-                    MouseLeftButtonUp="TrackControl_MouseLeftButtonUp"
+                    MouseLeftButtonDown="MainCanvas_MouseLeftButtonDown"
+                    MouseLeftButtonUp="MainCanvas_MouseLeftButtonUp"
                     MouseMove="MainCanvas_MouseMove"
-                    MouseRightButtonDown="TrackControl_MouseRightButtonDown"
+                    MouseRightButtonDown="MainCanvas_MouseRightButtonDown"
                     MouseUp="MainCanvas_MouseUp"
-                    SizeChanged="Window_SizeChanged">
-
+                    SizeChanged="MainCanvas_SizeChanged">
 
                     <!--  LOOP  -->
                     <control:LoopControl
@@ -188,6 +186,7 @@
                         </control:LoopControl.RenderTransform>
                     </control:LoopControl>
 
+                    <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}" Height="20" />
                     <!--  MARKERS  -->
                     <ItemsControl ItemsSource="{Binding TestMarkers}">
                         <ItemsControl.ItemsPanel>
@@ -198,8 +197,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Canvas>
-
-                                    <!--  Rectangle Marker  -->
+                                    <!--  Line Marker  -->
                                     <Rectangle
                                         Width="1"
                                         Height="100"

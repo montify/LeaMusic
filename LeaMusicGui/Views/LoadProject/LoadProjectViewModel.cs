@@ -16,7 +16,7 @@ namespace LeaMusicGui
         public ObservableCollection<string> googleDriveProjectList = new ObservableCollection<string>();
 
         [ObservableProperty]
-        private string selectedProject;
+        private string selectedProject = string.Empty;
 
         public LoadProjectViewModel(MainViewModel parentViewModel)
         {

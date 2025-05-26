@@ -7,7 +7,7 @@ namespace LeaMusic.src.AudioEngine_
     {
         public string Name { get; set; }     
         public List<Track> Tracks { get; set; }
-        public WaveFormat WaveFormat { get; set; }
+        public WaveFormat? WaveFormat { get; set; }
         public TimeSpan Duration { get; set; }
         public List<Marker> BeatMarkers { get; set; } = new List<Marker>();
         public DateTime LastSaveAt { get; set; }
@@ -44,9 +44,9 @@ namespace LeaMusic.src.AudioEngine_
         /// </exception>
         public void AddTrack(Track track)
         {
-            if (track == null || track.ClipDuration == null)
+            if (track == null || track.ClipDuration == TimeSpan.Zero)
             {
-                throw new Exception("");
+                throw new ArgumentNullException("Track cant be null");
             }
 
             if(WaveFormat == null)

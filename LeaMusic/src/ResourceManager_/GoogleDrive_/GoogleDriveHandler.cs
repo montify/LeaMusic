@@ -1,8 +1,5 @@
 ﻿using LeaMusic.src.AudioEngine_;
-using System;
-using System.IO;
 using System.IO.Compression;
-using System.Security.AccessControl;
 
 namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 {
@@ -11,7 +8,7 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
         //We Import Database from file, not from Database, we only load Audio from Database
         private readonly FileHandler fileHandler;
 
-       private GoogleContext context;
+        private GoogleContext context;
         private string rootFolder;
 
         public GoogleDriveHandler(string rootFolder, FileHandler fileHandler)
@@ -20,7 +17,13 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             this.rootFolder = rootFolder;
 
             context = new GoogleContext();
+
+            if (context == null)
+                throw new NullReferenceException("Cant create Google Drive Context");
+
             context.CreateDriveService();
+
+         
         }
 
         public Track ImportTrack(Location trackLocation, LeaResourceManager leaResourceManager)
@@ -29,7 +32,7 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
             if (track == null)
                 throw new Exception("Cant load Track");
-      
+
             return track;
         }
 
@@ -55,13 +58,13 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
                 //1) check if file exists in gdrive, if yes delete it
                 string? file = context.GetFileIdByNameInFolder(gLocation.ProjectName + ".zip", gLocation.gDriverootFolderPath);
-                
+
                 if (string.IsNullOrEmpty(file))
                     return null;
 
-               // var localfilePath = Path.Combine(gLocation.LocalProjectFilePath, gLocation.ProjectName);
+                // var localfilePath = Path.Combine(gLocation.LocalProjectFilePath, gLocation.ProjectName);
 
-                
+
                 using (var stream = await context.GetZipAsStream(file))
                 {
                     var projectDirectoryPath = Path.GetDirectoryName(gLocation.LocalProjectFilePath);
@@ -115,8 +118,8 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             if (!File.Exists(ZipFilePath))
                 throw new Exception($"cant create Zip file for Project: {project.Name}");
 
-           //var gDriveLocation = gDriveProjectLocation as GDriveLocation;
-            
+            //var gDriveLocation = gDriveProjectLocation as GDriveLocation;
+
             var rootFolderId = context.GetFolderIdByName(rootFolder);
 
             //check if .zip file on Gdrive exists, delete it
@@ -152,22 +155,22 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             return context.GetFileMetadataByNameInFolder(projectName, rootFolder);
         }
 
-        public Task<ProjectMetadata>? GetProjectMetadata(string projectName, Location location, LeaResourceManager resourceManager)
+        public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location, LeaResourceManager resourceManager)
         {
             var rootFolderId = context.GetFolderIdByName(rootFolder);
 
             if (string.IsNullOrEmpty(rootFolderId))
                 throw new Exception("Cant find rootFolder");
 
-            
-            var rawMetaData = context.GetFileMetadataByNameInFolder(projectName+".zip", rootFolder);
+
+            var rawMetaData = context.GetFileMetadataByNameInFolder(projectName + ".zip", rootFolder);
 
             if (rawMetaData == null)
-                return null;
+                return await Task.FromResult<ProjectMetadata?>(null);
 
             var metaData = new ProjectMetadata(rawMetaData.Value.Name, rawMetaData.Value.CreatedTime.Value);
 
-            return Task.FromResult(metaData);
+            return await Task.FromResult(metaData);
         }
     }
 }

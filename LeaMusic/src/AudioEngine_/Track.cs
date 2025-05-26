@@ -10,34 +10,34 @@ namespace LeaMusic.src.AudioEngine_
     {
         public static int UNIQUE_ID = 0;
 
-        internal WaveStream audio;
-        internal RubberBandWaveStream rubberBandWaveStream;
-        internal LoopStream loopStream;
-        internal WaveformProvider waveformProvider;
+        internal WaveStream audio = null!;
+        internal RubberBandWaveStream? rubberBandWaveStream;
+        internal LoopStream loopStream = null!;
+        internal WaveformProvider waveformProvider = null!;
 
-        public VolumeSampleProvider volumeStream;
+        public VolumeSampleProvider volumeStream = null!;
         public TimeSpan ClipDuration { get; set; }
-        public WaveFormat Waveformat { get; set; }
+        public WaveFormat? Waveformat { get; set; }
         public int ID { get; set; }
-        public string AudioFileName { get; set; }
-        public string AudioRelativePath { get; set; }
-        public string WaveformRelativePath { get; set; }
+        public string? AudioFileName { get; set; }
+        public string? AudioRelativePath { get; set; }
+        public string? WaveformRelativePath { get; set; }
 
-        public string Name { get; private set; }
+        public string? Name { get; private set; }
         [JsonIgnore]
-        public string OriginFilePath { get; set; }
+        public string? OriginFilePath { get; set; }
 
         public bool IsMuted { get; set; }
 
 
         public Track()
-        { 
+        {
         }
 
         public void LoadAudioFile(string audioFilePath, LeaResourceManager resourceManager)
         {
             OriginFilePath = audioFilePath;
-         
+
             AudioFileName = Path.GetFileName(audioFilePath);
 
             audio = resourceManager.LoadAudioFile(audioFilePath);
@@ -46,11 +46,19 @@ namespace LeaMusic.src.AudioEngine_
             Waveformat = audio.WaveFormat;
             ClipDuration = audio.TotalTime;
 
-            loopStream = new LoopStream(audio, 0, ClipDuration.TotalSeconds);
-            rubberBandWaveStream = new RubberBandWaveStream(loopStream);
-            volumeStream = new VolumeSampleProvider(rubberBandWaveStream.ToSampleProvider());
+            try
+            {
+                loopStream = new LoopStream(audio, 0, ClipDuration.TotalSeconds);
+                rubberBandWaveStream = new RubberBandWaveStream(loopStream);
+                volumeStream = new VolumeSampleProvider(rubberBandWaveStream.ToSampleProvider());
 
-            ID = ++UNIQUE_ID;
+                ID = ++UNIQUE_ID;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public void JumpToPosition(TimeSpan position)

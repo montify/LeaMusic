@@ -95,6 +95,7 @@ namespace LeaMusicGui
         private async Task SaveProject()
         {
             //Maybe Stop audioEngine here, and play again if previous state was play 
+           
             var oldLastSave = Project.LastSaveAt;
             Project.LastSaveAt = DateTime.Now;
 
@@ -188,6 +189,10 @@ namespace LeaMusicGui
                 //Prevent when user doubleclick, that WPF register as a mouseclick
                 await Task.Delay(100);
 
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine();
             }
             finally
             {
@@ -347,6 +352,23 @@ namespace LeaMusicGui
         {
             audioEngine.AddMarker(audioEngine.CurrentPosition, "B");
             CreateMarkerDTO();
+        }
+
+        public void MoveTextMarker(Point p, int width)
+        {
+            var second = ConvertPixelToSecond(p.X, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, width);
+            Console.WriteLine(second);
+            var marker = audioEngine.Project.BeatMarkers
+                         .FirstOrDefault(marker => Math.Abs(marker.Position.TotalSeconds - second) < 0.1);
+
+            if (marker != null)
+            {
+                marker.Position = TimeSpan.FromSeconds(second);
+                UpdateMarkers();
+                Console.WriteLine("MOVE");
+            }
+        
+         
         }
 
         public void ResetZoomParameter()
