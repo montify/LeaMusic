@@ -194,7 +194,7 @@ public partial class MainWindow : Window
 
         var viewModel = (MainViewModel)DataContext;
 
-        var control = (Canvas)sender;
+        var control = (Window)sender;
         var parent = VisualTreeHelper.GetParent(control) as FrameworkElement;
 
         //resize loop

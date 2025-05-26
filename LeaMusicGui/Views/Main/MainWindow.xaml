@@ -13,6 +13,7 @@
     Width="1334"
     Height="1021"
     KeyDown="Window_KeyDown"
+    MouseUp="MainCanvas_MouseUp"
     mc:Ignorable="d">
     <Window.DataContext>
         <local:MainViewModel />
@@ -149,7 +150,6 @@
                     MouseLeftButtonUp="MainCanvas_MouseLeftButtonUp"
                     MouseMove="MainCanvas_MouseMove"
                     MouseRightButtonDown="MainCanvas_MouseRightButtonDown"
-                    MouseUp="MainCanvas_MouseUp"
                     SizeChanged="MainCanvas_SizeChanged">
 
                     <!--  LOOP  -->
