@@ -63,19 +63,39 @@ public partial class MainWindow : Window
 
     private void MainCanvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
     {
+        var control = sender as FrameworkElement;
+        var viewModel = (MainViewModel)DataContext;
+
         //ZOOM
         if (isZoom)
         {
-            var childControl = sender as FrameworkElement;
-            if (childControl != null)
+            if (control != null)
             {
-                Point mousePosition = e.GetPosition(childControl);
-                var viewModel = (MainViewModel)DataContext;
+                Point mousePosition = e.GetPosition(control);
 
-                viewModel.ZoomWaveformMouse(mousePosition, childControl.ActualWidth);
+
+                viewModel.ZoomWaveformMouse(mousePosition, control.ActualWidth);
             }
         }
+
+        //resize loop
+        if (isLoopBeginDragLeftHandle)
+            viewModel.LoopSelectionStart(Mouse.GetPosition(control).X, control.ActualWidth);
+
+        if (isLoopBeginDragRightHandle)
+            viewModel.LoopSelectionEnd(Mouse.GetPosition(control).X, control.ActualWidth);
+         
     }
+
+    private void MainCanvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (isLoopBeginDragLeftHandle)
+            isLoopBeginDragLeftHandle = false;
+
+        if (isLoopBeginDragRightHandle)
+            isLoopBeginDragRightHandle = false;
+    }
+
 
     private void MainCanvas_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
@@ -87,9 +107,15 @@ public partial class MainWindow : Window
 
             selectionRange.End = (float)mousePosition.X;
 
-          
             viewModel.LoopSelection(selectionRange.Start, selectionRange.End, childControl.ActualWidth);
-            Console.WriteLine();
+        }
+
+        
+        //Loop 
+        if (isLoopBeginDragRightHandle)
+        {
+            var viewModel = (MainViewModel)DataContext;
+            viewModel.LoopSelectionEnd(Mouse.GetPosition(childControl).X, childControl.ActualWidth);
         }
     }
 
@@ -111,20 +137,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void LoopControl_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-    {
-        Mouse.OverrideCursor = null;
-    }
-
-    private void LoopControl_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
-    {
-        var control = (LoopControl)sender;
- 
-        if (IsOnLefEdgeLoop(control) || IsOnRightEdgeLoop(control))
-            Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeWE;
-        else
-            Mouse.OverrideCursor = null;
-    }
 
     private bool IsOnLefEdgeLoop(object sender, double EdgeThreshold = 20.04f)
     {
@@ -187,7 +199,23 @@ public partial class MainWindow : Window
             isLoopBeginDragRightHandle = true;
     }
 
-    private void MainCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+    private void LoopControl_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        Mouse.OverrideCursor = null;
+    }
+
+    private void LoopControl_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        var control = (LoopControl)sender;
+        var parent = VisualTreeHelper.GetParent(control) as FrameworkElement;
+
+        if (IsOnLefEdgeLoop(control) || IsOnRightEdgeLoop(control))
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.SizeWE;
+        else
+            Mouse.OverrideCursor = null;
+    }
+
+    private void Window_MouseUp(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton != MouseButton.Right)
             return;
@@ -196,19 +224,8 @@ public partial class MainWindow : Window
 
         var control = (Window)sender;
         var parent = VisualTreeHelper.GetParent(control) as FrameworkElement;
-
-        //resize loop
-        if (isLoopBeginDragLeftHandle)
-        {
-            viewModel.LoopSelectionStart(Mouse.GetPosition(control).X,  control.ActualWidth);
-            isLoopBeginDragLeftHandle = false;
-        }
-
-        if (isLoopBeginDragRightHandle)
-        {
-            viewModel.LoopSelectionEnd(Mouse.GetPosition(control).X, control.ActualWidth);
-            isLoopBeginDragRightHandle = false;
-        }
+       
+      
 
         if(isZoom)
         {
@@ -228,6 +245,8 @@ public partial class MainWindow : Window
 
         Console.WriteLine();
     }
+
+   
 
     private double GetScaleX(UIElement element)
     {
