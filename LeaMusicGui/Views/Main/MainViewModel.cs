@@ -220,12 +220,27 @@ namespace LeaMusicGui
                 {
                     TestMarkers[i].Visible = true;
                     TestMarkers[i].PositionRelativeView = CalculateSecRelativeToViewWindowPercentage(TestMarkers[i].Marker.Position, audioEngine.ViewStartTime, audioEngine.ViewDuration);
+ 
                 }
                 else
                 {
                     TestMarkers[i].Visible = false;
                 }
             }
+        }
+
+        // currentMarkerID is set when the User click on the marker(Command) in the View,
+        // after that OnRightMouseDown() invoke this Method and currentMarkerID is used to find the Marker the User clicked on.
+        
+        int currentMarkerID = 0;
+        public void MoveMarker(Point position, int renderWidth)
+        {
+            var marker = audioEngine.Project.BeatMarkers.Where(marker => marker.ID == currentMarkerID).FirstOrDefault();
+
+            if (marker != null)
+                marker.Position = TimeSpan.FromSeconds(ConvertPixelToSecond(position.X, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, renderWidth));
+ 
+            UpdateMarkers();
         }
 
         private void UpdateTrackDTO(List<Memory<float>> waveforms)
@@ -262,6 +277,7 @@ namespace LeaMusicGui
                 var w = new MarkerDTO();
                 w.Marker = marker;
                 w.PositionRelativeView = CalculateSecRelativeToViewWindowPercentage(marker.Position, audioEngine.ViewStartTime, audioEngine.ViewDuration);
+                w.Marker.ID = marker.ID;
                 TestMarkers.Add(w);
             }
         }
@@ -354,23 +370,6 @@ namespace LeaMusicGui
             CreateMarkerDTO();
         }
 
-        public void MoveTextMarker(Point p, int width)
-        {
-            var second = ConvertPixelToSecond(p.X, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, width);
-            Console.WriteLine(second);
-            var marker = audioEngine.Project.BeatMarkers
-                         .FirstOrDefault(marker => Math.Abs(marker.Position.TotalSeconds - second) < 0.1);
-
-            if (marker != null)
-            {
-                marker.Position = TimeSpan.FromSeconds(second);
-                UpdateMarkers();
-                Console.WriteLine("MOVE");
-            }
-        
-         
-        }
-
         public void ResetZoomParameter()
         {
             zoomStartPositionSetOnce = false;
@@ -450,6 +449,12 @@ namespace LeaMusicGui
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             RenderWidth = (int)e.NewSize.Width;
+        }
+
+        [RelayCommand]
+        private async Task MarkerClick(MarkerDTO marker)
+        {
+            currentMarkerID = marker.Marker.ID;
         }
 
         [RelayCommand]

@@ -43,6 +43,7 @@ public partial class MainWindow : Window
         public float End { get; set; }
     }
 
+    static UIElement? draggedElement = null;
 
     SelectionRange selectionRange = new SelectionRange();
 
@@ -72,8 +73,6 @@ public partial class MainWindow : Window
             if (control != null)
             {
                 Point mousePosition = e.GetPosition(control);
-
-
                 viewModel.ZoomWaveformMouse(mousePosition, control.ActualWidth);
             }
         }
@@ -84,18 +83,11 @@ public partial class MainWindow : Window
 
         if (isLoopBeginDragRightHandle)
             viewModel.LoopSelectionEnd(Mouse.GetPosition(control).X, control.ActualWidth);
-         
+
+        if (isMarkerMoving)
+            viewModel.MoveMarker(Mouse.GetPosition(control), (int)control.ActualWidth);
+  
     }
-
-    private void MainCanvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-    {
-        if (isLoopBeginDragLeftHandle)
-            isLoopBeginDragLeftHandle = false;
-
-        if (isLoopBeginDragRightHandle)
-            isLoopBeginDragRightHandle = false;
-    }
-
 
     private void MainCanvas_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
@@ -129,7 +121,6 @@ public partial class MainWindow : Window
 
     private void MainCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-
         if (DataContext is MainViewModel vm)
         {
             if (e.NewSize.Width != vm.RenderWidth)
@@ -137,12 +128,10 @@ public partial class MainWindow : Window
         }
     }
 
-
     private bool IsOnLefEdgeLoop(object sender, double EdgeThreshold = 20.04f)
     {
         var control = (LoopControl)sender;
         var mousePos = Mouse.GetPosition(control);
-
 
         //Because Control is 1px width and we scale based on LoopPercentage it, we need the scaled Width Value with GetScaleX
         double scaleX = GetScaleX(control);
@@ -197,6 +186,9 @@ public partial class MainWindow : Window
         
         if(IsOnRightEdgeLoop(control))
             isLoopBeginDragRightHandle = true;
+
+        draggedElement = control;
+        draggedElement.CaptureMouse();
     }
 
     private void LoopControl_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
@@ -225,28 +217,44 @@ public partial class MainWindow : Window
         var control = (Window)sender;
         var parent = VisualTreeHelper.GetParent(control) as FrameworkElement;
        
-      
-
         if(isZoom)
         {
             viewModel.ResetZoomParameter();
             isZoom = false; 
         }
+
+        if (draggedElement != null)
+        {
+            draggedElement.ReleaseMouseCapture();
+            draggedElement = null;
+
+            //ReleaseLoopHandle
+            if (isLoopBeginDragLeftHandle)
+                isLoopBeginDragLeftHandle = false;
+
+            if (isLoopBeginDragRightHandle)
+                isLoopBeginDragRightHandle = false;
+
+            if (isMarkerMoving)
+                isMarkerMoving = false;
+        }
     }
 
-    private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    bool isMarkerMoving;
+    private void Marker_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
-        var control = (Canvas)sender;
-        
-    
-        var mousePos = Mouse.GetPosition(control);
+        var control = (UIElement)sender;
+        var parent = VisualTreeHelper.GetParent(control) as FrameworkElement;
+
+        var mousePos = Mouse.GetPosition(parent);
         var viewModel = (MainViewModel)DataContext;
-        viewModel.MoveTextMarker(mousePos, (int)control.ActualWidth);
 
-        Console.WriteLine();
+        draggedElement = control;
+        draggedElement.CaptureMouse();
+
+        isMarkerMoving = true;
+        
     }
-
-   
 
     private double GetScaleX(UIElement element)
     {
@@ -263,6 +271,4 @@ public partial class MainWindow : Window
 
         return 1.0;
     }
-
 }
-

@@ -93,7 +93,7 @@ namespace LeaMusic.src.AudioEngine_
                 mixer.AddMixerInput(track.volumeStream);
             }
         }
-
+        
         public void AddMarker(TimeSpan position, string text)
         {
             var m = new Marker(position, text);
