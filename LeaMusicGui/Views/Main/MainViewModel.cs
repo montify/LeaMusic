@@ -51,6 +51,13 @@ namespace LeaMusicGui
 
         [ObservableProperty]
         public string projectName;
+
+        [ObservableProperty]
+        public double currentPlayTime;
+        [ObservableProperty]
+        public double totalProjectDuration;
+
+
         public ObservableCollection<TrackDTO> WaveformWrappers { get; set; } = new ObservableCollection<TrackDTO>();
         public ObservableCollection<MarkerDTO> TestMarkers { get; set; } = new ObservableCollection<MarkerDTO>();
 
@@ -278,6 +285,7 @@ namespace LeaMusicGui
                 w.Marker = marker;
                 w.PositionRelativeView = CalculateSecRelativeToViewWindowPercentage(marker.Position, audioEngine.ViewStartTime, audioEngine.ViewDuration);
                 w.Marker.ID = marker.ID;
+                w.Marker.Description = marker.Description;
                 TestMarkers.Add(w);
             }
         }
@@ -292,8 +300,11 @@ namespace LeaMusicGui
 
         private void AudioEngine_OnProgressChange(TimeSpan positionInSec)
         {
-            ProgressInPercentage = (audioEngine.CurrentPosition.TotalSeconds / audioEngine.TotalDuration.TotalSeconds) * 100;
+            TotalProjectDuration = Project.Duration.TotalSeconds;
+            CurrentPlayTime = positionInSec.TotalSeconds;
 
+            ProgressInPercentage = (audioEngine.CurrentPosition.TotalSeconds / audioEngine.TotalDuration.TotalSeconds) * 100;
+           
             //scroll view when Playhead reach the end of the view
             if (audioEngine.CurrentPosition >= audioEngine.ViewEndTime)
             {
@@ -456,11 +467,30 @@ namespace LeaMusicGui
         {
             currentMarkerID = marker.Marker.ID;
         }
+        [RelayCommand]
+        private async Task MarkerDelete(MarkerDTO marker)
+        {
+
+            // var m = audioEngine.Project.BeatMarkers.Where(t => t.ID == marker.Marker.ID).FirstOrDefault();
+            audioEngine.Project.DeleteMarker(marker.Marker.ID);
+
+            CreateMarkerDTO();
+
+
+
+
+        }
 
         [RelayCommand]
         private async Task Replay()
         {
             audioEngine.Replay();
+        }
+
+        [RelayCommand]
+        private async Task MuteAllTracks()
+        {
+            audioEngine.MuteAllTracks();
         }
 
         [RelayCommand]

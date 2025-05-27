@@ -45,7 +45,7 @@ namespace LeaMusic.src.AudioEngine_
             Project = project;
            
             TotalDuration = TimeSpan.FromSeconds(Project.Duration.TotalSeconds);
-
+            
             mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
             
             ReloadMixerInputs();
@@ -212,7 +212,7 @@ namespace LeaMusic.src.AudioEngine_
         public void MuteTrack(int trackID)
         {
 
-          var track =  Project.Tracks.Where(t => t.ID == trackID).FirstOrDefault();
+          var track = Project.Tracks.Where(t => t.ID == trackID).FirstOrDefault();
 
             if (track == null)
                 return;
@@ -228,6 +228,27 @@ namespace LeaMusic.src.AudioEngine_
                 track.IsMuted = true;
             }
         }
+
+        public void MuteAllTracks()
+        {
+            if(Project.IsAllTracksMuted == false)
+            {
+                foreach (var track in Project.Tracks)
+                {
+                    track.SetVolumte(0);
+                    Project.IsAllTracksMuted = true;
+                }
+            }
+            else
+            {
+                foreach (var track in Project.Tracks)
+                {
+                    track.SetVolumte(1);
+                    Project.IsAllTracksMuted = false;
+                }
+            }
+        }
+
 
         public void AudioJumpToSec(TimeSpan sec)
         {
@@ -303,5 +324,7 @@ namespace LeaMusic.src.AudioEngine_
                 LoopEnd = TimeSpan.Zero;
             }
         }
+
+     
     }
 }

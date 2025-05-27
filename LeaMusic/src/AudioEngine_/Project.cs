@@ -12,6 +12,7 @@ namespace LeaMusic.src.AudioEngine_
         public List<Marker> BeatMarkers { get; set; } = new List<Marker>();
         public DateTime LastSaveAt { get; set; }
 
+        public bool IsAllTracksMuted { get; set; }
         public Project(string name)
         {
             Name = name;
@@ -144,6 +145,17 @@ namespace LeaMusic.src.AudioEngine_
         {
             BeatMarkers.Add(marker);
         }
+
+        public void DeleteMarker(int id)
+        {
+            var marker = BeatMarkers.Where(marker => marker.ID == id).FirstOrDefault();
+
+            if (marker != null)
+            {
+                BeatMarkers.Remove(marker);
+            }
+        }
+
 
         public void Dispose()
         {
