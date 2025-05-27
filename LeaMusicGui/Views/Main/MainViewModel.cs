@@ -307,7 +307,7 @@ namespace LeaMusicGui
             //scroll view when Playhead reach the end of the view
             if (audioEngine.CurrentPosition >= audioEngine.ViewEndTime)
             {
-                audioEngine.ZoomWaveForm(Zoom, audioEngine.CurrentPosition + audioEngine.halfViewWindow); 
+                audioEngine.ZoomWaveForm(Zoom, audioEngine.CurrentPosition); 
 
                 UpdateWaveformDTO(RenderWidth);
             }
@@ -385,6 +385,12 @@ namespace LeaMusicGui
             zoomStartPositionSetOnce = false;
         }
 
+        /// <summary>
+        /// Performs a smooth zoom operation on the waveform based on mouse movement.
+        /// The zoom is anchored at the horizontal position of the ZoomStart Position
+        /// </summary>
+        /// <param name="p">The current mouse position.</param>
+        /// <param name="width">The width of the waveform display in pixels.</param>
         public void ZoomWaveformMouse(Point p, double width)
         {
             if (!zoomStartPositionSetOnce)

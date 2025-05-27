@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using LeaMusic.Extensions;
+using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Diagnostics;
 
@@ -100,7 +101,6 @@ namespace LeaMusic.src.AudioEngine_
             Project.AddTimeMarker(m);
         }
 
-        public TimeSpan halfViewWindow;
         public void ZoomWaveForm(double zoomFactor, TimeSpan zoomPosition)
         {
             Zoom = zoomFactor;
@@ -109,18 +109,20 @@ namespace LeaMusic.src.AudioEngine_
             {
                 TimeSpan baseWindow = TotalDuration;
                 TimeSpan timeWindow = baseWindow / Zoom;
-                halfViewWindow = timeWindow / 2.0f;
 
-                ViewStartTime = zoomPosition - halfViewWindow;
-                ViewEndTime = zoomPosition + halfViewWindow;
+                double relativePos = (zoomPosition - ViewStartTime) / ViewDuration;
 
-                ViewStartTime = TimeSpan.FromSeconds(Math.Max(0, ViewStartTime.TotalSeconds));
-                ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds));
+                ViewStartTime = zoomPosition- timeWindow * relativePos;
+                ViewEndTime = ViewStartTime + timeWindow;
+
+                // New view start time to keep zoomPosition at the same relative position
+                ViewStartTime = ViewStartTime.Clamp(TimeSpan.Zero, TotalDuration);
+                ViewEndTime = ViewEndTime.Clamp(TimeSpan.Zero, TotalDuration);
             }
             else
             {
                 ViewStartTime = TimeSpan.Zero;
-                ViewEndTime = TotalDuration;          
+                ViewEndTime = TotalDuration;
             }
 
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
