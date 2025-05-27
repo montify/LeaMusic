@@ -75,7 +75,7 @@ namespace LeaMusicGui
         private bool zoomStartPositionSetOnce;
 
         public IDialogService? DialogService { get; set; }
-
+      
         public MainViewModel()
         {
             resourceManager = new LeaResourceManager();
@@ -227,7 +227,6 @@ namespace LeaMusicGui
                 {
                     TestMarkers[i].Visible = true;
                     TestMarkers[i].PositionRelativeView = CalculateSecRelativeToViewWindowPercentage(TestMarkers[i].Marker.Position, audioEngine.ViewStartTime, audioEngine.ViewDuration);
- 
                 }
                 else
                 {
@@ -435,18 +434,30 @@ namespace LeaMusicGui
 
         public void LoopSelectionStart(double startPixel, double renderWidth)
         {
-            var startSec = ConvertPixelToSecond(startPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth);
-            var endSec = audioEngine.LoopEnd.TotalSeconds;
+            var beatmarkers = audioEngine.Project.BeatMarkers;
+            var startSec = TimeSpan.FromSeconds(ConvertPixelToSecond(startPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+            var endSec = audioEngine.LoopEnd;
 
-            audioEngine.Loop(TimeSpan.FromSeconds(startSec), TimeSpan.FromSeconds(endSec));
+            // TODO: Optimize — stop looping through beat markers once the nearest valid point is found.
+            // TODO: Should the snapping logic be moved to the code-behind?
+            foreach (var beatMarker in beatmarkers)
+                startSec = Helpers.ChechSnapping(audioEngine, renderWidth, beatMarker.Position, startSec, treshholdInMs: 10);
+
+            audioEngine.Loop(startSec, endSec);
         }
 
         public void LoopSelectionEnd(double endPixel, double renderWidth)
         {
-            var startSec = audioEngine.LoopStart.TotalSeconds;
-            var endSec = ConvertPixelToSecond(endPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth);
+            var beatmarkers = audioEngine.Project.BeatMarkers;
+            var startSec = audioEngine.LoopStart;
+            var endSec = TimeSpan.FromSeconds(ConvertPixelToSecond(endPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
-            audioEngine.Loop(TimeSpan.FromSeconds(startSec), TimeSpan.FromSeconds(endSec));
+            // TODO: Optimize — stop looping through beat markers once the nearest valid point is found.
+            // TODO: Should the snapping logic be moved to the code-behind?
+            foreach (var beatMarker in beatmarkers)
+                endSec = Helpers.ChechSnapping(audioEngine, renderWidth, beatMarker.Position, endSec, treshholdInMs: 10);
+
+            audioEngine.Loop(startSec, endSec);     
         }
 
         public double ConvertPixelToSecond(double pixelPos, double viewStartTimeSec, double viewDurationSec, int renderWidth)
@@ -470,15 +481,9 @@ namespace LeaMusicGui
         [RelayCommand]
         private async Task MarkerDelete(MarkerDTO marker)
         {
-
-            // var m = audioEngine.Project.BeatMarkers.Where(t => t.ID == marker.Marker.ID).FirstOrDefault();
             audioEngine.Project.DeleteMarker(marker.Marker.ID);
 
             CreateMarkerDTO();
-
-
-
-
         }
 
         [RelayCommand]
@@ -501,7 +506,6 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
-
         private async Task Pause()
         {
             audioEngine.Pause();
