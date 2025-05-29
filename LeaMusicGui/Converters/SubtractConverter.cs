@@ -9,7 +9,7 @@ namespace LeaMusicGui.Converters
         {
             if (value is double width)
             {
-                return width - 100; // Subtract 50 from the width
+                return width - 100; 
             }
             return value;
         }

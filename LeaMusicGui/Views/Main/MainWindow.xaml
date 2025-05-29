@@ -22,10 +22,8 @@
     </Window.DataContext>
 
     <Window.Resources>
-        <local1:PlayheadPercentageConverterOffset x:Key="PlayheadPercentageConverterOffset" />
-        <local1:PlayheadPercentageOffsetMultiConverter x:Key="PlayheadPercentageOffsetMultiConverter" />
         <local1:LoopWidthPercentageConverter x:Key="LoopWidthPercentageConverter" />
-        <local1:MarkerConverter x:Key="MarkerConverter" />
+        <local1:PlayheadPercentageOffsetMultiConverter x:Key="PlayheadPercentageOffsetMultiConverter" />
         <local1:SubtractConverter x:Key="SubtractConverter" />
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </Window.Resources>
@@ -99,22 +97,29 @@
         </StackPanel>
 
         <Grid Grid.Row="2">
-            <!--Display ProgressTime-->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <!--  Display ProgressTime  -->
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Foreground="WhiteSmoke" FontSize="20" Text="{Binding CurrentPlayTime, StringFormat={}{0:0.00}}"></TextBlock>
-                    <TextBlock Foreground="WhiteSmoke" FontSize="20" Text="/"></TextBlock>
-                    <TextBlock Foreground="WhiteSmoke" FontSize="20" Text="{Binding TotalProjectDuration, StringFormat={}{0:0.00}}"></TextBlock>
-                    <Button Content="Mute all Tracks" Command="{Binding MuteAllTracksCommand}"></Button>
+                    <TextBlock
+                        FontSize="20"
+                        Foreground="WhiteSmoke"
+                        Text="{Binding CurrentPlayTime, StringFormat={}{0:0.00}}" />
+                    <TextBlock
+                        FontSize="20"
+                        Foreground="WhiteSmoke"
+                        Text="/" />
+                    <TextBlock
+                        FontSize="20"
+                        Foreground="WhiteSmoke"
+                        Text="{Binding TotalProjectDuration, StringFormat={}{0:0.00}}" />
+                    <Button Command="{Binding MuteAllTracksCommand}" Content="Mute all Tracks" />
                 </StackPanel>
-              
-                
+
+
             </StackPanel>
         </Grid>
-        
-        <ScrollViewer
-            Grid.Row="3"
-            VerticalScrollBarVisibility="Auto">
+
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
 
             <!--  Waveform CANVAS  -->
             <Canvas
@@ -212,9 +217,8 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                
-                                <Canvas
-                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}">
+
+                                <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}">
                                     <!--  Line Marker  -->
                                     <Rectangle
                                         Width="1"
@@ -234,20 +238,21 @@
                                         Canvas.Top="0"
                                         Margin="1,0,0,0"
                                         Background="DarkRed"
-                                        
-                                        RenderTransformOrigin="0.5,0"
                                         Content="{Binding Marker.Description}"
                                         Foreground="White"
-                                        Visibility="{Binding Visible, Converter={StaticResource BoolToVis}}"
-                                        PreviewMouseRightButtonDown="Marker_MouseRightButtonDown">
+                                        PreviewMouseRightButtonDown="Marker_MouseRightButtonDown"
+                                        RenderTransformOrigin="0.5,0"
+                                        Visibility="{Binding Visible, Converter={StaticResource BoolToVis}}">
 
                                         <Button.InputBindings>
-                                            <MouseBinding Gesture="RightClick"
-                                          Command="{Binding DataContext.MarkerClickCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                          CommandParameter="{Binding}" />
-                                            <MouseBinding Gesture="LeftClick"
+                                            <MouseBinding
+                                                Command="{Binding DataContext.MarkerClickCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                Gesture="RightClick" />
+                                            <MouseBinding
                                                 Command="{Binding DataContext.MarkerDeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}" />
+                                                CommandParameter="{Binding}"
+                                                Gesture="LeftClick" />
                                         </Button.InputBindings>
 
 
@@ -283,10 +288,9 @@
             </Canvas>
         </ScrollViewer>
 
-        
-        
-        <Grid Grid.Row="4"
-              Background="#424341">
+
+
+        <Grid Grid.Row="4" Background="#424341">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <!--  ProgressBar  -->
@@ -355,7 +359,7 @@
                     Value="{Binding Scroll}" />
             </StackPanel>
             <!--  Speed  -->
-            <StackPanel Grid.Row="5" HorizontalAlignment="Center" >
+            <StackPanel Grid.Row="5" HorizontalAlignment="Center">
                 <Label Content="Speed" />
                 <Slider
                     Width="120"
@@ -366,7 +370,7 @@
                     TickFrequency="0.1"
                     Value="{Binding Speed}" />
             </StackPanel>
-         
+
         </Grid>
 
         <!--  Modal "Loading Project" Window  -->
