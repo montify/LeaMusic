@@ -116,13 +116,17 @@ namespace LeaMusic.src.AudioEngine_
                 ViewEndTime = zoomPosition + halfViewWindow;
 
                 ViewStartTime = TimeSpan.FromSeconds(Math.Max(0, ViewStartTime.TotalSeconds));
-                ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds));
-
-
-                OnLoopChange?.Invoke(LoopStart, LoopEnd);
+                ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds)); 
             }
-        }
+            else
+            {
+                ViewStartTime = TimeSpan.FromSeconds(0);
+                ViewEndTime = TimeSpan.FromSeconds(TotalDuration.TotalSeconds);
+            }
 
+
+            OnLoopChange?.Invoke(LoopStart, LoopEnd);
+        }
 
         //Used for Zoom with mouse
         public void ZoomWaveFormRelative(double zoomFactor, TimeSpan zoomPosition)

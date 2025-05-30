@@ -1,4 +1,5 @@
 ﻿using SkiaSharp;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -45,27 +46,28 @@ namespace LeaMusicGui.Controls
 
             };
 
+            //NewSize.Width = TrakckControlSize
             this.SizeChanged += (s, e) =>
             {
-                if (_resizeTimer.IsEnabled || e.NewSize.Width < 1)
-                    return;
+                //if (_resizeTimer.IsEnabled || e.NewSize.Width < 1)
+                //    return;
 
-                _resizeTimer.Stop();
-                _resizeTimer.Start();
+                //_resizeTimer.Stop();
+                //_resizeTimer.Start();
             };
 
             //   CompositionTarget.Rendering += Update;
         }
 
-        bool updateOnce = false;
-        private void Update(object? sender, EventArgs e)
-        {
-            if (updateOnce && !WaveformData.IsEmpty)
-            {
-                UpdateImage();
-                updateOnce = true;
-            }
-        }
+        //bool updateOnce = false;
+        //private void Update(object? sender, EventArgs e)
+        //{
+        //    if (updateOnce && !WaveformData.IsEmpty)
+        //    {
+        //        UpdateImage();
+        //        updateOnce = true;
+        //    }
+        //}
 
         public WriteableBitmap CreateImage(int width, int height)
         {
@@ -191,48 +193,53 @@ namespace LeaMusicGui.Controls
 
         private void Resize()
         {
-           // Debug.WriteLine($"WaveFormControl renderSize Change Width: {renderWidth}");
-
-            if (renderWidth == 0)
+            if (ActualWidth == 0)
                 return;
 
             //ViewModel fetch new Waveform
 
             var vm = ParentViewModel as MainViewModel;
             if (vm != null)
-            {
-                vm.UpdateWaveformDTO(renderWidth);
-
-
+            {             
                 surface.Dispose();
                 WriteableBitmap = null;
                 GC.Collect();
 
-                WriteableBitmap = CreateImage((int)renderWidth, 300);
+                
+                WriteableBitmap = CreateImage((int)ActualWidth, 300);
                 width = (int)WriteableBitmap.Width;
                 height = (int)WriteableBitmap.Height;
+
+                Debug.WriteLine($"BitmapWidth: {width}");
 
                 var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
 
                 surface = SKSurface.Create(info);
 
-                InvalidateVisual();
                 UpdateImage();
+                InvalidateVisual();
+               
 
                 oldZoom = vm.Zoom;
 
-             
-                vm.Zoom = 1.1f;
+                Debug.WriteLine($"RenderWidth WaveformControl.cs: {ActualWidth}");
+                vm.Zoom = oldZoom+0.1f;
                 vm.Zoom = oldZoom;
-             
+                
 
             }
         }
-        private double renderWidth;
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
-            renderWidth = sizeInfo.NewSize.Width;
+            if (sizeInfo.NewSize.Width < 1)
+                return;
+
+            if (_resizeTimer.IsEnabled || sizeInfo.NewSize.Width < 1)
+                return;
+
+            _resizeTimer.Stop();
+            _resizeTimer.Start();
 
             base.OnRenderSizeChanged(sizeInfo);
         }

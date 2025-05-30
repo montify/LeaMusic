@@ -161,7 +161,7 @@
                 <Canvas
                     x:Name="MainCanvas"
                     Canvas.Left="100"
-                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}"
+                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}, Converter={StaticResource SubtractConverter}}"
                     Height="400"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"

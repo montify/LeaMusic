@@ -473,11 +473,6 @@ namespace LeaMusicGui
             return timeInSeconds;
         }
 
-        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            RenderWidth = (int)e.NewSize.Width;
-        }
-
         [RelayCommand]
         private async Task MarkerClick(MarkerDTO marker)
         {
