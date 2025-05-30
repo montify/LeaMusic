@@ -430,11 +430,23 @@ namespace LeaMusicGui
         {
             Debug.WriteLine($"LoopStart: {startPixel}, Loop end {endPixel}");
 
-            var startSec = ConvertPixelToSecond(startPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth);
-            var endSec = ConvertPixelToSecond(endPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth);
+            var startSec = TimeSpan.FromSeconds(ConvertPixelToSecond(startPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+            var endSec = TimeSpan.FromSeconds(ConvertPixelToSecond(endPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
-            audioEngine.Loop(TimeSpan.FromSeconds(startSec), TimeSpan.FromSeconds(endSec));
-            audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(startSec));
+          
+            //When Loop is <=0 than treat it as the user Jump to a new Position
+            if (startSec >= endSec || endSec - startSec <= TimeSpan.Zero)
+            {
+                audioEngine.Loop(TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0));
+                audioEngine.AudioJumpToSec(startSec);
+            }
+            //If loop is to shoort, ignore it 
+            else if ((endSec - startSec) < TimeSpan.FromMilliseconds(50))
+                return;
+
+
+            audioEngine.Loop(startSec, endSec);
+            audioEngine.AudioJumpToSec(startSec);
         }
 
         public void LoopSelectionStart(double startPixel, double renderWidth)
