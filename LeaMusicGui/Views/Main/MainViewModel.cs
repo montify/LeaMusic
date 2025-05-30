@@ -426,6 +426,7 @@ namespace LeaMusicGui
             oldZoomFactor = newZoomFactor;
         }
 
+        //TODO: LoopSelection is the wrong name, because this function make a Loop AND reposition the Playhead, find a better Solution
         public void LoopSelection(double startPixel, double endPixel, double renderWidth)
         {
             Debug.WriteLine($"LoopStart: {startPixel}, Loop end {endPixel}");
@@ -433,7 +434,6 @@ namespace LeaMusicGui
             var startSec = TimeSpan.FromSeconds(ConvertPixelToSecond(startPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
             var endSec = TimeSpan.FromSeconds(ConvertPixelToSecond(endPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
-          
             //When Loop is <=0 than treat it as the user Jump to a new Position
             if (startSec >= endSec || endSec - startSec <= TimeSpan.Zero)
             {
