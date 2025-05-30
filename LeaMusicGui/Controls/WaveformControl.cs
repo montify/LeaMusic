@@ -1,5 +1,4 @@
 ﻿using SkiaSharp;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -39,18 +38,16 @@ namespace LeaMusicGui.Controls
 
             _resizeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(20) };
 
-
-
             _resizeTimer.Tick += (s, e) =>
             {
                 _resizeTimer.Stop();
-                Resize(); // Nur hier wird das Bitmap neu erstellt
+                Resize(); 
 
             };
 
             this.SizeChanged += (s, e) =>
             {
-                if (_resizeTimer.IsEnabled)
+                if (_resizeTimer.IsEnabled || e.NewSize.Width < 1)
                     return;
 
                 _resizeTimer.Stop();
@@ -224,9 +221,10 @@ namespace LeaMusicGui.Controls
 
                 oldZoom = vm.Zoom;
 
-
+             
                 vm.Zoom = 1.1f;
                 vm.Zoom = oldZoom;
+             
 
             }
         }

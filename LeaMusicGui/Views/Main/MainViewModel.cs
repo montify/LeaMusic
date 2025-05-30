@@ -67,7 +67,7 @@ namespace LeaMusicGui
         private Project Project { get; set; }
         private bool isSyncEnabled { get; set; } = true;
         //is used when Zoom with mouse, to prevent to fetch waveform twice
-        private bool supressZoom;
+        public bool supressZoom;
         private IResourceHandler resourceHandler;
         private TimeSpan zoomMouseStartPosition;
         private double oldZoomFactor = 1.0f;
@@ -306,9 +306,8 @@ namespace LeaMusicGui
            
             //scroll view when Playhead reach the end of the view
             if (audioEngine.CurrentPosition >= audioEngine.ViewEndTime)
-            {
-                audioEngine.ZoomWaveForm(Zoom, audioEngine.CurrentPosition); 
-
+            {    
+                audioEngine.ZoomWaveForm(Zoom, audioEngine.CurrentPosition + audioEngine.halfViewWindow);
                 UpdateWaveformDTO(RenderWidth);
             }
         }
@@ -419,7 +418,7 @@ namespace LeaMusicGui
             Zoom = newZoomFactor;
             supressZoom = false;
 
-            audioEngine.ZoomWaveForm(newZoomFactor, zoomMouseStartPosition);
+            audioEngine.ZoomWaveFormRelative(newZoomFactor, zoomMouseStartPosition);
 
             UpdateWaveformDTO(RenderWidth);
             CreateMarkerDTO();
