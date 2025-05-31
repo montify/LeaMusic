@@ -52,14 +52,33 @@ namespace LeaMusic.src.AudioEngine_.Streams
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            int bytesRead = sourceStream.Read(buffer, offset, count);
+            int totalBytesRead = 0;
 
-            if (sourceStream.Position >= loopEndBytes) // If we reach loop end, restart
+            while (totalBytesRead < count)
             {
-                sourceStream.Position = loopStartBytes;
+                long bytesRemainingUntilLoopEnd = loopEndBytes - sourceStream.Position;
+                int bytesToRead = (int)Math.Min(count - totalBytesRead, bytesRemainingUntilLoopEnd);
+
+                int bytesRead = sourceStream.Read(buffer, offset + totalBytesRead, bytesToRead);
+
+                if (bytesRead == 0)
+                {
+                    // End of stream — jump to loop start
+                    sourceStream.Position = loopStartBytes;
+                    continue;
+                }
+
+                totalBytesRead += bytesRead;
+
+                // If we reached loop end, wrap around
+                if (sourceStream.Position >= loopEndBytes)
+                {
+                    sourceStream.Position = loopStartBytes;
+                }
             }
 
-            return bytesRead;
+            return totalBytesRead;
         }
+
     }
 }

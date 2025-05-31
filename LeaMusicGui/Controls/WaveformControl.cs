@@ -77,6 +77,7 @@ namespace LeaMusicGui.Controls
 
         public void UpdateImage()
         {
+
             canvas = surface.Canvas;
             canvas.Clear(SKColor.Parse("#424651"));
 
@@ -86,8 +87,9 @@ namespace LeaMusicGui.Controls
                 paint.Style = SKPaintStyle.Stroke;
                 paint.Color = SKColor.Parse("#AF3B6E");
 
-                //if (WaveformHeightMulti <= 0)
-                //    WaveformHeightMulti = 1;
+                //When NOT bound to a slider Value, the value is 0
+                if (WaveformHeightMulti <= 0.0f)
+                    WaveformHeightMulti = 1f;
 
                 float heightMulti = 40 * WaveformHeightMulti;
 

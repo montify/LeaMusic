@@ -53,6 +53,9 @@ namespace LeaMusicGui
         public string projectName;
 
         [ObservableProperty]
+        public string statusMessages;
+
+        [ObservableProperty]
         public double currentPlayTime;
         [ObservableProperty]
         public double totalProjectDuration;
@@ -87,14 +90,13 @@ namespace LeaMusicGui
             Project = Project.CreateEmptyProject("TEST");
             // Project.AddTrack(new Track("C:\\Users\\alexlapi\\Desktop\\v1\\AudioFiles\\Hairflip.mp3"));
             ProjectName = "NOT SET";
-
-            audioEngine.MountProject(Project);
+            resourceHandler = new FileHandler();
 
             audioEngine.OnUpdate += AudioEngine_OnPlayHeadChange;
             audioEngine.OnProgressChange += AudioEngine_OnProgressChange;
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;
 
-            resourceHandler = new FileHandler();
+          
          
             CompositionTarget.Rendering += (sender, e) => audioEngine.Update();
         }
@@ -102,7 +104,11 @@ namespace LeaMusicGui
         private async Task SaveProject()
         {
             //Maybe Stop audioEngine here, and play again if previous state was play 
-           
+           if(Project.Duration == TimeSpan.FromSeconds(1))
+            {
+                StatusMessages = "Cant save project, you have to load a project!";
+                return;
+            }
             var oldLastSave = Project.LastSaveAt;
             Project.LastSaveAt = DateTime.Now;
 
@@ -115,7 +121,8 @@ namespace LeaMusicGui
                     if(!string.IsNullOrEmpty(dialogResult))
                     {
                         resourceManager.SaveProject(Project, new FileLocation(dialogResult), fileHandler);
-                        Debug.WriteLine($"Project is saved Local at: {dialogResult}");
+                       
+                        StatusMessages = $"Project is saved Local at: {dialogResult}";
 
                         //ifSyncEnabled && isTokenValid(Auth Token google)
                         if (isSyncEnabled)
@@ -123,8 +130,10 @@ namespace LeaMusicGui
                             var gDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
                             //Todo: save rootFolder in GoogleDriveHandler
                             // var gDriveLocation = new GDriveLocation(gDriveRootFolder: "", gDrivelocalPath: "", projectName: "");
-                            resourceManager.SaveProject(Project, default, gDriveHandler);
-                            Debug.WriteLine("Uploaded Project to Google Drive!");
+                            StatusMessages = $"Begin Project to Google Drive!";
+                            await resourceManager.SaveProject(Project, default, gDriveHandler);
+                            StatusMessages = $"Uploaded Project to Google Drive!";
+                           
                         }
                     }
                 }
@@ -159,10 +168,10 @@ namespace LeaMusicGui
                 var location = new FileLocation(dialogResult);
                 var projectName = Path.GetFileNameWithoutExtension(location.Path);
                 var googleDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
-
+                
                 //Fetch project Metadata, and compare on Date
-                ProjectMetadata? fileMetaData = resourceManager.GetProjectMetaData($"{projectName}.zip", location, fileHandler);
-                ProjectMetadata? gDriveMetaData = resourceManager.GetProjectMetaData($"{projectName}", null, googleDriveHandler);
+                ProjectMetadata? fileMetaData =  resourceManager.GetProjectMetaData($"{projectName}.zip", location, fileHandler);
+                ProjectMetadata? gDriveMetaData =  resourceManager.GetProjectMetaData($"{projectName}", null, googleDriveHandler);
 
                 if (isSyncEnabled &&
                     gDriveMetaData?.lastSavedAt > fileMetaData?.lastSavedAt)

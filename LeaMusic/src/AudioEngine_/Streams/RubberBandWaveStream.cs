@@ -32,8 +32,8 @@ namespace LeaMusic.src.AudioEngine_.Streams
             _stretchedSamples = Enumerable.Range(1, source.WaveFormat.Channels).Select(channel => new float[16384]).ToArray();
 
             _stretcher = new RubberBandStretcher(_source.WaveFormat.SampleRate, _source.WaveFormat.Channels, RubberBandStretcher.Options.ProcessRealTime);
-
-            _tempo = 1.0;
+           
+          _tempo = 1.0;
         }
 
         public double Tempo
@@ -55,6 +55,20 @@ namespace LeaMusic.src.AudioEngine_.Streams
         public event EventHandler EndOfStream;
 
         public void Reset() => _stretcher.Reset();
+
+        public void SeekTo(TimeSpan time)
+        {
+            _stretcher.Reset();
+
+            if (_source is WaveStream sourceStream)
+            {
+                sourceStream.CurrentTime = time;
+            }
+
+            _sourceExtraBytes.Clear();
+            _outputExtraBytes.Clear();
+        }
+
         public int Read(byte[] buffer, int offset, int count)
         {
             int numRead = 0;
@@ -95,7 +109,7 @@ namespace LeaMusic.src.AudioEngine_.Streams
             while (true)
             {
                 int stretchedFramesToRead = (count + bytesPerFrame - 1) / bytesPerFrame;
-
+              
                 if (stretchedFramesToRead > _stretchedSamples[0].Length)
                     stretchedFramesToRead = _stretchedSamples[0].Length;
 

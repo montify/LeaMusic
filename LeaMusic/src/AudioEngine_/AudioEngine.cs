@@ -1,4 +1,5 @@
 ﻿using LeaMusic.Extensions;
+using NAudio.Utils;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Diagnostics;
@@ -53,8 +54,7 @@ namespace LeaMusic.src.AudioEngine_
 
             ViewStartTime = TimeSpan.Zero;
             ViewEndTime = TotalDuration;
-            waveOut.DesiredLatency = 250;
-
+            waveOut.DesiredLatency = 450;
             Debug.WriteLine($"WavOut Latency: {waveOut.DesiredLatency}");
            
             //TODO: Init can happen only once in wavOut Lifetime, this is a Hack lol
@@ -97,7 +97,8 @@ namespace LeaMusic.src.AudioEngine_
         
         public void AddMarker(TimeSpan position, string text)
         {
-            var m = new Marker(position, text);
+
+            var m = new Marker(position , text);
             Project.AddTimeMarker(m);
         }
 
@@ -282,19 +283,43 @@ namespace LeaMusic.src.AudioEngine_
 
         public void AudioJumpToSec(TimeSpan sec)
         {
-            waveOut.Stop();
 
-            Project.ResetTracks();
+            if (waveOut == null)
+                return;
+
+             waveOut.Stop();
+         
+          
+           // Project.ResetTracks();
             CurrentPosition = sec;
 
             sw.Reset();
             InitStart = sec;
 
             Project.JumpToSeconds(sec);
-       
+            
             LastUpdateTime = TimeSpan.Zero;
             AccumulatedProgress = TimeSpan.Zero;
         }
+
+        //public void TurnLoopAround(TimeSpan sec)
+        //{
+        //    waveOut.Stop();
+
+           
+        //    // Project.ResetTracks();
+        //    CurrentPosition = sec;
+
+        //    sw.Reset();
+        //    InitStart = sec;
+
+        //    Project.JumpToSeconds(sec);
+            
+        //    LastUpdateTime = TimeSpan.Zero;
+        //    AccumulatedProgress = TimeSpan.Zero;
+        //    waveOut.Play();
+        //}
+
 
         public void Loop(TimeSpan startSec, TimeSpan endSec)
         {
@@ -330,18 +355,17 @@ namespace LeaMusic.src.AudioEngine_
             bool isLoop = LoopEnd.TotalSeconds - LoopStart.TotalSeconds > 0;
             if (isLoop)
             {
-                //when reach end of Loop
+                //when reach end of Loop, go back to loopStart
                 if (CurrentPosition >= LoopEnd)
                 {
                     AudioJumpToSec(LoopStart);
                     Play();
-                    Update();
                 }
 
                 //if zoom OR LoopStartSelection change
                 if (m_oldZoom != Zoom || LoopStart.TotalSeconds != m_oldLoopStart.TotalSeconds)
                 {
-                    Debug.WriteLine("LOOP INVOKE");
+                    Debug.WriteLine("AudioEngine.UpdateLoop INVOKE");
                     OnLoopChange?.Invoke(LoopStart, LoopEnd);
                     m_oldLoopStart = LoopStart;
 

@@ -11,9 +11,9 @@
     xmlns:trackcontrol_="clr-namespace:LeaMusicGui.Controls.TrackControl_"
     Title="{Binding ProjectName}"
     Width="1334"
-    Height="1021"
+    Height="800"
     MinWidth="1334"
-    MinHeight="1021"
+    MinHeight="800"
     KeyDown="Window_KeyDown"
     MouseUp="Window_MouseUp"
     mc:Ignorable="d">
@@ -28,16 +28,22 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </Window.Resources>
 
-    <Grid Background="#424651">
+    <Grid Background="#423651">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="90" />
+            <RowDefinition Height="30" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="350" />
+            <RowDefinition Height="150" />
+            <RowDefinition Height="30" />
         </Grid.RowDefinitions>
-
-        <StackPanel
+        <TextBlock
+            Grid.Row="0"
+            HorizontalAlignment="Left"
+            FontFamily="Cascadia Code"
+            FontSize="30">
+            ·LeaMusic
+        </TextBlock>
+        <!--<StackPanel
             Grid.Row="1"
             Height="30"
             Margin="0,20,0,0"
@@ -94,10 +100,12 @@
                 Command="{Binding AddTrackCommand}"
                 Content="Add Track"
                 Style="{StaticResource ButtonPrimary}" />
-        </StackPanel>
+        </StackPanel>-->
 
-        <Grid Grid.Row="2">
-            <!--  Display ProgressTime  -->
+        <!--<Grid Grid.Row="1">
+        -->
+        <!--  Display ProgressTime  -->
+        <!--
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock
@@ -117,54 +125,48 @@
 
 
             </StackPanel>
-        </Grid>
+        </Grid>-->
 
-        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
-
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <!--  Waveform CANVAS  -->
-            <Canvas
+            <Grid
                 x:Name="WaveformCanvas"
                 Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}}"
-                Height="500"
                 Background="#424651">
 
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                    <StackPanel Background="#424651">
+                <!--  WaveForm  -->
+                <ItemsControl ItemsSource="{Binding WaveformWrappers}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
 
-                        <!--  WaveForm  -->
-                        <ItemsControl ItemsSource="{Binding WaveformWrappers}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <trackcontrol_:TrackControl
+                                    Delete="{Binding PlayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    HeightScaleFactor="{Binding ElementName=HeightMultiSlider, Path=Value}"
+                                    Mute="{Binding MuteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    ParentViewModel="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    TrackID="{Binding TrackID}"
+                                    WaveformData="{Binding Waveform}" />
+                                <Separator />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel>
-                                        <trackcontrol_:TrackControl
-                                            Delete="{Binding PlayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            HeightScaleFactor="{Binding ElementName=HeightMultiSlider, Path=Value}"
-                                            Mute="{Binding MuteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            ParentViewModel="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            TrackID="{Binding TrackID}"
-                                            WaveformData="{Binding Waveform}" />
-                                        <Separator />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </ScrollViewer>
 
                 <!--  Main CANVAS  -->
                 <Canvas
                     x:Name="MainCanvas"
-                    Canvas.Left="100"
-                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}, Converter={StaticResource SubtractConverter}}"
-                    Height="400"
+                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}"
+                    Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Grid}}"
+                    Margin="100,0,0,0"
                     HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
+                    VerticalAlignment="Top"
                     Background="Transparent"
                     IsHitTestVisible="True"
                     MouseLeftButtonDown="MainCanvas_MouseLeftButtonDown"
@@ -176,7 +178,6 @@
                     <!--  LOOP  -->
                     <control:LoopControl
                         Width="1"
-                        Height="400"
                         IsHitTestVisible="True"
                         MouseDown="LoopControl_MouseDown"
                         MouseLeave="LoopControl_MouseLeave"
@@ -222,7 +223,7 @@
                                     <!--  Line Marker  -->
                                     <Rectangle
                                         Width="1"
-                                        Height="100"
+                                        Height="{Binding ActualHeight, ElementName=MainCanvas}"
                                         Fill="DarkRed"
                                         Visibility="{Binding Visible, Converter={StaticResource BoolToVis}}">
                                         <Canvas.Left>
@@ -271,7 +272,7 @@
                     <!--  Playhead  -->
                     <Rectangle
                         Name="Playhead"
-                        Width="1"
+                        Width="1.3"
                         Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
@@ -285,28 +286,42 @@
                         </Canvas.Left>
                     </Rectangle>
                 </Canvas>
-            </Canvas>
+
+            </Grid>
         </ScrollViewer>
 
 
-
-        <Grid Grid.Row="4" Background="#424341">
-            <Grid.RowDefinitions>
+        <Grid Grid.Row="3" Background="#424341">
+            <!--<Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <!--  ProgressBar  -->
+            -->
+            <!--  ProgressBar  -->
+            <!--
                 <RowDefinition Height="Auto" />
-                <!--  Zoom Slider  -->
+            -->
+            <!--  Zoom Slider  -->
+            <!--
                 <RowDefinition Height="Auto" />
-                <!--  Zoom Label  -->
+            -->
+            <!--  Zoom Label  -->
+            <!--
                 <RowDefinition Height="Auto" />
-                <!--  HeightMultiSlider  -->
+            -->
+            <!--  HeightMultiSlider  -->
+            <!--
                 <RowDefinition Height="Auto" />
-                <!--  Scroll Slider  -->
+            -->
+            <!--  Scroll Slider  -->
+            <!--
                 <RowDefinition Height="Auto" />
-                <!--  Speed Slider  -->
+            -->
+            <!--  Speed Slider  -->
+            <!--
             </Grid.RowDefinitions>
 
+            -->
             <!--  ProgressBar in Row 0  -->
+            <!--
             <StackPanel Grid.Row="0" HorizontalAlignment="Center">
                 <Label Content="Progress" />
                 <ProgressBar
@@ -317,7 +332,9 @@
                     Value="{Binding Path=ProgressInPercentage}" />
             </StackPanel>
 
+            -->
             <!--  Zoom Slider  -->
+            <!--
             <StackPanel Grid.Row="1" HorizontalAlignment="Center">
                 <Label Content="Zoom" />
                 <Slider
@@ -331,13 +348,17 @@
                     Value="{Binding Zoom}" />
             </StackPanel>
 
+            -->
             <!--  Zoom Label  -->
+            <!--
             <StackPanel Grid.Row="2" HorizontalAlignment="Center">
                 <Label Content="{Binding Zoom}" />
             </StackPanel>
 
+           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
             <!--  HeightMultiSlider  -->
-            <StackPanel Grid.Row="3" HorizontalAlignment="Center">
+            <!--
+            <StackPanel HorizontalAlignment="Center">
                 <Label Content="Height Multiplier" />
                 <Slider
                     x:Name="HeightMultiSlider"
@@ -346,9 +367,10 @@
                     HorizontalAlignment="Left"
                     Minimum="1"
                     Value="1" />
-            </StackPanel>
+            </StackPanel>-->
 
             <!--  ScrollSlider  -->
+            <!--
             <StackPanel Grid.Row="4" HorizontalAlignment="Center">
                 <Label Content="Scroll" />
                 <Slider
@@ -358,7 +380,9 @@
                     Maximum="100"
                     Value="{Binding Scroll}" />
             </StackPanel>
+            -->
             <!--  Speed  -->
+            <!--
             <StackPanel Grid.Row="5" HorizontalAlignment="Center">
                 <Label Content="Speed" />
                 <Slider
@@ -369,13 +393,86 @@
                     SmallChange="1"
                     TickFrequency="0.1"
                     Value="{Binding Speed}" />
-            </StackPanel>
+            </StackPanel>-->
 
+
+            <StackPanel
+                Grid.Row="1"
+                Margin="0,20,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Orientation="Vertical">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    FontSize="30"
+                    Foreground="WhiteSmoke"
+                    Text="{Binding CurrentPlayTime, StringFormat={}{0:0.00}}" />
+                <StackPanel Orientation="Horizontal">
+
+                    <Button
+                        Margin="0,0,10,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Command="{Binding Path=PlayCommand}"
+                        Content="Play"
+                        Style="{StaticResource ButtonSuccess}" />
+                    <Button
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Command="{Binding Path=PauseCommand}"
+                        Content="Pause"
+                        Style="{StaticResource ButtonDanger}" />
+                    <Button
+                        Margin="0,0,10,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Command="{Binding LoadProjectFileCommand}"
+                        Content="Load Project Local" />
+                    <Button
+                        Margin="0,0,10,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Command="{Binding SaveProjectFileCommand}"
+                        Content="Save Project Local" />
+                </StackPanel>
+                <Button
+                    Width="30"
+                    Height="30"
+                    Content="OK">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="50">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <Slider
+                        x:Name="HeightMultiSlider"
+                        Width="120"
+                        Margin="5"
+                        HorizontalAlignment="Left"
+                        Minimum="1"
+                        Value="1" />
+                    <Label Content="Height Multiplier" />
+                </StackPanel>
+            </StackPanel>
         </Grid>
+
+
+
+        <StackPanel Grid.Row="6" VerticalAlignment="Center">
+            <TextBlock Text="{Binding StatusMessages}" />
+        </StackPanel>
 
         <!--  Modal "Loading Project" Window  -->
         <Grid
-            Grid.RowSpan="5"
+            Grid.RowSpan="6"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             Panel.ZIndex="999"

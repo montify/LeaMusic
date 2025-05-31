@@ -19,7 +19,7 @@ namespace LeaMusicGui.Controls
 
         public LoopControl()
         {
-            WriteableBitmap = new WriteableBitmap(1, 300, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
+            WriteableBitmap = new WriteableBitmap(1, 3000, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
             width = (int)WriteableBitmap.Width;
             height = (int)WriteableBitmap.Height;
 

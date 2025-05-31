@@ -18,7 +18,7 @@
     <Grid Height="120">
         <StackPanel Orientation="Horizontal">
             <Grid Width="100" Background="#282B28">
-                <StackPanel>
+                <StackPanel VerticalAlignment="Center">
                     <Button Command="{Binding DataContext.MuteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">Mute</Button>
                     <Button Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">Delete</Button>
                     <Label Content="{Binding TrackID}" />
@@ -27,7 +27,7 @@
             </Grid>
 
             <controls:WaveformControl
-                Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}, Converter={StaticResource SubtractConverter}}"
+                Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}"
                 Height="120"
                 ParentViewModel="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
                 WaveformData="{Binding WaveformData, RelativeSource={RelativeSource AncestorType=UserControl}}"

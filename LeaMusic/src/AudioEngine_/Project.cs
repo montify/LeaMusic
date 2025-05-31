@@ -112,7 +112,8 @@ namespace LeaMusic.src.AudioEngine_
         {
             foreach (var track in Tracks)
             {
-                track.loopStream.JumpToSeconds(position.TotalSeconds);
+                track.rubberBandWaveStream.SeekTo(position);
+              //  track.loopStream.JumpToSeconds(position.TotalSeconds);
             }
         }
 
