@@ -78,7 +78,9 @@ namespace LeaMusicGui
         private bool zoomStartPositionSetOnce;
 
         public IDialogService? DialogService { get; set; }
-      
+
+        public bool IsProjectLoaded => Project != null && Project.Duration > TimeSpan.FromSeconds(1);
+
         public MainViewModel()
         {
             resourceManager = new LeaResourceManager();
@@ -529,6 +531,12 @@ namespace LeaMusicGui
         [RelayCommand]
         private async Task Pause()
         {
+            if (!IsProjectLoaded)
+            {
+                StatusMessages = "Pleas load a Project...";
+                return;
+            }
+
             audioEngine.Pause();
         }
 
@@ -540,6 +548,8 @@ namespace LeaMusicGui
         {
             resourceHandler = new FileHandler();
             await LoadProject();
+
+            StatusMessages = $"Project: {Project.Name} loaded!";
         }
 
         [RelayCommand]
@@ -574,12 +584,23 @@ namespace LeaMusicGui
         [RelayCommand]
         private async Task Play()
         {
+            if(!IsProjectLoaded)
+            {
+                StatusMessages = "Pleas load a Project...";
+                return;
+            }
             audioEngine.Play();
         }
 
         [RelayCommand]
         private async Task Mute(object param)
         {
+            if (!IsProjectLoaded)
+            {
+                StatusMessages = "Pleas load a Project...";
+                return;
+            }
+
             if (param is TrackDTO wrapper)
             {
                 audioEngine.MuteTrack(wrapper.TrackID);
