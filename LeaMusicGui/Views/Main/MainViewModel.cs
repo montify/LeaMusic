@@ -268,7 +268,7 @@ namespace LeaMusicGui
                     WaveformWrappers.Add(new TrackDTO());
 
                 WaveformWrappers[i].Waveform = waveforms[i];
-
+                WaveformWrappers[i].Name = audioEngine.Project.Tracks[i].Name;
                 WaveformWrappers[i].TrackID = audioEngine.Project.Tracks[i].ID;
             }
         }

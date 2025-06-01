@@ -8,5 +8,7 @@ namespace LeaMusicGui
         private ReadOnlyMemory<float> _waveform;
 
         public int TrackID { get; set; }
+
+        public string Name { get; set; }
     }
 }

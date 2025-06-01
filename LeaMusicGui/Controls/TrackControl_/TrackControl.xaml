@@ -22,7 +22,11 @@
                     <Button Command="{Binding DataContext.MuteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">Mute</Button>
                     <Button Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">Delete</Button>
                     <Label Content="{Binding TrackID}" />
-
+                    <TextBlock Text="{Binding Name}" 
+           Width="90" 
+           TextTrimming="CharacterEllipsis" 
+           TextWrapping="NoWrap" 
+           ToolTip="{Binding Name}" />
                 </StackPanel>
             </Grid>
 

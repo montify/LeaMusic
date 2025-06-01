@@ -28,21 +28,27 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </Window.Resources>
 
-    <Grid Background="#423651">
+    <Grid Background="#424651">
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
-            <RowDefinition Height="auto" />
+
             <RowDefinition Height="*" />
             <RowDefinition Height="150" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
-        <TextBlock
-            Grid.Row="0"
-            HorizontalAlignment="Left"
-            FontFamily="Cascadia Code"
-            FontSize="30">
-            ·LeaMusic
-        </TextBlock>
+
+        <DockPanel Grid.Row="0">
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_New" />
+                    <MenuItem Header="_Open" />
+                    <MenuItem Header="_Save" />
+                    <Separator />
+                    <MenuItem Header="_Exit" />
+                </MenuItem>
+            </Menu>
+
+        </DockPanel>
         <!--<StackPanel
             Grid.Row="1"
             Height="30"
@@ -127,7 +133,10 @@
             </StackPanel>
         </Grid>-->
 
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer
+            Grid.Row="1"
+            Margin="0,40,0,0"
+            VerticalScrollBarVisibility="Auto">
             <!--  Waveform CANVAS  -->
             <Grid
                 x:Name="WaveformCanvas"
@@ -291,35 +300,14 @@
         </ScrollViewer>
 
 
-        <Grid Grid.Row="3" Background="#424341">
-            <!--<Grid.RowDefinitions>
+        <Grid Grid.Row="2" Background="#424341">
+            <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-            -->
-            <!--  ProgressBar  -->
-            <!--
                 <RowDefinition Height="Auto" />
-            -->
-            <!--  Zoom Slider  -->
-            <!--
                 <RowDefinition Height="Auto" />
-            -->
-            <!--  Zoom Label  -->
-            <!--
-                <RowDefinition Height="Auto" />
-            -->
-            <!--  HeightMultiSlider  -->
-            <!--
-                <RowDefinition Height="Auto" />
-            -->
-            <!--  Scroll Slider  -->
-            <!--
-                <RowDefinition Height="Auto" />
-            -->
-            <!--  Speed Slider  -->
-            <!--
             </Grid.RowDefinitions>
 
-            -->
+
             <!--  ProgressBar in Row 0  -->
             <!--
             <StackPanel Grid.Row="0" HorizontalAlignment="Center">
@@ -395,78 +383,100 @@
                     Value="{Binding Speed}" />
             </StackPanel>-->
 
-
-            <StackPanel
-                Grid.Row="1"
-                Margin="0,20,0,0"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                Orientation="Vertical">
+            <StackPanel>
                 <TextBlock
                     HorizontalAlignment="Center"
                     FontSize="30"
                     Foreground="WhiteSmoke"
                     Text="{Binding CurrentPlayTime, StringFormat={}{0:0.00}}" />
-                <StackPanel Orientation="Horizontal">
+                <StackPanel
+                    Grid.Row="0"
+                    Margin="0,20,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Orientation="Horizontal">
 
-                    <Button
-                        Margin="0,0,10,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        Command="{Binding Path=PlayCommand}"
-                        Content="Play"
-                        Style="{StaticResource ButtonSuccess}" />
-                    <Button
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        Command="{Binding Path=PauseCommand}"
-                        Content="Pause"
-                        Style="{StaticResource ButtonDanger}" />
-                    <Button
-                        Margin="0,0,10,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        Command="{Binding LoadProjectFileCommand}"
-                        Content="Load Project Local" />
-                    <Button
-                        Margin="0,0,10,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        Command="{Binding SaveProjectFileCommand}"
-                        Content="Save Project Local" />
-                </StackPanel>
-                <Button
-                    Width="30"
-                    Height="30"
-                    Content="OK">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="50">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                    <Slider
-                        x:Name="HeightMultiSlider"
-                        Width="120"
-                        Margin="5"
-                        HorizontalAlignment="Left"
-                        Minimum="1"
-                        Value="1" />
-                    <Label Content="Height Multiplier" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button
+                            Margin="0,0,10,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Command="{Binding Path=PlayCommand}"
+                            Content="Play"
+                            Style="{StaticResource ButtonSuccess}" />
+                        <Button
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Command="{Binding Path=PauseCommand}"
+                            Content="Pause"
+                            Style="{StaticResource ButtonDanger}" />
+                        <Button
+                            Margin="0,0,10,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Command="{Binding LoadProjectFileCommand}"
+                            Content="Load Project Local" />
+                        <Button
+                            Margin="0,0,10,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Command="{Binding SaveProjectFileCommand}"
+                            Content="Save Project Local" />
+                    </StackPanel>
+
+                    <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
+                        <Label Content="Height Multiplier" />
+                        <Slider
+                            x:Name="HeightMultiSlider"
+                            Width="120"
+                            Margin="5"
+                            HorizontalAlignment="Left"
+                            Minimum="1"
+                            Value="1" />
+                    </StackPanel>
+                    <!--  Zoom Slider  -->
+
+                    <StackPanel Grid.Row="1" HorizontalAlignment="Center">
+                        <Label Content="Zoom" />
+                        <Slider
+                            Width="120"
+                            HorizontalAlignment="Left"
+                            LargeChange="0.1"
+                            Maximum="60"
+                            Minimum="1"
+                            TickFrequency="0.1"
+                            Value="{Binding Zoom}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="5" HorizontalAlignment="Center">
+                        <Label Content="Speed" />
+                        <Slider
+                            Width="120"
+                            Margin="5"
+                            HorizontalAlignment="Left"
+                            Maximum="1"
+                            SmallChange="1"
+                            TickFrequency="0.1"
+                            Value="{Binding Speed}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="5" HorizontalAlignment="Center">
+                        <Label Content="Pitch" />
+                        <Slider
+                            Width="120"
+                            Margin="5"
+                            HorizontalAlignment="Left"
+                            Maximum="8"
+                            Minimum="-8"
+                            SmallChange="1"
+                            Value="{Binding Pitch}" />
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
         </Grid>
 
 
 
-        <StackPanel Grid.Row="6" VerticalAlignment="Center">
+        <StackPanel Grid.Row="3" VerticalAlignment="Center">
             <TextBlock Text="{Binding StatusMessages}" />
         </StackPanel>
 
