@@ -18,15 +18,29 @@
     <Grid Height="120">
         <StackPanel Orientation="Horizontal">
             <Grid Width="100" Background="#282B28">
-                <StackPanel VerticalAlignment="Center">
-                    <Button Command="{Binding DataContext.MuteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">Mute</Button>
-                    <Button Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}">Delete</Button>
-                    <Label Content="{Binding TrackID}" />
-                    <TextBlock Text="{Binding Name}" 
-           Width="90" 
-           TextTrimming="CharacterEllipsis" 
-           TextWrapping="NoWrap" 
-           ToolTip="{Binding Name}" />
+                <StackPanel>
+                    <Button
+                        Width="20"
+                        Height="20"
+                        Padding="0"
+                        Command="{Binding DataContext.MuteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        CommandParameter="{Binding}"
+                        Content="M"
+                        FontSize="10" />
+                    <Button
+                        Width="20"
+                        Height="20"
+                        Padding="0"
+                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        CommandParameter="{Binding}"
+                        Content="D" />
+                    <TextBlock HorizontalAlignment="Center" Text="{Binding TrackID}" />
+                    <TextBlock
+                        Width="90"
+                        Text="{Binding Name}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        ToolTip="{Binding Name}" />
                 </StackPanel>
             </Grid>
 
