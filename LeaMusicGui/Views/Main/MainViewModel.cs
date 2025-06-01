@@ -145,7 +145,8 @@ namespace LeaMusicGui
             catch (Exception e)
             {
                 Project.LastSaveAt = oldLastSave;
-                throw;
+                StatusMessages = $"Error: {e.Message}";
+                return;
             }
         }
 
@@ -195,7 +196,8 @@ namespace LeaMusicGui
                 if (Project == null)
                 {
                     //Expose to View
-                    throw new Exception("Cant load Project");
+                    StatusMessages = "Cant load Project";
+                    return;
                 }
 
                 ProjectName = Project.Name;
