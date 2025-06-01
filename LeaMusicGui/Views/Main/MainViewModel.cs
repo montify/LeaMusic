@@ -94,6 +94,8 @@ namespace LeaMusicGui
             ProjectName = "NOT SET";
             resourceHandler = new FileHandler();
 
+            audioEngine.MountProject(Project);
+
             audioEngine.OnUpdate += AudioEngine_OnPlayHeadChange;
             audioEngine.OnProgressChange += AudioEngine_OnProgressChange;
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;

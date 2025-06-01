@@ -41,8 +41,9 @@
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_File">
                     <MenuItem Header="_New" />
-                    <MenuItem Header="_Open" />
-                    <MenuItem Header="_Save" />
+                    <MenuItem Command="{Binding LoadProjectFileCommand}" Header="_Open Project" />
+                    <MenuItem Command="{Binding SaveProjectFileCommand}" Header="_Save Project" />
+                    <MenuItem Command="{Binding AddTrackCommand}" Header="_Add Track" />
                     <Separator />
                     <MenuItem Header="_Exit" />
                 </MenuItem>
@@ -411,22 +412,10 @@
                             Command="{Binding Path=PauseCommand}"
                             Content="Pause"
                             Style="{StaticResource ButtonDanger}" />
-                        <Button
-                            Margin="0,0,10,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            Command="{Binding LoadProjectFileCommand}"
-                            Content="Load Project Local" />
-                        <Button
-                            Margin="0,0,10,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            Command="{Binding SaveProjectFileCommand}"
-                            Content="Save Project Local" />
                     </StackPanel>
 
                     <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
-                        <Label Content="Height Multiplier" />
+                        <TextBlock HorizontalAlignment="Center" Text="{Binding ElementName=HeightMultiSlider, Path=Value, StringFormat={}{0:0.00}}" />
                         <Slider
                             x:Name="HeightMultiSlider"
                             Width="120"
@@ -434,11 +423,12 @@
                             HorizontalAlignment="Left"
                             Minimum="1"
                             Value="1" />
+                        <TextBlock HorizontalAlignment="Center" Text="Height Multiplier" />
                     </StackPanel>
                     <!--  Zoom Slider  -->
 
                     <StackPanel Grid.Row="1" HorizontalAlignment="Center">
-                        <Label Content="Zoom" />
+                        <TextBlock HorizontalAlignment="Center" Text="{Binding Zoom, StringFormat={}{0:0.00}}" />
                         <Slider
                             Width="120"
                             HorizontalAlignment="Left"
@@ -447,9 +437,10 @@
                             Minimum="1"
                             TickFrequency="0.1"
                             Value="{Binding Zoom}" />
+                        <TextBlock HorizontalAlignment="Center" Text="Zoom" />
                     </StackPanel>
                     <StackPanel Grid.Row="5" HorizontalAlignment="Center">
-                        <Label Content="Speed" />
+                        <TextBlock HorizontalAlignment="Center" Text="{Binding Speed, StringFormat={}{0:0.00}}" />
                         <Slider
                             Width="120"
                             Margin="5"
@@ -458,9 +449,10 @@
                             SmallChange="1"
                             TickFrequency="0.1"
                             Value="{Binding Speed}" />
+                        <TextBlock HorizontalAlignment="Center" Text="Speed" />
                     </StackPanel>
                     <StackPanel Grid.Row="5" HorizontalAlignment="Center">
-                        <Label Content="Pitch" />
+                        <TextBlock HorizontalAlignment="Center" Text="{Binding Pitch}" />
                         <Slider
                             Width="120"
                             Margin="5"
@@ -469,6 +461,7 @@
                             Minimum="-8"
                             SmallChange="1"
                             Value="{Binding Pitch}" />
+                        <TextBlock HorizontalAlignment="Center" Text="Pitch" />
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
