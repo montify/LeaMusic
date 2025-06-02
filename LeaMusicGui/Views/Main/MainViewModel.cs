@@ -57,9 +57,12 @@ namespace LeaMusicGui
 
         [ObservableProperty]
         public double currentPlayTime;
+
         [ObservableProperty]
         public double totalProjectDuration;
 
+        [ObservableProperty]
+        public int projectBpm;
 
         public ObservableCollection<TrackDTO> WaveformWrappers { get; set; } = new ObservableCollection<TrackDTO>();
         public ObservableCollection<MarkerDTO> TestMarkers { get; set; } = new ObservableCollection<MarkerDTO>();
@@ -100,8 +103,6 @@ namespace LeaMusicGui
             audioEngine.OnProgressChange += AudioEngine_OnProgressChange;
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;
 
-          
-         
             CompositionTarget.Rendering += (sender, e) => audioEngine.Update();
         }
 
@@ -136,8 +137,7 @@ namespace LeaMusicGui
                             // var gDriveLocation = new GDriveLocation(gDriveRootFolder: "", gDrivelocalPath: "", projectName: "");
                             StatusMessages = $"Begin Project to Google Drive!";
                             await resourceManager.SaveProject(Project, default, gDriveHandler);
-                            StatusMessages = $"Uploaded Project to Google Drive!";
-                           
+                            StatusMessages = $"Uploaded Project to Google Drive!"; 
                         }
                     }
                 }
@@ -248,6 +248,8 @@ namespace LeaMusicGui
                     TestMarkers[i].Visible = false;
                 }
             }
+
+            ProjectBpm = audioEngine.CalculateBpm(beatsPerMeasure: 4);
         }
 
         // currentMarkerID is set when the User click on the marker(Command) in the View,

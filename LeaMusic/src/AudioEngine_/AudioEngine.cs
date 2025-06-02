@@ -180,6 +180,26 @@ namespace LeaMusic.src.AudioEngine_
             oldScrollValue = scrollFactor;
         }
 
+        public int CalculateBpm(int beatsPerMeasure)
+        {
+           
+
+            var markers = Project.BeatMarkers;
+            if (markers.Count < 2)
+                return 0;
+
+            var bpmList = new List<double>();
+
+            for (int i = 1; i < markers.Count; i++)
+            {
+                var seconds = (markers[i].Position - markers[i - 1].Position).TotalSeconds;
+                double bpm = (60.0 * beatsPerMeasure) / seconds;
+                bpmList.Add(bpm);
+            }
+
+            return (int)Math.Round(bpmList.Average());
+
+        }
         public void Play()
         {
             if (waveOut.PlaybackState == PlaybackState.Playing)
