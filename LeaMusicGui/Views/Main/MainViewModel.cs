@@ -130,7 +130,8 @@ namespace LeaMusicGui
                         StatusMessages = $"Project is saved Local at: {dialogResult}";
 
                         //ifSyncEnabled && isTokenValid(Auth Token google)
-                        if (isSyncEnabled)
+                        
+                        if (DialogService.EnableSync())
                         {
                             var gDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
                             //Todo: save rootFolder in GoogleDriveHandler
@@ -152,9 +153,6 @@ namespace LeaMusicGui
 
         private async Task LoadProject()
         {
-            Project?.Dispose();
-            Project = null;
-          
             try
             {
                 IsProjectLoading = true;
@@ -178,17 +176,22 @@ namespace LeaMusicGui
                 ProjectMetadata? fileMetaData =  resourceManager.GetProjectMetaData($"{projectName}.zip", location, fileHandler);
                 ProjectMetadata? gDriveMetaData =  resourceManager.GetProjectMetaData($"{projectName}", null, googleDriveHandler);
 
+                Project?.Dispose();
+                Project = null;
+
+
                 if (isSyncEnabled &&
-                    gDriveMetaData?.lastSavedAt > fileMetaData?.lastSavedAt)
+                    gDriveMetaData?.lastSavedAt > fileMetaData?.lastSavedAt &&
+                      DialogService.AskDownloadGoogleDrive(localDate: fileMetaData.lastSavedAt, googleDriveDate:gDriveMetaData.lastSavedAt))
                 {
-                    Debug.WriteLine($"GoogleDrive Project: {projectName} is newer, DOWNLOAD IT!");
+                    Debug.WriteLine($"Download Project: {projectName} from google Drive");
                     var gdriveLocation = new GDriveLocation("LeaRoot", dialogResult, projectName);
 
                     Project = await resourceManager.LoadProject(gdriveLocation, googleDriveHandler);
                 }
                 else
                 {
-                    Debug.WriteLine("LOCAL Project is newer, NO DOWNLOAD");
+                    Debug.WriteLine($"Load Project: {ProjectName} from LocalFile");
                     Project = await resourceManager.LoadProject(new FileLocation(dialogResult), fileHandler);
                 }
 
