@@ -624,6 +624,8 @@ namespace LeaMusicGui
                     WaveformWrappers.Remove(wrapper);
 
                     audioEngine.ReloadMixerInputs();
+
+                    StatusMessages = $"Track: {track.Name} deleted!";
                 }
             }
         }
@@ -631,7 +633,25 @@ namespace LeaMusicGui
         [RelayCommand]
         private async Task JumpToSec()
         {
+            if (TimeSpan.FromSeconds(JumpToPositionInSec) < TimeSpan.Zero)
+            {
+                StatusMessages = "Please enter a positive Number";
+                return;
+            }
+
             audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(JumpToPositionInSec));
         }
+
+
+        [RelayCommand]
+        private async Task JumpToLoopStart()
+        {
+            if (audioEngine.LoopStart > TimeSpan.Zero)
+            {
+                audioEngine.AudioJumpToSec(audioEngine.LoopStart);
+                await Play();
+            }
+        }
+
     }
 }
