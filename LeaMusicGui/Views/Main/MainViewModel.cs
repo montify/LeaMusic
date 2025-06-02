@@ -5,12 +5,10 @@ using LeaMusic.src.ResourceManager_;
 using LeaMusic.src.ResourceManager_.GoogleDrive_;
 using LeaMusicGui.Views.DialogServices;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media;
-using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
 namespace LeaMusicGui
 {
@@ -64,6 +62,9 @@ namespace LeaMusicGui
         [ObservableProperty]
         public int projectBpm;
 
+        [ObservableProperty]
+        bool isProjectLoading;
+
         public ObservableCollection<TrackDTO> WaveformWrappers { get; set; } = new ObservableCollection<TrackDTO>();
         public ObservableCollection<MarkerDTO> TestMarkers { get; set; } = new ObservableCollection<MarkerDTO>();
 
@@ -76,7 +77,6 @@ namespace LeaMusicGui
         public bool supressZoom;
         private IResourceHandler resourceHandler;
         private TimeSpan zoomMouseStartPosition;
-        private double oldZoomFactor = 1.0f;
         private double zoomStartMouseY;
         private bool zoomStartPositionSetOnce;
 
@@ -88,7 +88,7 @@ namespace LeaMusicGui
         {
             resourceManager = new LeaResourceManager();
             audioEngine = new AudioEngine();
-            
+
             TimelineService = new TimelineService(audioEngine);
 
             //Create Empty Project for StartUp
@@ -109,7 +109,7 @@ namespace LeaMusicGui
         private async Task SaveProject()
         {
             //Maybe Stop audioEngine here, and play again if previous state was play 
-           if(Project.Duration == TimeSpan.FromSeconds(1))
+            if (Project.Duration == TimeSpan.FromSeconds(1))
             {
                 StatusMessages = "Cant save project, you have to load a project!";
                 return;
@@ -123,14 +123,14 @@ namespace LeaMusicGui
                 {
                     string? dialogResult = DialogService.Save();
 
-                    if(!string.IsNullOrEmpty(dialogResult))
+                    if (!string.IsNullOrEmpty(dialogResult))
                     {
                         resourceManager.SaveProject(Project, new FileLocation(dialogResult), fileHandler);
-                       
+
                         StatusMessages = $"Project is saved Local at: {dialogResult}";
 
                         //ifSyncEnabled && isTokenValid(Auth Token google)
-                        
+
                         if (DialogService.EnableSync())
                         {
                             var gDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
@@ -138,7 +138,7 @@ namespace LeaMusicGui
                             // var gDriveLocation = new GDriveLocation(gDriveRootFolder: "", gDrivelocalPath: "", projectName: "");
                             StatusMessages = $"Begin Project to Google Drive!";
                             await resourceManager.SaveProject(Project, default, gDriveHandler);
-                            StatusMessages = $"Uploaded Project to Google Drive!"; 
+                            StatusMessages = $"Uploaded Project to Google Drive!";
                         }
                     }
                 }
@@ -155,8 +155,6 @@ namespace LeaMusicGui
         {
             try
             {
-                IsProjectLoading = true;
-
                 if (resourceHandler == null)
                     throw new Exception("ResourceHandler invalid");
 
@@ -168,13 +166,15 @@ namespace LeaMusicGui
                 if (string.IsNullOrEmpty(dialogResult))
                     return;
 
+                IsProjectLoading = true;
+
                 var location = new FileLocation(dialogResult);
                 var projectName = Path.GetFileNameWithoutExtension(location.Path);
                 var googleDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
-                
+
                 //Fetch project Metadata, and compare on Date
-                ProjectMetadata? fileMetaData =  resourceManager.GetProjectMetaData($"{projectName}.zip", location, fileHandler);
-                ProjectMetadata? gDriveMetaData =  resourceManager.GetProjectMetaData($"{projectName}", null, googleDriveHandler);
+                ProjectMetadata? fileMetaData = resourceManager.GetProjectMetaData($"{projectName}.zip", location, fileHandler);
+                ProjectMetadata? gDriveMetaData = resourceManager.GetProjectMetaData($"{projectName}", null, googleDriveHandler);
 
                 Project?.Dispose();
                 Project = null;
@@ -182,16 +182,17 @@ namespace LeaMusicGui
 
                 if (isSyncEnabled &&
                     gDriveMetaData?.lastSavedAt > fileMetaData?.lastSavedAt &&
-                      DialogService.AskDownloadGoogleDrive(localDate: fileMetaData.lastSavedAt, googleDriveDate:gDriveMetaData.lastSavedAt))
+                      DialogService.AskDownloadGoogleDrive(localDate: fileMetaData.lastSavedAt, googleDriveDate: gDriveMetaData.lastSavedAt))
                 {
-                    Debug.WriteLine($"Download Project: {projectName} from google Drive");
+                    StatusMessages = $"Download Project: {projectName} from google Drive";
                     var gdriveLocation = new GDriveLocation("LeaRoot", dialogResult, projectName);
 
                     Project = await resourceManager.LoadProject(gdriveLocation, googleDriveHandler);
                 }
                 else
                 {
-                    Debug.WriteLine($"Load Project: {ProjectName} from LocalFile");
+                    StatusMessages = $"Load Project: {ProjectName} from LocalFile";
+
                     Project = await resourceManager.LoadProject(new FileLocation(dialogResult), fileHandler);
                 }
 
@@ -215,9 +216,9 @@ namespace LeaMusicGui
                 await Task.Delay(100);
 
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                Console.WriteLine();
+                StatusMessages = $"Cant load Project, maybe File is corrupt";
             }
             finally
             {
@@ -257,7 +258,7 @@ namespace LeaMusicGui
 
         // currentMarkerID is set when the User click on the marker(Command) in the View,
         // after that OnRightMouseDown() invoke this Method and currentMarkerID is used to find the Marker the User clicked on.
-        
+
         int currentMarkerID = 0;
         public void MoveMarker(Point position, int renderWidth)
         {
@@ -265,7 +266,7 @@ namespace LeaMusicGui
 
             if (marker != null)
                 marker.Position = TimeSpan.FromSeconds(ConvertPixelToSecond(position.X, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, renderWidth));
- 
+
             UpdateMarkers();
         }
 
@@ -323,10 +324,10 @@ namespace LeaMusicGui
             CurrentPlayTime = positionInSec.TotalSeconds;
 
             ProgressInPercentage = (audioEngine.CurrentPosition.TotalSeconds / audioEngine.TotalDuration.TotalSeconds) * 100;
-           
+
             //scroll view when Playhead reach the end of the view
             if (audioEngine.CurrentPosition >= audioEngine.ViewEndTime)
-            {    
+            {
                 audioEngine.ZoomWaveForm(Zoom, audioEngine.CurrentPosition + audioEngine.halfViewWindow);
                 UpdateWaveformDTO(RenderWidth);
             }
@@ -381,6 +382,7 @@ namespace LeaMusicGui
 
         partial void OnZoomChanged(double value)
         {
+            Zoom = value;
             // supressZoom Prevents OnZoomChanged from being called when Zoom is set manually (e.g. during mouse zoom),
             // so we don't zoom twice or from the wrong position.
             //I set Zoom in ZoomWaveformMouse() to reflect the ZoomValue in the UI
@@ -389,8 +391,7 @@ namespace LeaMusicGui
             {
                 audioEngine.ZoomWaveForm(value, audioEngine.CurrentPosition);
 
-                UpdateWaveformDTO(RenderWidth);
-
+                UpdateWaveformDTO(RenderWidth)
             }
         }
 
@@ -408,6 +409,9 @@ namespace LeaMusicGui
         [RelayCommand]
         public void FitLoopToView()
         {
+            if (audioEngine.LoopEnd - audioEngine.LoopStart <= TimeSpan.Zero)
+                return;
+
             var loopStart = audioEngine.LoopStart;
             var loopEnd = audioEngine.LoopEnd;
             var loopDuration = loopEnd - loopStart;
@@ -427,23 +431,21 @@ namespace LeaMusicGui
             // Zoom to padded loo
             audioEngine.ZoomWaveForm(zoomFactor, paddedStart, paddedEnd);
 
-            // Update DTOs
+            //audioEngine.Update();
+
             var trackDTOList = new List<Memory<float>>();
             for (int i = 0; i < Project.Tracks.Count; i++)
             {
                 trackDTOList.Add(TimelineService.RequestSample(i, RenderWidth, paddedStart, paddedEnd));
             }
+            UpdateTrackDTO(trackDTOList);
+
+            CreateMarkerDTO();
 
             supressZoom = true;
             Zoom = zoomFactor;
             supressZoom = false;
-
-            audioEngine.Update();
-            UpdateTrackDTO(trackDTOList);
-
-            CreateMarkerDTO();
         }
-
 
         /// <summary>
         /// Performs a smooth zoom operation on the waveform based on mouse movement.
@@ -458,8 +460,6 @@ namespace LeaMusicGui
                 zoomMouseStartPosition = TimeSpan.FromSeconds(ConvertPixelToSecond(p.X, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)width));
                 zoomStartPositionSetOnce = true;
                 zoomStartMouseY = p.Y;
-
-
             }
 
             double zoomSensitivity = 0.002f;
@@ -474,7 +474,7 @@ namespace LeaMusicGui
             //Avoid crazy Zoom :D
             relativeScale = Math.Clamp(relativeScale, 0.5, 2.0);
 
-            double newZoomFactor = oldZoomFactor * relativeScale;
+            double newZoomFactor = Zoom * relativeScale;
             newZoomFactor = Math.Clamp(newZoomFactor, minZoom, maxZoom);
 
             supressZoom = true;
@@ -485,15 +485,11 @@ namespace LeaMusicGui
 
             UpdateWaveformDTO(RenderWidth);
             CreateMarkerDTO();
-
-            oldZoomFactor = newZoomFactor;
         }
 
         //TODO: LoopSelection is the wrong name, because this function make a Loop AND reposition the Playhead, find a better Solution
         public void LoopSelection(double startPixel, double endPixel, double renderWidth)
         {
-            Debug.WriteLine($"LoopStart: {startPixel}, Loop end {endPixel}");
-
             var startSec = TimeSpan.FromSeconds(ConvertPixelToSecond(startPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
             var endSec = TimeSpan.FromSeconds(ConvertPixelToSecond(endPixel, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
@@ -537,7 +533,7 @@ namespace LeaMusicGui
             foreach (var beatMarker in beatmarkers)
                 endSec = Helpers.ChechSnapping(audioEngine, renderWidth, beatMarker.Position, endSec, treshholdInMs: 10);
 
-            audioEngine.Loop(startSec, endSec);     
+            audioEngine.Loop(startSec, endSec);
         }
 
         public double ConvertPixelToSecond(double pixelPos, double viewStartTimeSec, double viewDurationSec, int renderWidth)
@@ -592,9 +588,6 @@ namespace LeaMusicGui
             audioEngine.Pause();
         }
 
-        [ObservableProperty]
-        bool isProjectLoading;
-
         [RelayCommand]
         private async Task LoadProjectFile()
         {
@@ -636,7 +629,7 @@ namespace LeaMusicGui
         [RelayCommand]
         private async Task Play()
         {
-            if(!IsProjectLoaded)
+            if (!IsProjectLoaded)
             {
                 StatusMessages = "Pleas load a Project...";
                 return;

@@ -303,7 +303,7 @@
                     <!--  Zoom Slider  -->
 
                     <StackPanel Grid.Row="1" HorizontalAlignment="Center">
-                        <TextBlock Foreground="White" HorizontalAlignment="Center" Text="{Binding Zoom, StringFormat={}{0:0.00}}" />
+                        <TextBlock Foreground="White" HorizontalAlignment="Center" Text="{Binding Zoom, Mode=TwoWay, StringFormat={}{0:0.00}}" />
                         <Slider
                             Width="120"
                             HorizontalAlignment="Left"

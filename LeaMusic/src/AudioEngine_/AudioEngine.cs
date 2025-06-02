@@ -97,14 +97,13 @@ namespace LeaMusic.src.AudioEngine_
         
         public void AddMarker(TimeSpan position, string text)
         {
-
             var m = new Marker(position , text);
             Project.AddTimeMarker(m);
         }
 
         public void ZoomWaveForm(double zoomFactor, TimeSpan start, TimeSpan end)
         {
-
+            Zoom = zoomFactor;
             ViewStartTime = start;
             ViewEndTime = end;
 
