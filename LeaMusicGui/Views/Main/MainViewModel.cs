@@ -390,6 +390,7 @@ namespace LeaMusicGui
                 audioEngine.ZoomWaveForm(value, audioEngine.CurrentPosition);
 
                 UpdateWaveformDTO(RenderWidth);
+
             }
         }
 
@@ -404,6 +405,46 @@ namespace LeaMusicGui
             zoomStartPositionSetOnce = false;
         }
 
+        [RelayCommand]
+        public void FitLoopToView()
+        {
+            var loopStart = audioEngine.LoopStart;
+            var loopEnd = audioEngine.LoopEnd;
+            var loopDuration = loopEnd - loopStart;
+
+            //Add Padding left and right 
+            double paddingFactor = 0.05;
+            var padding = TimeSpan.FromSeconds(loopDuration.TotalSeconds * paddingFactor);
+            var paddedStart = loopStart - padding;
+            var paddedEnd = loopEnd + padding;
+            paddedStart = TimeSpan.FromSeconds(Math.Max(0, paddedStart.TotalSeconds));
+            paddedEnd = TimeSpan.FromSeconds(Math.Min(audioEngine.TotalDuration.TotalSeconds, paddedEnd.TotalSeconds));
+
+            var paddedDuration = paddedEnd - paddedStart;
+
+            double zoomFactor = audioEngine.TotalDuration.TotalSeconds / paddedDuration.TotalSeconds;
+
+            // Zoom to padded loo
+            audioEngine.ZoomWaveForm(zoomFactor, paddedStart, paddedEnd);
+
+            // Update DTOs
+            var trackDTOList = new List<Memory<float>>();
+            for (int i = 0; i < Project.Tracks.Count; i++)
+            {
+                trackDTOList.Add(TimelineService.RequestSample(i, RenderWidth, paddedStart, paddedEnd));
+            }
+
+            supressZoom = true;
+            Zoom = zoomFactor;
+            supressZoom = false;
+
+            audioEngine.Update();
+            UpdateTrackDTO(trackDTOList);
+
+            CreateMarkerDTO();
+        }
+
+
         /// <summary>
         /// Performs a smooth zoom operation on the waveform based on mouse movement.
         /// The zoom is anchored at the horizontal position of the ZoomStart Position
@@ -417,6 +458,8 @@ namespace LeaMusicGui
                 zoomMouseStartPosition = TimeSpan.FromSeconds(ConvertPixelToSecond(p.X, audioEngine.ViewStartTime.TotalSeconds, audioEngine.ViewDuration.TotalSeconds, (int)width));
                 zoomStartPositionSetOnce = true;
                 zoomStartMouseY = p.Y;
+
+
             }
 
             double zoomSensitivity = 0.002f;

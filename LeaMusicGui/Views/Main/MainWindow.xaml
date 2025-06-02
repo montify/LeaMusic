@@ -270,6 +270,12 @@
                              Command="{Binding Path=JumpToLoopStartCommand}"
                              Content="LoopStart"
                              Style="{StaticResource ButtonPrimary}" />
+                        <Button  
+                               Margin="0,0,50,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Top"
+                               Command="{Binding Path=FitLoopToViewCommand}"
+                               Content="Fit Loop" />    
                         <TextBox
                              Width="40"
                              VerticalAlignment="Top"

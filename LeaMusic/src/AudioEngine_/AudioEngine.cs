@@ -102,10 +102,22 @@ namespace LeaMusic.src.AudioEngine_
             Project.AddTimeMarker(m);
         }
 
+        public void ZoomWaveForm(double zoomFactor, TimeSpan start, TimeSpan end)
+        {
+
+            ViewStartTime = start;
+            ViewEndTime = end;
+
+            ViewStartTime = TimeSpan.FromSeconds(Math.Max(0, ViewStartTime.TotalSeconds));
+            ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds));
+
+            OnLoopChange?.Invoke(LoopStart, LoopEnd);
+        }
+
         public TimeSpan halfViewWindow;
         public void ZoomWaveForm(double zoomFactor, TimeSpan zoomPosition)
         {
-           // Zoom = zoomFactor;
+            Zoom = zoomFactor;
 
             if (Zoom != 1)
             {
