@@ -60,8 +60,7 @@ namespace LeaMusic.src.AudioEngine_
             //TODO: Init can happen only once in wavOut Lifetime, this is a Hack lol
             try
             {
-                waveOut.Init(mixer);
-               
+                waveOut.Init(mixer); 
             }
             catch (Exception)
             {              
@@ -114,7 +113,7 @@ namespace LeaMusic.src.AudioEngine_
         }
 
         public TimeSpan halfViewWindow;
-        public void ZoomWaveForm(double zoomFactor, TimeSpan zoomPosition)
+        public void ZoomViewWindow(double zoomFactor, TimeSpan zoomPosition)
         {
             Zoom = zoomFactor;
 
@@ -141,7 +140,7 @@ namespace LeaMusic.src.AudioEngine_
         }
 
         //Used for Zoom with mouse
-        public void ZoomWaveFormRelative(double zoomFactor, TimeSpan zoomPosition)
+        public void ZoomViewWindowRelative(double zoomFactor, TimeSpan zoomPosition)
         {
             Zoom = zoomFactor;
 

@@ -328,7 +328,7 @@ namespace LeaMusicGui
             //scroll view when Playhead reach the end of the view
             if (audioEngine.CurrentPosition >= audioEngine.ViewEndTime)
             {
-                audioEngine.ZoomWaveForm(Zoom, audioEngine.CurrentPosition + audioEngine.halfViewWindow);
+                audioEngine.ZoomViewWindow(Zoom, audioEngine.CurrentPosition + audioEngine.halfViewWindow);
                 UpdateWaveformDTO(RenderWidth);
             }
         }
@@ -389,9 +389,9 @@ namespace LeaMusicGui
             //Supress is false when i zoom with Slider in the UI, because we want zoom in the CurrentPosition, not in the ZoomPosition(mouse)
             if (!supressZoom)
             {
-                audioEngine.ZoomWaveForm(value, audioEngine.CurrentPosition);
+                audioEngine.ZoomViewWindow(value, audioEngine.CurrentPosition);
 
-                UpdateWaveformDTO(RenderWidth)
+                UpdateWaveformDTO(RenderWidth);
             }
         }
 
@@ -481,7 +481,7 @@ namespace LeaMusicGui
             Zoom = newZoomFactor;
             supressZoom = false;
 
-            audioEngine.ZoomWaveFormRelative(newZoomFactor, zoomMouseStartPosition);
+            audioEngine.ZoomViewWindowRelative(newZoomFactor, zoomMouseStartPosition);
 
             UpdateWaveformDTO(RenderWidth);
             CreateMarkerDTO();
