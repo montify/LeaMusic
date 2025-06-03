@@ -97,10 +97,10 @@ namespace LeaMusic.src.AudioEngine_
         public void AddMarker(TimeSpan position, string text)
         {
             var m = new Marker(position , text);
-            Project.AddTimeMarker(m);
+            Project.AddBeatMarker(m);
         }
 
-        public void ZoomWaveForm(double zoomFactor, TimeSpan start, TimeSpan end)
+        public void ZoomViewWindow(double zoomFactor, TimeSpan start, TimeSpan end)
         {
             Zoom = zoomFactor;
             ViewStartTime = start;
@@ -192,8 +192,6 @@ namespace LeaMusic.src.AudioEngine_
 
         public int CalculateBpm(int beatsPerMeasure)
         {
-           
-
             var markers = Project.BeatMarkers;
             if (markers.Count < 2)
                 return 0;

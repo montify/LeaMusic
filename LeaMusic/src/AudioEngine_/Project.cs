@@ -142,7 +142,7 @@ namespace LeaMusic.src.AudioEngine_
         /// Adds a time marker to the track, which can be used for user orientation or BPM (beats per minute) detection.
         /// </summary>
         /// <param name="marker">The marker to add, representing a specific point in time within the track.</param>
-        public void AddTimeMarker(Marker marker)
+        public void AddBeatMarker(Marker marker)
         {
             BeatMarkers.Add(marker);
         }

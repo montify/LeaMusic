@@ -34,8 +34,9 @@
                         Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                         CommandParameter="{Binding}"
                         Content="D" />
-                    <TextBlock HorizontalAlignment="Center" Text="{Binding TrackID}" />
+                    <TextBlock  Foreground="White" HorizontalAlignment="Center" Text="{Binding TrackID}" />
                     <TextBlock
+                        Foreground="White"
                         Width="90"
                         Text="{Binding Name}"
                         TextTrimming="CharacterEllipsis"

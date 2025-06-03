@@ -21,7 +21,6 @@ namespace LeaMusic.src.AudioEngine_
         {
             waveformBuffer = waveform;
             WaveFormat = waveFormat;
-          
         }
 
 

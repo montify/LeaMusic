@@ -429,7 +429,7 @@ namespace LeaMusicGui
             double zoomFactor = audioEngine.TotalDuration.TotalSeconds / paddedDuration.TotalSeconds;
 
             // Zoom to padded loo
-            audioEngine.ZoomWaveForm(zoomFactor, paddedStart, paddedEnd);
+            audioEngine.ZoomViewWindow(zoomFactor, paddedStart, paddedEnd);
 
             //audioEngine.Update();
 
