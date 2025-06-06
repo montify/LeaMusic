@@ -483,6 +483,7 @@ namespace LeaMusicGui
 
             audioEngine.ZoomViewWindowRelative(newZoomFactor, zoomMouseStartPosition);
 
+           
             UpdateWaveformDTO(RenderWidth);
             CreateMarkerDTO();
         }

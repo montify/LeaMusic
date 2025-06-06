@@ -22,7 +22,7 @@ namespace LeaMusic.src.AudioEngine_
         public TimeSpan JumpToPosition;
 
         private MixingSampleProvider mixer;
-        private WaveOutEvent waveOut;
+     //   private WaveOutEvent waveOut;
         private Stopwatch sw = new Stopwatch();
         private TimeSpan m_oldPosition;
         private TimeSpan m_oldLoopStart = TimeSpan.FromSeconds(-1);
@@ -34,16 +34,20 @@ namespace LeaMusic.src.AudioEngine_
         public event Action<TimeSpan> OnProgressChange;
         public event Action<TimeSpan, TimeSpan> OnLoopChange;
 
+        PortAudioWaveOut portWavout;
+
         public AudioEngine()
         {
+            portWavout = new PortAudioWaveOut();
         }
 
         public void MountProject(Project project)
         {
             Zoom = 1;
 
-            waveOut?.Stop();
-            waveOut =  new WaveOutEvent();
+            // waveOut?.Stop();
+            //waveOut =  new WaveOutEvent();
+            portWavout = new PortAudioWaveOut();
             Project = project;
            
             TotalDuration = TimeSpan.FromSeconds(Project.Duration.TotalSeconds);
@@ -54,13 +58,14 @@ namespace LeaMusic.src.AudioEngine_
 
             ViewStartTime = TimeSpan.Zero;
             ViewEndTime = TotalDuration;
-            waveOut.DesiredLatency = 450;
-            Debug.WriteLine($"WavOut Latency: {waveOut.DesiredLatency}");
+           // waveOut.DesiredLatency = 450;
+           // Debug.WriteLine($"WavOut Latency: {waveOut.DesiredLatency}");
            
             //TODO: Init can happen only once in wavOut Lifetime, this is a Hack lol
             try
             {
-                waveOut.Init(mixer); 
+                // waveOut.Init(mixer); 
+                portWavout.Init(mixer);
             }
             catch (Exception)
             {              
@@ -210,18 +215,19 @@ namespace LeaMusic.src.AudioEngine_
         }
         public void Play()
         {
-            if (waveOut.PlaybackState == PlaybackState.Playing)
-                waveOut.Stop();
+            //if (waveOut.PlaybackState == PlaybackState.Playing)
+            //    waveOut.Stop();
 
-            waveOut.Play();
+            //waveOut.Play();
+            portWavout.Play();
             sw.Start();
         }
 
         public void Pause()
         {
-            if (waveOut.PlaybackState == PlaybackState.Playing)
-                waveOut.Pause();
-
+            //if (waveOut.PlaybackState == PlaybackState.Playing)
+            //    waveOut.Pause();
+            portWavout.Stop();
             sw.Stop();
         }
 
@@ -230,20 +236,20 @@ namespace LeaMusic.src.AudioEngine_
             Speed = speed;
 
             var old = CurrentPosition;
-            var oldPlaybackState = waveOut.PlaybackState;
+            //var oldPlaybackState = waveOut.PlaybackState;
 
-            if (waveOut.PlaybackState == PlaybackState.Playing)
-                Pause();
+            //if (waveOut.PlaybackState == PlaybackState.Playing)
+            //    Pause();
 
             ////hm this keeps palyhead in sync when slowdown while play
-            AudioJumpToSec(TimeSpan.FromSeconds(CurrentPosition.TotalMilliseconds + 1));
+        //    AudioJumpToSec(TimeSpan.FromSeconds(CurrentPosition.TotalMilliseconds + 1));
 
             Project.SetTempo(Math.Round(Speed, 2));
 
-            AudioJumpToSec(old);
+           // AudioJumpToSec(old);
 
-            if (oldPlaybackState == PlaybackState.Playing)
-                Play();
+            //if (oldPlaybackState == PlaybackState.Playing)
+            //    Play();
         }
 
         public void ChangePitch(int semitones)
@@ -256,16 +262,16 @@ namespace LeaMusic.src.AudioEngine_
 
         public void Replay()
         {
-            if (waveOut.PlaybackState == PlaybackState.Playing)
-            {
-                AudioJumpToSec(LoopStart);
-                Play();
-            }
+            //if (waveOut.PlaybackState == PlaybackState.Playing)
+            //{
+            //    AudioJumpToSec(LoopStart);
+            //    Play();
+            //}
         }
 
         public void Stop()
         {
-            waveOut?.Stop();
+            //waveOut?.Stop();
         }
 
         public void MuteTrack(int trackID)
@@ -312,11 +318,14 @@ namespace LeaMusic.src.AudioEngine_
         public void AudioJumpToSec(TimeSpan sec)
         {
 
-            if (waveOut == null)
+            //if (waveOut == null)
+            //    return;
+            if (portWavout == null)
                 return;
-
-             waveOut.Stop();
          
+            // waveOut.Stop();
+           
+           portWavout.Stop();
           
            // Project.ResetTracks();
             CurrentPosition = sec;
