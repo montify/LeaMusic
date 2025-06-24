@@ -1,4 +1,5 @@
-﻿using LeaMusic.Extensions;
+﻿using _LeaLog;
+using LeaMusic.Extensions;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Diagnostics;
@@ -54,15 +55,18 @@ namespace LeaMusic.src.AudioEngine_
             ViewStartTime = TimeSpan.Zero;
             ViewEndTime = TotalDuration;
             waveOut.DesiredLatency = 450;
-            Debug.WriteLine($"WavOut Latency: {waveOut.DesiredLatency}");
+           
+            LeaLog.Instance.LogErrorAsync($"Mount Project: {Project.Name}");
+
 
             //TODO: Init can happen only once in wavOut Lifetime, this is a Hack lol
             try
             {
                 waveOut.Init(mixer);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                LeaLog.Instance.LogErrorAsync($"Cant Init Audioengine: {e.Message}");
             }
         }
 

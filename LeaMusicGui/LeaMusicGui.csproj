@@ -27,4 +27,10 @@
 		<ProjectReference Include="..\LeaMusic\LeaMusic.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Reference Include="LeaLogClient">
+	    <HintPath>LeaLogClient.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
 </Project>

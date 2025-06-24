@@ -1,7 +1,9 @@
-﻿using LeaMusic.src.AudioEngine_;
+﻿using _LeaLog;
+using LeaMusic.src.AudioEngine_;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 
 namespace LeaMusic.src.ResourceManager_
@@ -70,9 +72,9 @@ namespace LeaMusic.src.ResourceManager_
                  track.OriginFilePath = projectFilePath.Path;
                 track.LoadAudioFile(projectFilePath.Path, resourceManager);
                 track.waveformProvider = ImportWaveform(track);
-                
-                Debug.WriteLine($"Create new Track, : {track.AudioFileName}");
 
+                LeaLog.Instance.LogInfoAsync($"Create new Track, : {track.AudioFileName}");
+                
                 return track;
             }
             else
@@ -88,7 +90,8 @@ namespace LeaMusic.src.ResourceManager_
             track.LoadAudioFile(audioFilePath, resourceManager);
             track.waveformProvider = LoadWaveform(projectPath, track);
 
-            Debug.WriteLine($"Load Existing Track: {track.AudioFileName}");
+            LeaLog.Instance.LogErrorAsync($"Load Existing Track: {track.AudioFileName}");
+         
             return track;
         }
 
@@ -174,7 +177,8 @@ namespace LeaMusic.src.ResourceManager_
                 }
             }
 
-            Debug.WriteLine($"Write WaveformBinary to: {path}");
+            LeaLog.Instance.LogErrorAsync($"Write WaveformBinary to: {path}");
+        
         }
 
         private float[] ReadWaveformBinary(string path)

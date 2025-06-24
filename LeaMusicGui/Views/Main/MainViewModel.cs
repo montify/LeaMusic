@@ -1,5 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using _LeaLog;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LeaLogClient;
 using LeaMusic.src.AudioEngine_;
 using LeaMusic.src.ResourceManager_;
 using LeaMusic.src.ResourceManager_.GoogleDrive_;
@@ -96,9 +98,12 @@ namespace LeaMusicGui
             Project = Project.CreateEmptyProject("TEST");
             ProjectName = "NOT SET";
 
+            LeaLog.Instance.LogInfoAsync("Init Default Project");
+
             resourceHandler = new FileHandler();
 
             audioEngine.MountProject(Project);
+
             audioEngine.OnUpdate += AudioEngine_OnPlayHeadChange;
             audioEngine.OnProgressChange += AudioEngine_OnProgressChange;
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;
@@ -212,6 +217,7 @@ namespace LeaMusicGui
                 CreateTrackDTO();
                 CreateMarkerDTO();
 
+                LeaLog.Instance.LogInfoAsync($"Load Project: {Project.Name}");
                 //Prevent when user doubleclick, that WPF register as a mouseclick
                 await Task.Delay(100);
 

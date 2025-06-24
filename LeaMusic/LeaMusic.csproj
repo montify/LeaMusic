@@ -21,4 +21,10 @@
     <PackageReference Include="rubberband-sharp.NAudio" Version="1.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="LeaLogClient">
+      <HintPath>..\LeaMusicGui\LeaLogClient.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

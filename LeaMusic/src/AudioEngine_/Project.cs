@@ -1,5 +1,7 @@
-﻿using NAudio.Wave;
+﻿using _LeaLog;
+using NAudio.Wave;
 using System.Diagnostics;
+using System.IO;
 
 namespace LeaMusic.src.AudioEngine_
 {
@@ -25,7 +27,9 @@ namespace LeaMusic.src.AudioEngine_
             var project = new Project(name);
             project.WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
             project.Duration = TimeSpan.FromSeconds(1);
-            
+
+            LeaLog.Instance.LogInfoAsync($"Project: Create Empty Project");
+
             return project;
         }
 
@@ -67,10 +71,10 @@ namespace LeaMusic.src.AudioEngine_
 
             if (track.Waveformat.SampleRate != WaveFormat.SampleRate)
                 throw new Exception("Waveformat must be the same for all Tracks");
+         
 
-            Debug.WriteLine("Track ADDED");
+            LeaLog.Instance.LogErrorAsync($"Track Added: {track.Name}");
 
-           
             Tracks.Add(track);
         }
 
@@ -88,6 +92,7 @@ namespace LeaMusic.src.AudioEngine_
             {
                 track.rubberBandWaveStream.Tempo = speed;
             }
+            LeaLog.Instance.LogInfoAsync($"Project: SetTempo: {speed}");
         }
 
         /// <summary>
@@ -96,11 +101,14 @@ namespace LeaMusic.src.AudioEngine_
         /// </summary>
         public void ResetTracks()
         {
+           
             foreach (var track in Tracks)
             {
                 track.rubberBandWaveStream.Reset();
-               
             }
+
+            LeaLog.Instance.LogInfoAsync($"Project: ResetTracks");
+
         }
 
         /// <summary>
@@ -115,6 +123,8 @@ namespace LeaMusic.src.AudioEngine_
             {
                 track.rubberBandWaveStream.SeekTo(position - offset);
             }
+
+            LeaLog.Instance.LogInfoAsync($"Project: JumpToSeconds: {position}");
         }
 
         /// <summary>
@@ -128,6 +138,7 @@ namespace LeaMusic.src.AudioEngine_
         /// <exception cref="Exception"></exception>
         public Memory<float> RequestSample(int trackId, double viewStartTimeSec, double viewEndTimeSec, int renderWidth)
         {
+            LeaLog.Instance.LogInfoAsync($"Project: RequestSample: ViewStart: {viewStartTimeSec}, ViewEnd: {viewEndTimeSec}, RenderWidth: {renderWidth}");
             if (Tracks.Count == 0)
                 return default;
 
@@ -143,7 +154,8 @@ namespace LeaMusic.src.AudioEngine_
         /// </summary>
         /// <param name="marker">The marker to add, representing a specific point in time within the track.</param>
         public void AddBeatMarker(Marker marker)
-        {
+        { 
+            LeaLog.Instance.LogInfoAsync($"Add Beatmarker ID: {marker.ID} at {marker.Position}");
             BeatMarkers.Add(marker);
         }
 
@@ -154,6 +166,7 @@ namespace LeaMusic.src.AudioEngine_
             if (marker != null)
             {
                 BeatMarkers.Remove(marker);
+                LeaLog.Instance.LogInfoAsync($"Delete Beatmarker ID: {marker.ID} at {marker.Position}");
             }
         }
 

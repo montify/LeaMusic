@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using _LeaLog;
+using SkiaSharp;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -77,7 +78,7 @@ namespace LeaMusicGui.Controls
 
         public void UpdateImage()
         {
-
+            LeaLog.Instance.LogInfoAsync($"WaveFormControl: UpdateImage");
             canvas = surface.Canvas;
             canvas.Clear(SKColor.Parse("#424651"));
 
@@ -165,17 +166,17 @@ namespace LeaMusicGui.Controls
             set => SetValue(ZoomProperty, value);
         }
 
-        public float SelectionStartPercentage
-        {
-            get => (float)GetValue(SelectionStartProperty);
-            set => SetValue(SelectionStartProperty, value);
-        }
+        //public float SelectionStartPercentage
+        //{
+        //    get => (float)GetValue(SelectionStartProperty);
+        //    set => SetValue(SelectionStartProperty, value);
+        //}
 
-        public float SelectionEndPercentage
-        {
-            get => (float)GetValue(SelectionEndProperty);
-            set => SetValue(SelectionEndProperty, value);
-        }
+        //public float SelectionEndPercentage
+        //{
+        //    get => (float)GetValue(SelectionEndProperty);
+        //    set => SetValue(SelectionEndProperty, value);
+        //}
 
 
         private static void WaveFormRedraw(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -184,8 +185,7 @@ namespace LeaMusicGui.Controls
             {
                 if (e.OldValue != e.NewValue)
                 {
-                   // Debug.WriteLine("Redraw Waveform");
-                    control.InvalidateVisual();
+                    //control.InvalidateVisual();
                     control.UpdateImage();
                 }
             }
@@ -195,6 +195,8 @@ namespace LeaMusicGui.Controls
 
         private void Resize()
         {
+            LeaLog.Instance.LogInfoAsync($"WaveFormControl: Resize");
+
             if (ActualWidth == 0)
                 return;
 
@@ -212,8 +214,6 @@ namespace LeaMusicGui.Controls
                 width = (int)WriteableBitmap.Width;
                 height = (int)WriteableBitmap.Height;
 
-                Debug.WriteLine($"BitmapWidth: {width}");
-
                 var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
 
                 surface = SKSurface.Create(info);
@@ -223,8 +223,7 @@ namespace LeaMusicGui.Controls
                
 
                 oldZoom = vm.Zoom;
-
-                Debug.WriteLine($"RenderWidth WaveformControl.cs: {ActualWidth}");
+ 
                 vm.Zoom = oldZoom+0.1f;
                 vm.Zoom = oldZoom;
                 
@@ -232,13 +231,21 @@ namespace LeaMusicGui.Controls
             }
         }
 
+        private Size _lastSize;
+
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
-            if (sizeInfo.NewSize.Width < 1)
+            // Skip invalid sizes
+            if (sizeInfo.NewSize.Width < 1 || sizeInfo.NewSize.Height < 1)
                 return;
 
-            if (_resizeTimer.IsEnabled || sizeInfo.NewSize.Width < 1)
+            // Avoid redundant resizing
+            if (_lastSize.Width == sizeInfo.NewSize.Width)
                 return;
+
+            _lastSize = sizeInfo.NewSize;
+
+            LeaLog.Instance.LogInfoAsync($"WaveFormControl: OnRenderSizeChanged:  OldSize: {_lastSize} | NewSize: {sizeInfo.NewSize}");
 
             _resizeTimer.Stop();
             _resizeTimer.Start();
@@ -268,15 +275,15 @@ namespace LeaMusicGui.Controls
             typeof(WaveformControl),
             new FrameworkPropertyMetadata(1.0f, FrameworkPropertyMetadataOptions.AffectsRender, null));
 
-        public static readonly DependencyProperty SelectionStartProperty =
-         DependencyProperty.Register(nameof(SelectionStartPercentage), typeof(float),
-         typeof(WaveformControl),
-         new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, WaveFormRedraw));
+        //public static readonly DependencyProperty SelectionStartProperty =
+        // DependencyProperty.Register(nameof(SelectionStartPercentage), typeof(float),
+        // typeof(WaveformControl),
+        // new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, WaveFormRedraw));
 
-        public static readonly DependencyProperty SelectionEndProperty =
-         DependencyProperty.Register(nameof(SelectionEndPercentage), typeof(float),
-         typeof(WaveformControl),
-         new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, WaveFormRedraw));
+        //public static readonly DependencyProperty SelectionEndProperty =
+        // DependencyProperty.Register(nameof(SelectionEndPercentage), typeof(float),
+        // typeof(WaveformControl),
+        // new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, WaveFormRedraw));
 
 
         public object ParentViewModel

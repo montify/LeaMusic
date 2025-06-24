@@ -1,5 +1,7 @@
-﻿using LeaMusicGui.Controls;
+﻿using _LeaLog;
+using LeaMusicGui.Controls;
 using LeaMusicGui.Views.DialogServices;
+using NAudio.Wave;
 using System.Diagnostics;
 using System.Printing;
 using System.Windows;
@@ -58,7 +60,8 @@ public partial class MainWindow : Window
             selectionRange = new SelectionRange();
             selectionRange.Start = (float)mousePosition.X;
 
-            Debug.WriteLine($"MouseDownRIGHT: {mousePosition.X}");
+         
+            LeaLog.Instance.LogInfoAsync($"MainCanvas_MouseLeftButtonDown: {mousePosition.X}");
         }
     }
 
@@ -99,6 +102,8 @@ public partial class MainWindow : Window
 
             selectionRange.End = (float)mousePosition.X;
 
+            LeaLog.Instance.LogInfoAsync($"LoopSelection Start: {selectionRange.Start}, End: {selectionRange.End}");
+
             viewModel.LoopSelection(selectionRange.Start, selectionRange.End, childControl.ActualWidth);
         }
 
@@ -125,6 +130,9 @@ public partial class MainWindow : Window
         {
             if (e.NewSize.Width != vm.RenderWidth)
                 vm.RenderWidth = (int)e.NewSize.Width;
+
+            LeaLog.Instance.LogInfoAsync($"MainCanvas_SizeChanged to {e.NewSize.Width}"); 
+
         }
     }
 
