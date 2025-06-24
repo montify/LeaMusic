@@ -110,10 +110,11 @@ namespace LeaMusic.src.AudioEngine_
         /// <param name="position">The target time position to jump to</param>
         public void JumpToSeconds(TimeSpan position)
         {
+            var offset = TimeSpan.FromMilliseconds(29);
+
             foreach (var track in Tracks)
             {
-                track.rubberBandWaveStream.SeekTo(position);
-              //  track.loopStream.JumpToSeconds(position.TotalSeconds);
+                track.rubberBandWaveStream.SeekTo(position - offset);
             }
         }
 
