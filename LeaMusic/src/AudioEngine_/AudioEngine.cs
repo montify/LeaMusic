@@ -1,5 +1,4 @@
 ﻿using LeaMusic.Extensions;
-using NAudio.Utils;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Diagnostics;
@@ -43,27 +42,27 @@ namespace LeaMusic.src.AudioEngine_
             Zoom = 1;
 
             waveOut?.Stop();
-            waveOut =  new WaveOutEvent();
+            waveOut = new WaveOutEvent();
             Project = project;
-           
+
             TotalDuration = TimeSpan.FromSeconds(Project.Duration.TotalSeconds);
-            
+
             mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
-            
+
             ReloadMixerInputs();
 
             ViewStartTime = TimeSpan.Zero;
             ViewEndTime = TotalDuration;
             waveOut.DesiredLatency = 450;
             Debug.WriteLine($"WavOut Latency: {waveOut.DesiredLatency}");
-           
+
             //TODO: Init can happen only once in wavOut Lifetime, this is a Hack lol
             try
             {
-                waveOut.Init(mixer); 
+                waveOut.Init(mixer);
             }
             catch (Exception)
-            {              
+            {
             }
         }
 
@@ -93,10 +92,10 @@ namespace LeaMusic.src.AudioEngine_
                 mixer.AddMixerInput(track.volumeStream);
             }
         }
-        
+
         public void AddMarker(TimeSpan position, string text)
         {
-            var m = new Marker(position , text);
+            var m = new Marker(position, text);
             Project.AddBeatMarker(m);
         }
 
@@ -127,14 +126,13 @@ namespace LeaMusic.src.AudioEngine_
                 ViewEndTime = zoomPosition + halfViewWindow;
 
                 ViewStartTime = TimeSpan.FromSeconds(Math.Max(0, ViewStartTime.TotalSeconds));
-                ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds)); 
+                ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds));
             }
             else
             {
                 ViewStartTime = TimeSpan.FromSeconds(0);
                 ViewEndTime = TimeSpan.FromSeconds(TotalDuration.TotalSeconds);
             }
-
 
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
         }
@@ -151,7 +149,7 @@ namespace LeaMusic.src.AudioEngine_
 
                 double relativePos = (zoomPosition - ViewStartTime) / ViewDuration;
 
-                ViewStartTime = zoomPosition- timeWindow * relativePos;
+                ViewStartTime = zoomPosition - timeWindow * relativePos;
                 ViewEndTime = ViewStartTime + timeWindow;
 
                 // New view start time to keep zoomPosition at the same relative position
@@ -184,7 +182,7 @@ namespace LeaMusic.src.AudioEngine_
             ViewEndTime = end;
 
             UpdateLoop();
- 
+
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
 
             oldScrollValue = scrollFactor;
@@ -251,7 +249,7 @@ namespace LeaMusic.src.AudioEngine_
             var pitch = Math.Pow(2.0, semitones / 12.0);
 
             foreach (var track in Project.Tracks)
-                track.rubberBandWaveStream.SetPitch(pitch);  
+                track.rubberBandWaveStream.SetPitch(pitch);
         }
 
         public void Replay()
@@ -271,12 +269,12 @@ namespace LeaMusic.src.AudioEngine_
         public void MuteTrack(int trackID)
         {
 
-          var track = Project.Tracks.Where(t => t.ID == trackID).FirstOrDefault();
+            var track = Project.Tracks.Where(t => t.ID == trackID).FirstOrDefault();
 
             if (track == null)
                 return;
 
-            if(track.IsMuted)
+            if (track.IsMuted)
             {
                 track.SetVolumte(1);
                 track.IsMuted = false;
@@ -290,7 +288,7 @@ namespace LeaMusic.src.AudioEngine_
 
         public void MuteAllTracks()
         {
-            if(Project.IsAllTracksMuted == false)
+            if (Project.IsAllTracksMuted == false)
             {
                 foreach (var track in Project.Tracks)
                 {
@@ -315,39 +313,20 @@ namespace LeaMusic.src.AudioEngine_
             if (waveOut == null)
                 return;
 
-             waveOut.Stop();
-         
-          
-           // Project.ResetTracks();
+            waveOut.Stop();
+
+
+            // Project.ResetTracks();
             CurrentPosition = sec;
 
             sw.Reset();
             InitStart = sec;
 
             Project.JumpToSeconds(sec);
-            
+
             LastUpdateTime = TimeSpan.Zero;
             AccumulatedProgress = TimeSpan.Zero;
         }
-
-        //public void TurnLoopAround(TimeSpan sec)
-        //{
-        //    waveOut.Stop();
-
-           
-        //    // Project.ResetTracks();
-        //    CurrentPosition = sec;
-
-        //    sw.Reset();
-        //    InitStart = sec;
-
-        //    Project.JumpToSeconds(sec);
-            
-        //    LastUpdateTime = TimeSpan.Zero;
-        //    AccumulatedProgress = TimeSpan.Zero;
-        //    waveOut.Play();
-        //}
-
 
         public void Loop(TimeSpan startSec, TimeSpan endSec)
         {
@@ -363,11 +342,7 @@ namespace LeaMusic.src.AudioEngine_
             LoopStart = startSec;
             LoopEnd = endSec;
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
-
-            // AudioJumpToSec(startSec);
-            // Play();
         }
-
         private void CalculateProgress()
         {
             TimeSpan now = sw.Elapsed;
@@ -406,7 +381,5 @@ namespace LeaMusic.src.AudioEngine_
                 LoopEnd = TimeSpan.Zero;
             }
         }
-
-     
     }
 }

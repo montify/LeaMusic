@@ -73,6 +73,7 @@ namespace LeaMusicGui
         private LeaResourceManager resourceManager;
         private Project Project { get; set; }
         private bool isSyncEnabled { get; set; } = true;
+
         //is used when Zoom with mouse, to prevent to fetch waveform twice
         public bool supressZoom;
         private IResourceHandler resourceHandler;
@@ -93,12 +94,11 @@ namespace LeaMusicGui
 
             //Create Empty Project for StartUp
             Project = Project.CreateEmptyProject("TEST");
-            // Project.AddTrack(new Track("C:\\Users\\alexlapi\\Desktop\\v1\\AudioFiles\\Hairflip.mp3"));
             ProjectName = "NOT SET";
+
             resourceHandler = new FileHandler();
 
             audioEngine.MountProject(Project);
-
             audioEngine.OnUpdate += AudioEngine_OnPlayHeadChange;
             audioEngine.OnProgressChange += AudioEngine_OnProgressChange;
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;
@@ -181,8 +181,8 @@ namespace LeaMusicGui
 
 
                 if (isSyncEnabled &&
-                    gDriveMetaData?.lastSavedAt > fileMetaData?.lastSavedAt &&
-                      DialogService.AskDownloadGoogleDrive(localDate: fileMetaData.lastSavedAt, googleDriveDate: gDriveMetaData.lastSavedAt))
+                        gDriveMetaData?.lastSavedAt > fileMetaData?.lastSavedAt &&
+                        DialogService.AskDownloadGoogleDrive(localDate: fileMetaData.lastSavedAt, googleDriveDate: gDriveMetaData.lastSavedAt))
                 {
                     StatusMessages = $"Download Project: {projectName} from google Drive";
                     var gdriveLocation = new GDriveLocation("LeaRoot", dialogResult, projectName);
@@ -365,7 +365,6 @@ namespace LeaMusicGui
         {
             if (Project != null)
                 Project.Name = value;
-
         }
 
         partial void OnScrollChanged(double value)
@@ -404,47 +403,6 @@ namespace LeaMusicGui
         public void ResetZoomParameter()
         {
             zoomStartPositionSetOnce = false;
-        }
-
-        [RelayCommand]
-        public void FitLoopToView()
-        {
-            if (audioEngine.LoopEnd - audioEngine.LoopStart <= TimeSpan.Zero)
-                return;
-
-            var loopStart = audioEngine.LoopStart;
-            var loopEnd = audioEngine.LoopEnd;
-            var loopDuration = loopEnd - loopStart;
-
-            //Add Padding left and right 
-            double paddingFactor = 0.05;
-            var padding = TimeSpan.FromSeconds(loopDuration.TotalSeconds * paddingFactor);
-            var paddedStart = loopStart - padding;
-            var paddedEnd = loopEnd + padding;
-            paddedStart = TimeSpan.FromSeconds(Math.Max(0, paddedStart.TotalSeconds));
-            paddedEnd = TimeSpan.FromSeconds(Math.Min(audioEngine.TotalDuration.TotalSeconds, paddedEnd.TotalSeconds));
-
-            var paddedDuration = paddedEnd - paddedStart;
-
-            double zoomFactor = audioEngine.TotalDuration.TotalSeconds / paddedDuration.TotalSeconds;
-
-            // Zoom to padded loo
-            audioEngine.ZoomViewWindow(zoomFactor, paddedStart, paddedEnd);
-
-            //audioEngine.Update();
-
-            var trackDTOList = new List<Memory<float>>();
-            for (int i = 0; i < Project.Tracks.Count; i++)
-            {
-                trackDTOList.Add(TimelineService.RequestSample(i, RenderWidth, paddedStart, paddedEnd));
-            }
-            UpdateTrackDTO(trackDTOList);
-
-            CreateMarkerDTO();
-
-            supressZoom = true;
-            Zoom = zoomFactor;
-            supressZoom = false;
         }
 
         /// <summary>
@@ -545,10 +503,52 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
+        public void FitLoopToView()
+        {
+            if (audioEngine.LoopEnd - audioEngine.LoopStart <= TimeSpan.Zero)
+                return;
+
+            var loopStart = audioEngine.LoopStart;
+            var loopEnd = audioEngine.LoopEnd;
+            var loopDuration = loopEnd - loopStart;
+
+            //Add Padding left and right 
+            double paddingFactor = 0.05;
+            var padding = TimeSpan.FromSeconds(loopDuration.TotalSeconds * paddingFactor);
+            var paddedStart = loopStart - padding;
+            var paddedEnd = loopEnd + padding;
+            paddedStart = TimeSpan.FromSeconds(Math.Max(0, paddedStart.TotalSeconds));
+            paddedEnd = TimeSpan.FromSeconds(Math.Min(audioEngine.TotalDuration.TotalSeconds, paddedEnd.TotalSeconds));
+
+            var paddedDuration = paddedEnd - paddedStart;
+
+            double zoomFactor = audioEngine.TotalDuration.TotalSeconds / paddedDuration.TotalSeconds;
+
+            // Zoom to padded loo
+            audioEngine.ZoomViewWindow(zoomFactor, paddedStart, paddedEnd);
+
+            //audioEngine.Update();
+
+            var trackDTOList = new List<Memory<float>>();
+            for (int i = 0; i < Project.Tracks.Count; i++)
+            {
+                trackDTOList.Add(TimelineService.RequestSample(i, RenderWidth, paddedStart, paddedEnd));
+            }
+            UpdateTrackDTO(trackDTOList);
+
+            CreateMarkerDTO();
+
+            supressZoom = true;
+            Zoom = zoomFactor;
+            supressZoom = false;
+        }
+
+        [RelayCommand]
         private async Task MarkerClick(MarkerDTO marker)
         {
             currentMarkerID = marker.Marker.ID;
         }
+
         [RelayCommand]
         private async Task MarkerDelete(MarkerDTO marker)
         {

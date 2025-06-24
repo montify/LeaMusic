@@ -4,7 +4,6 @@
     public class Marker
     {
         public static int UNIQUE_ID = 0;
-
         public int ID { get; set; }
         public TimeSpan Position { get; set; }
         public string Description { get; set; }
@@ -15,6 +14,5 @@
             Description = description;
             ID = ++UNIQUE_ID;
         }
-
     }
 }

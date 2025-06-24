@@ -48,17 +48,6 @@ namespace LeaMusic.src.AudioEngine_
                 start = Math.Max(0, start);
                 end = Math.Min(waveformBuffer.Length, end);
 
-                //if (start < end)
-                //{
-                //    var samples = waveformBuffer[start..end];
-                //    resultSamples[i] = samples.Max();
-                //}
-                //else
-                //{
-                //    resultSamples[i] = 0f;
-                //}
-
-
                 //Better Version no GC pressure 
                 if (start < end)
                 {

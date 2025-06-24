@@ -26,7 +26,7 @@ namespace LeaMusic.src.AudioEngine_
             project.WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
             project.Duration = TimeSpan.FromSeconds(1);
             
-           return project;
+            return project;
         }
 
         public Project()
@@ -62,7 +62,6 @@ namespace LeaMusic.src.AudioEngine_
                 Duration = track.ClipDuration;
             }
                
-
             if(track.ClipDuration != Duration)
                 throw new Exception("Track Length/Duration must be the same for all Tracks");
 
@@ -157,7 +156,6 @@ namespace LeaMusic.src.AudioEngine_
                 BeatMarkers.Remove(marker);
             }
         }
-
 
         public void Dispose()
         {

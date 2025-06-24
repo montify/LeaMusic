@@ -29,7 +29,6 @@ namespace LeaMusic.src.AudioEngine_
 
         public bool IsMuted { get; set; }
 
-
         public Track()
         {
         }

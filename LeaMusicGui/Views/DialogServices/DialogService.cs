@@ -11,7 +11,7 @@ namespace LeaMusicGui.Views.DialogServices
             return dialog.ShowDialog() == DialogResult.OK ? dialog.FileName : null;
 
         }
-        
+
         public string? Save()
         {
             var saveDialog = new FolderBrowserDialog();
@@ -20,7 +20,7 @@ namespace LeaMusicGui.Views.DialogServices
 
         public bool EnableSync()
         {
-            var result =  System.Windows.MessageBox.Show("Do you want to Sync with GoogleDrive?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = System.Windows.MessageBox.Show("Do you want to Sync with GoogleDrive?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
                 return true;
@@ -37,7 +37,5 @@ namespace LeaMusicGui.Views.DialogServices
             else
                 return false;
         }
-
     }
-
 }
