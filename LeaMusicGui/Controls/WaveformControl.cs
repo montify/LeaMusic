@@ -1,6 +1,4 @@
-﻿using _LeaLog;
-using SkiaSharp;
-using System.Diagnostics;
+﻿using SkiaSharp;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -78,7 +76,6 @@ namespace LeaMusicGui.Controls
 
         public void UpdateImage()
         {
-            LeaLog.Instance.LogInfoAsync($"WaveFormControl: UpdateImage");
             canvas = surface.Canvas;
             canvas.Clear(SKColor.Parse("#424651"));
 
@@ -195,7 +192,7 @@ namespace LeaMusicGui.Controls
 
         private void Resize()
         {
-            LeaLog.Instance.LogInfoAsync($"WaveFormControl: Resize");
+            //LeaLog.Instance.LogInfoAsync($"WaveFormControl: Resize");
 
             if (ActualWidth == 0)
                 return;
@@ -245,7 +242,7 @@ namespace LeaMusicGui.Controls
 
             _lastSize = sizeInfo.NewSize;
 
-            LeaLog.Instance.LogInfoAsync($"WaveFormControl: OnRenderSizeChanged:  OldSize: {_lastSize} | NewSize: {sizeInfo.NewSize}");
+            //LeaLog.Instance.LogInfoAsync($"WaveFormControl: OnRenderSizeChanged:  OldSize: {_lastSize} | NewSize: {sizeInfo.NewSize}");
 
             _resizeTimer.Stop();
             _resizeTimer.Start();
