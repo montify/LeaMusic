@@ -27,10 +27,12 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        if (DataContext is MainViewModel vm)
-        {
-            vm.DialogService = new DialogService();
-        }
+        //DataContext = new MainViewModel();
+        
+        //if (DataContext is MainViewModel vm)
+        //{
+        //    vm.DialogService = new DialogService();
+        //}
     }
 
     public record class SelectionRange

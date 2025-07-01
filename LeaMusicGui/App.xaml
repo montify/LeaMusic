@@ -1,8 +1,8 @@
 ﻿<Application x:Class="LeaMusicGui.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:LeaMusicGui"
-             StartupUri="Views/Main/MainWindow.xaml">
+             xmlns:local="clr-namespace:LeaMusicGui">
+
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

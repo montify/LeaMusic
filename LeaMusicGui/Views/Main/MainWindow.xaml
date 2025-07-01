@@ -17,9 +17,9 @@
     KeyDown="Window_KeyDown"
     MouseUp="Window_MouseUp"
     mc:Ignorable="d">
-    <Window.DataContext>
+    <!--<Window.DataContext>
         <local:MainViewModel />
-    </Window.DataContext>
+    </Window.DataContext>-->
 
     <Window.Resources>
         <local1:LoopWidthPercentageConverter x:Key="LoopWidthPercentageConverter" />

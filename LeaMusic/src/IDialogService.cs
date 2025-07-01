@@ -1,4 +1,4 @@
-﻿namespace LeaMusicGui.Views.DialogServices
+﻿namespace LeaMusic.src.AudioEngine_
 {
     public interface IDialogService
     {
