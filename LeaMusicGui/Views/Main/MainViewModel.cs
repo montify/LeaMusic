@@ -62,6 +62,9 @@ namespace LeaMusicGui
         [ObservableProperty]
         bool isProjectLoading;
 
+        public bool isLoopBeginDragLeftHandle;
+        public bool isLoopBeginDragRightHandle;
+        public bool isMarkerMoving;
         public ObservableCollection<TrackDTO> WaveformWrappers { get; set; } = new ObservableCollection<TrackDTO>();
         public ObservableCollection<MarkerDTO> TestMarkers { get; set; } = new ObservableCollection<MarkerDTO>();
 
@@ -400,7 +403,7 @@ namespace LeaMusicGui
             // TODO: Optimize — stop looping through beat markers once the nearest valid point is found.
             // TODO: Should the snapping logic be moved to the code-behind?
             foreach (var beatMarker in beatmarkers)
-                startSec = Helpers.ChechSnapping(AudioEngine, renderWidth, beatMarker.Position, startSec, treshholdInMs: 10);
+                startSec = Helpers.CheckSnapping(AudioEngine, renderWidth, beatMarker.Position, startSec, treshholdInMs: 10);
 
             AudioEngine.Loop(startSec, endSec);
         }
@@ -414,7 +417,7 @@ namespace LeaMusicGui
             // TODO: Optimize — stop looping through beat markers once the nearest valid point is found.
             // TODO: Should the snapping logic be moved to the code-behind?
             foreach (var beatMarker in beatmarkers)
-                endSec = Helpers.ChechSnapping(AudioEngine, renderWidth, beatMarker.Position, endSec, treshholdInMs: 10);
+                endSec = Helpers.CheckSnapping(AudioEngine, renderWidth, beatMarker.Position, endSec, treshholdInMs: 10);
 
             AudioEngine.Loop(startSec, endSec);
         }

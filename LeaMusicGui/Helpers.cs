@@ -1,10 +1,11 @@
 ﻿using LeaMusic.src.AudioEngine_;
+using System.Windows;
 
 namespace LeaMusicGui
 {
     internal class Helpers
     {
-        public static TimeSpan ChechSnapping(AudioEngine audioEngine, double renderWidth, TimeSpan markerPosition, TimeSpan checkPosition, double treshholdInMs)
+        public static TimeSpan CheckSnapping(AudioEngine audioEngine, double renderWidth, TimeSpan markerPosition, TimeSpan checkPosition, double treshholdInMs)
         {
             var beatmarkers = audioEngine.Project.BeatMarkers;
             var endLoopPosition = checkPosition;
@@ -14,8 +15,11 @@ namespace LeaMusicGui
 
             if (diff < snapTimeThreshold)
                 checkPosition = markerPosition;
-         
+
             return checkPosition;
         }
+
+        public static UIElement? DraggedElement { get; set; } = null;
+
     }
 }

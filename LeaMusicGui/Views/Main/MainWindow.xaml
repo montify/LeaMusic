@@ -7,6 +7,8 @@
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:LeaMusicGui"
     xmlns:local1="clr-namespace:LeaMusicGui.Converters"
+    xmlns:behaviors="clr-namespace:LeaMusicGui.Behaviors"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:trackcontrol_="clr-namespace:LeaMusicGui.Controls.TrackControl_"
     Title="{Binding ProjectName}"
@@ -15,12 +17,8 @@
     MinWidth="1334"
     MinHeight="800"
     KeyDown="Window_KeyDown"
-    MouseUp="Window_MouseUp"
     mc:Ignorable="d">
-    <!--<Window.DataContext>
-        <local:MainViewModel />
-    </Window.DataContext>-->
-
+ 
     <Window.Resources>
         <local1:LoopWidthPercentageConverter x:Key="LoopWidthPercentageConverter" />
         <local1:PlayheadPercentageOffsetMultiConverter x:Key="PlayheadPercentageOffsetMultiConverter" />
@@ -95,19 +93,22 @@
                     VerticalAlignment="Top"
                     Background="Transparent"
                     IsHitTestVisible="True"
-                    MouseLeftButtonDown="MainCanvas_MouseLeftButtonDown"
-                    MouseLeftButtonUp="MainCanvas_MouseLeftButtonUp"
-                    MouseMove="MainCanvas_MouseMove"
-                    MouseRightButtonDown="MainCanvas_MouseRightButtonDown"
+                
                     SizeChanged="MainCanvas_SizeChanged">
+
+                    <i:Interaction.Behaviors>
+                        <behaviors:TimelineInteractionBehavior ViewModel="{Binding}" />
+                    </i:Interaction.Behaviors>
 
                     <!--  LOOP  -->
                     <control:LoopControl
                         Width="1"
-                        IsHitTestVisible="True"
-                        MouseDown="LoopControl_MouseDown"
-                        MouseLeave="LoopControl_MouseLeave"
-                        MouseMove="LoopControl_MouseMove">
+                        IsHitTestVisible="True">
+
+                        <i:Interaction.Behaviors>
+                            <behaviors:LoopBehavior ViewModel="{Binding}"/>
+                        </i:Interaction.Behaviors>
+
                         <control:LoopControl.RenderTransform>
                             <TransformGroup>
                                 <!--  width  -->
@@ -167,9 +168,12 @@
                                         Background="DarkRed"
                                         Content="{Binding Marker.Description}"
                                         Foreground="White"
-                                        PreviewMouseRightButtonDown="Marker_MouseRightButtonDown"
                                         RenderTransformOrigin="0.5,0"
                                         Visibility="{Binding Visible, Converter={StaticResource BoolToVis}}">
+
+                                        <i:Interaction.Behaviors>
+                                            <behaviors:BeatMarkerBehavior ViewModel="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"/>
+                                        </i:Interaction.Behaviors>
 
                                         <Button.InputBindings>
                                             <MouseBinding
@@ -224,7 +228,7 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            
+
             <StackPanel >
                 <Grid HorizontalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
@@ -275,7 +279,7 @@
                                HorizontalAlignment="Left"
                                VerticalAlignment="Top"
                                Command="{Binding Path=FitLoopToViewCommand}"
-                               Content="Fit Loop" />    
+                               Content="Fit Loop" />
                         <TextBox
                              Width="40"
                              VerticalAlignment="Top"
@@ -352,23 +356,5 @@
             <TextBlock HorizontalAlignment="Center" Foreground="White" Text="{Binding StatusMessages}" />
         </StackPanel>
 
-        
-        <!--  Modal "Loading Project" Window  -->
-        <Grid
-            Grid.RowSpan="6"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            Panel.ZIndex="999"
-            Background="#80000000"
-            Visibility="{Binding IsProjectLoading, Converter={StaticResource BoolToVis}}">
-
-            <TextBlock
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                FontSize="30"
-                FontWeight="Bold"
-                Foreground="White"
-                Text="Loading Project..." />
-        </Grid>
     </Grid>
 </Window>
