@@ -52,6 +52,7 @@
             Grid.Row="1"
             Margin="0,40,0,0"
             VerticalScrollBarVisibility="Auto">
+            
             <!--  Waveform CANVAS  -->
             <Grid
                 x:Name="WaveformCanvas"
@@ -59,7 +60,7 @@
                 Background="#424651">
 
                 <!--  WaveForm  -->
-                <ItemsControl ItemsSource="{Binding WaveformWrappers}">
+                <ItemsControl Margin="0,30,0,0"  ItemsSource="{Binding WaveformWrappers}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel />
@@ -137,7 +138,7 @@
 
                     <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}" Height="20" />
                     <!--  MARKERS  -->
-                    <ItemsControl ItemsSource="{Binding TestMarkers}">
+                    <ItemsControl ItemsSource="{Binding BeatMarkers}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}" Height="20" />

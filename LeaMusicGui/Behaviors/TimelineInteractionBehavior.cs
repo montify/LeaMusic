@@ -1,7 +1,9 @@
 ﻿using Microsoft.Xaml.Behaviors;
+using System.Drawing;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using Point = System.Windows.Point;
 
 namespace LeaMusicGui.Behaviors
 {
@@ -33,7 +35,7 @@ namespace LeaMusicGui.Behaviors
             var childControl = sender as FrameworkElement;
             if (childControl != null)
             {
-                Point mousePosition = e.GetPosition(childControl);
+                 Point mousePosition = e.GetPosition(childControl);
 
                 if (mousePosition.Y > 30)
                 {
@@ -51,7 +53,7 @@ namespace LeaMusicGui.Behaviors
             {
                 if (control != null)
                 {
-                    Point mousePosition = e.GetPosition(control);
+                   Point mousePosition = e.GetPosition(control);
                     ViewModel.ZoomWaveformMouse(mousePosition, control.ActualWidth);
                 }
             }
@@ -72,7 +74,7 @@ namespace LeaMusicGui.Behaviors
             var childControl = sender as FrameworkElement;
             if (childControl != null)
             {
-                Point mousePosition = e.GetPosition(childControl);
+               Point mousePosition = e.GetPosition(childControl);
 
                 selectionRange.End = (float)mousePosition.X;
 

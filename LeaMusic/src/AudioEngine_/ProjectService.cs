@@ -35,7 +35,7 @@ namespace LeaMusic.src.AudioEngine_
             ProjectMetadata? fileMetaData = ResourceManager.GetProjectMetaData($"{projectName}.zip", location, fileHandler);
             ProjectMetadata? gDriveMetaData = ResourceManager.GetProjectMetaData($"{projectName}", null, googleDriveHandler);
 
-            Project project = null;
+            Project? project = null;
 
             if (isGoogleDriveSync &&
                         gDriveMetaData?.lastSavedAt > fileMetaData?.lastSavedAt &&
@@ -71,7 +71,7 @@ namespace LeaMusic.src.AudioEngine_
                 {
                     var fileHandler = new FileHandler();
 
-                    ResourceManager.SaveProject(project, new FileLocation(dialogResult), fileHandler);
+                    await ResourceManager.SaveProject(project, new FileLocation(dialogResult), fileHandler);
 
                     if (DialogService.EnableSync())
                     {

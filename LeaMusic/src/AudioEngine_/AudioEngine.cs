@@ -94,7 +94,7 @@ namespace LeaMusic.src.AudioEngine_
 
         public void AddMarker(TimeSpan position, string text)
         {
-            var m = new Marker(position, text);
+            var m = new BeatMarker(position, text);
             Project.AddBeatMarker(m);
         }
 

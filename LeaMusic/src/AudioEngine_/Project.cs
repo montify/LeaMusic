@@ -8,7 +8,7 @@ namespace LeaMusic.src.AudioEngine_
         public List<Track> Tracks { get; set; }
         public WaveFormat? WaveFormat { get; set; }
         public TimeSpan Duration { get; set; }
-        public List<Marker> BeatMarkers { get; set; } = new List<Marker>();
+        public List<BeatMarker> BeatMarkers { get; set; } = new List<BeatMarker>();
         public DateTime LastSaveAt { get; set; }
 
         public bool IsAllTracksMuted { get; set; }
@@ -143,7 +143,7 @@ namespace LeaMusic.src.AudioEngine_
         /// Adds a time marker to the track, which can be used for user orientation or BPM (beats per minute) detection.
         /// </summary>
         /// <param name="marker">The marker to add, representing a specific point in time within the track.</param>
-        public void AddBeatMarker(Marker marker)
+        public void AddBeatMarker(BeatMarker marker)
         { 
             BeatMarkers.Add(marker);
         }

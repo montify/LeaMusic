@@ -2,10 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using LeaMusic.src.AudioEngine_;
 using LeaMusic.src.ResourceManager_;
+using LeaMusic.src.Services;
 using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Forms;
 using System.Windows.Media;
+using Point = System.Windows.Point;
 
 namespace LeaMusicGui
 {
@@ -66,22 +66,22 @@ namespace LeaMusicGui
         public bool isLoopBeginDragRightHandle;
         public bool isMarkerMoving;
         public ObservableCollection<TrackDTO> WaveformWrappers { get; set; } = new ObservableCollection<TrackDTO>();
-        public ObservableCollection<MarkerDTO> TestMarkers { get; set; } = new ObservableCollection<MarkerDTO>();
+        public ObservableCollection<MarkerDTO> BeatMarkers { get; set; } = new ObservableCollection<MarkerDTO>();
 
         private AudioEngine AudioEngine;
         private TimelineService TimelineService;
         private LeaResourceManager ResourceManager;
         private ProjectService ProjectService;
+        private TimelineCalculator TimelineCalculator;
+        private LoopService LoopService;
+        private IResourceHandler resourceHandler;
+        private IDialogService DialogService;
 
         private Project Project { get; set; }
         private bool isSyncEnabled { get; set; } = true;
 
         //is used when Zoom with mouse, to prevent to fetch waveform twice
         public bool supressZoom;
-        private IResourceHandler resourceHandler;
-        private TimeSpan zoomMouseStartPosition;
-        private double zoomStartMouseY;
-        private bool zoomStartPositionSetOnce;
 
         public bool IsProjectLoaded => Project != null && Project.Duration > TimeSpan.FromSeconds(1);
 
@@ -90,13 +90,21 @@ namespace LeaMusicGui
         public MainViewModel(ProjectService projectService,
                              LeaResourceManager resourceManager,
                              TimelineService timelineService,
-                             AudioEngine audioEngine)
+                             AudioEngine audioEngine,
+                             TimelineCalculator timelineCalculator,
+                             LoopService loopService,
+                             IDialogService dialogService)
         {
 
             ProjectService = projectService;
             ResourceManager = resourceManager;
             TimelineService = timelineService;
             AudioEngine = audioEngine;
+            DialogService = dialogService;
+            TimelineCalculator = timelineCalculator;
+            LoopService = loopService;
+
+            statusMessages = "";
 
             //Create Empty Project for StartUp
             Project = Project.CreateEmptyProject("TEST");
@@ -130,14 +138,13 @@ namespace LeaMusicGui
 
             var project = await ProjectService.LoadProjectAsync(isGoogleDriveSync: isSyncEnabled, updateStatus);
 
-            if(project == null)
+            if (project == null)
             {
                 StatusMessages = "Cant Load Project";
                 return;
             }
 
-            if (Project != null)
-                Project.Dispose();
+            Project?.Dispose();
 
             Project = project;
 
@@ -151,7 +158,6 @@ namespace LeaMusicGui
 
             //Prevent when user doubleclick, that WPF register as a mouseclick
             await Task.Delay(100);
-
         }
 
         public void UpdateWaveformDTO(double newWidth)
@@ -168,16 +174,16 @@ namespace LeaMusicGui
 
         private void UpdateMarkers()
         {
-            for (int i = 0; i < TestMarkers.Count; i++)
+            for (int i = 0; i < BeatMarkers.Count; i++)
             {
-                if (IsMarkerVisible(TestMarkers[i]))
+                if (IsMarkerVisible(BeatMarkers[i]))
                 {
-                    TestMarkers[i].Visible = true;
-                    TestMarkers[i].PositionRelativeView = CalculateSecRelativeToViewWindowPercentage(TestMarkers[i].Marker.Position, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
+                    BeatMarkers[i].Visible = true;
+                    BeatMarkers[i].PositionRelativeView = TimelineCalculator.CalculateSecRelativeToViewWindowPercentage(BeatMarkers[i].Marker.Position, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
                 }
                 else
                 {
-                    TestMarkers[i].Visible = false;
+                    BeatMarkers[i].Visible = false;
                 }
             }
 
@@ -193,7 +199,7 @@ namespace LeaMusicGui
             var marker = AudioEngine.Project.BeatMarkers.Where(marker => marker.ID == currentMarkerID).FirstOrDefault();
 
             if (marker != null)
-                marker.Position = TimeSpan.FromSeconds(ConvertPixelToSecond(position.X, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, renderWidth));
+                marker.Position = TimeSpan.FromSeconds(TimelineCalculator.ConvertPixelToSecond(position.X, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, renderWidth));
 
             UpdateMarkers();
         }
@@ -206,7 +212,7 @@ namespace LeaMusicGui
                     WaveformWrappers.Add(new TrackDTO());
 
                 WaveformWrappers[i].Waveform = waveforms[i];
-                WaveformWrappers[i].Name = AudioEngine.Project.Tracks[i].Name;
+                WaveformWrappers[i].Name = AudioEngine.Project.Tracks[i].Name ?? "No Name Set";
                 WaveformWrappers[i].TrackID = AudioEngine.Project.Tracks[i].ID;
             }
         }
@@ -222,19 +228,19 @@ namespace LeaMusicGui
         }
 
         //Maybe Create if the Marker Count > WrapperCount?!
-        private void CreateMarkerDTO()
+        internal void CreateMarkerDTO()
         {
-            TestMarkers.Clear();
+            BeatMarkers.Clear();
             for (int i = 0; i < AudioEngine.Project.BeatMarkers.Count; i++)
             {
                 var marker = AudioEngine.Project.BeatMarkers[i];
 
                 var w = new MarkerDTO();
                 w.Marker = marker;
-                w.PositionRelativeView = CalculateSecRelativeToViewWindowPercentage(marker.Position, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
+                w.PositionRelativeView = TimelineCalculator.CalculateSecRelativeToViewWindowPercentage(marker.Position, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
                 w.Marker.ID = marker.ID;
                 w.Marker.Description = marker.Description;
-                TestMarkers.Add(w);
+                BeatMarkers.Add(w);
             }
         }
 
@@ -261,26 +267,15 @@ namespace LeaMusicGui
             }
         }
 
-        public double CalculateSecRelativeToViewWindowPercentage(TimeSpan positionSec, TimeSpan viewStartTimeSec, TimeSpan viewDurationSec)
-        {
-            TimeSpan positionInViewSec = positionSec - viewStartTimeSec;
-
-            double relativePercentage = positionInViewSec.TotalSeconds / viewDurationSec.TotalSeconds;
-
-            relativePercentage = Math.Max(0.0f, Math.Min(1.0f, relativePercentage));
-
-            return relativePercentage * 100;
-        }
-
         private void AudioEngine_OnLoopChange(TimeSpan startSec, TimeSpan endSec)
         {
-            SelectionStartPercentage = CalculateSecRelativeToViewWindowPercentage(startSec, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
-            SelectionEndPercentage = CalculateSecRelativeToViewWindowPercentage(endSec, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
+            SelectionStartPercentage = TimelineCalculator.CalculateSecRelativeToViewWindowPercentage(startSec, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
+            SelectionEndPercentage = TimelineCalculator.CalculateSecRelativeToViewWindowPercentage(endSec, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
         }
 
         private void AudioEngine_OnPlayHeadChange(TimeSpan positionInSeconds)
         {
-            PlayheadPercentage = CalculateSecRelativeToViewWindowPercentage(positionInSeconds, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
+            PlayheadPercentage = TimelineCalculator.CalculateSecRelativeToViewWindowPercentage(positionInSeconds, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
             UpdateMarkers();
         }
 
@@ -330,7 +325,9 @@ namespace LeaMusicGui
 
         public void ResetZoomParameter()
         {
-            zoomStartPositionSetOnce = false;
+            TimelineCalculator.ResetZoomParameter();
+
+            //zoomStartPositionSetOnce = false;
         }
 
         /// <summary>
@@ -341,144 +338,118 @@ namespace LeaMusicGui
         /// <param name="width">The width of the waveform display in pixels.</param>
         public void ZoomWaveformMouse(Point p, double width)
         {
-            if (!zoomStartPositionSetOnce)
-            {
-                zoomMouseStartPosition = TimeSpan.FromSeconds(ConvertPixelToSecond(p.X, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)width));
-                zoomStartPositionSetOnce = true;
-                zoomStartMouseY = p.Y;
-            }
+            var point = new System.Drawing.Point((int)p.X, (int)p.Y);
 
-            double zoomSensitivity = 0.002f;
-            double maxZoom = 60;
-            double minZoom = 1;
-            double zoomRange = maxZoom - minZoom;
-
-            var delta = p.Y - zoomStartMouseY;
-
-            double relativeScale = 1 + (delta * zoomSensitivity);
-
-            //Avoid crazy Zoom :D
-            relativeScale = Math.Clamp(relativeScale, 0.5, 2.0);
-
-            double newZoomFactor = Zoom * relativeScale;
-            newZoomFactor = Math.Clamp(newZoomFactor, minZoom, maxZoom);
-
+            var result = TimelineCalculator.ZoomWaveformMouse(point, AudioEngine.ViewStartTime, AudioEngine.ViewDuration,  Zoom, width);
             supressZoom = true;
-            Zoom = newZoomFactor;
+            Zoom = result.newZoomFactor;
             supressZoom = false;
 
-            AudioEngine.ZoomViewWindowRelative(newZoomFactor, zoomMouseStartPosition);
+            AudioEngine.ZoomViewWindowRelative(result.newZoomFactor, result.zoomStartPosition);
 
             UpdateWaveformDTO(RenderWidth);
             CreateMarkerDTO();
         }
 
-        //TODO: LoopSelection is the wrong name, because this function make a Loop AND reposition the Playhead, find a better Solution
+        private void SetOrAdjustLoop(TimeSpan? proposedStart, TimeSpan? proposedEnd)
+        {
+            // Determine the actual start and end for the loop operation
+            // Use existing LoopStart/LoopEnd if not explicitly provided
+            TimeSpan currentLoopStart = proposedStart ?? AudioEngine.LoopStart;
+            TimeSpan currentLoopEnd = proposedEnd ?? AudioEngine.LoopEnd;
+
+            if(proposedStart != null)
+                currentLoopStart = SnappingService.SnapToMarkers(
+                currentLoopStart,
+                AudioEngine.Project.BeatMarkers,
+                AudioEngine.ViewStartTime,
+                AudioEngine.ViewDuration,
+                RenderWidth, thresholdInMs: 10);
+
+
+            if (proposedEnd != null)
+                currentLoopEnd = SnappingService.SnapToMarkers(
+                currentLoopEnd,
+                AudioEngine.Project.BeatMarkers,
+                AudioEngine.ViewStartTime,
+                AudioEngine.ViewDuration,
+                RenderWidth,
+                thresholdInMs: 10);
+
+            // Use the LoopPlaybackService to determine the final action
+            var loopAction = LoopService.DetermineLoopAction(currentLoopStart, currentLoopEnd);
+
+            if (!loopAction.ShouldSetLoop && !loopAction.ShouldJump)
+            {
+                return; // Service decided to ignore this input
+            }
+
+            if (loopAction.ShouldSetLoop)
+            {
+                AudioEngine.Loop(loopAction.LoopStart, loopAction.LoopEnd);
+            }
+
+            if (loopAction.ShouldJump)
+            {
+                AudioEngine.AudioJumpToSec(loopAction.JumpToPosition);
+            }
+
+            UpdateWaveformDTO(RenderWidth);
+            CreateMarkerDTO();
+        }
+
+     
         public void LoopSelection(double startPixel, double endPixel, double renderWidth)
         {
-            var startSec = TimeSpan.FromSeconds(ConvertPixelToSecond(startPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
-            var endSec = TimeSpan.FromSeconds(ConvertPixelToSecond(endPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+            var startSec = TimeSpan.FromSeconds(TimelineCalculator.ConvertPixelToSecond(startPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+            var endSec = TimeSpan.FromSeconds(TimelineCalculator.ConvertPixelToSecond(endPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
-            //When Loop is <=0 than treat it as the user Jump to a new Position
-            if (startSec >= endSec || endSec - startSec <= TimeSpan.Zero)
-            {
-                AudioEngine.Loop(TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0));
-                AudioEngine.AudioJumpToSec(startSec);
-            }
-            //If loop is to shoort, ignore it 
-            else if ((endSec - startSec) < TimeSpan.FromMilliseconds(50))
-                return;
-
-
-            AudioEngine.Loop(startSec, endSec);
-            AudioEngine.AudioJumpToSec(startSec);
+            SetOrAdjustLoop(startSec, endSec);
         }
 
         public void LoopSelectionStart(double startPixel, double renderWidth)
         {
-            var beatmarkers = AudioEngine.Project.BeatMarkers;
-            var startSec = TimeSpan.FromSeconds(ConvertPixelToSecond(startPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
-            var endSec = AudioEngine.LoopEnd;
-
-            // TODO: Optimize — stop looping through beat markers once the nearest valid point is found.
-            // TODO: Should the snapping logic be moved to the code-behind?
-            foreach (var beatMarker in beatmarkers)
-                startSec = Helpers.CheckSnapping(AudioEngine, renderWidth, beatMarker.Position, startSec, treshholdInMs: 10);
-
-            AudioEngine.Loop(startSec, endSec);
+            var startSec = TimeSpan.FromSeconds(TimelineCalculator.ConvertPixelToSecond(startPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+            
+            SetOrAdjustLoop(startSec, null); // Only proposing a new start
         }
 
         public void LoopSelectionEnd(double endPixel, double renderWidth)
         {
-            var beatmarkers = AudioEngine.Project.BeatMarkers;
-            var startSec = AudioEngine.LoopStart;
-            var endSec = TimeSpan.FromSeconds(ConvertPixelToSecond(endPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
-
-            // TODO: Optimize — stop looping through beat markers once the nearest valid point is found.
-            // TODO: Should the snapping logic be moved to the code-behind?
-            foreach (var beatMarker in beatmarkers)
-                endSec = Helpers.CheckSnapping(AudioEngine, renderWidth, beatMarker.Position, endSec, treshholdInMs: 10);
-
-            AudioEngine.Loop(startSec, endSec);
-        }
-
-        public double ConvertPixelToSecond(double pixelPos, double viewStartTimeSec, double viewDurationSec, int renderWidth)
-        {
-            double pixelPercentage = pixelPos / renderWidth;
-            double timeInSeconds = viewStartTimeSec + (pixelPercentage * viewDurationSec);
-
-            return timeInSeconds;
+            var endSec = TimeSpan.FromSeconds(TimelineCalculator.ConvertPixelToSecond(endPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+           
+            SetOrAdjustLoop(null, endSec); // Only proposing a new end
         }
 
         [RelayCommand]
         public void FitLoopToView()
         {
-            if (AudioEngine.LoopEnd - AudioEngine.LoopStart <= TimeSpan.Zero)
-                return;
-
-            var loopStart = AudioEngine.LoopStart;
-            var loopEnd = AudioEngine.LoopEnd;
-            var loopDuration = loopEnd - loopStart;
-
-            //Add Padding left and right 
-            double paddingFactor = 0.05;
-            var padding = TimeSpan.FromSeconds(loopDuration.TotalSeconds * paddingFactor);
-            var paddedStart = loopStart - padding;
-            var paddedEnd = loopEnd + padding;
-            paddedStart = TimeSpan.FromSeconds(Math.Max(0, paddedStart.TotalSeconds));
-            paddedEnd = TimeSpan.FromSeconds(Math.Min(AudioEngine.TotalDuration.TotalSeconds, paddedEnd.TotalSeconds));
-
-            var paddedDuration = paddedEnd - paddedStart;
-
-            double zoomFactor = AudioEngine.TotalDuration.TotalSeconds / paddedDuration.TotalSeconds;
-
-            // Zoom to padded loo
-            AudioEngine.ZoomViewWindow(zoomFactor, paddedStart, paddedEnd);
-
-            //audioEngine.Update();
+            var result = TimelineCalculator.FitLoopToView(AudioEngine.LoopStart, AudioEngine.LoopEnd, AudioEngine.TotalDuration);
+         
+            AudioEngine.ZoomViewWindow(result.zoomFactor, result.paddedStart, result.paddedEnd);
 
             var trackDTOList = new List<Memory<float>>();
             for (int i = 0; i < Project.Tracks.Count; i++)
             {
-                trackDTOList.Add(TimelineService.RequestSample(i, RenderWidth, paddedStart, paddedEnd));
+                trackDTOList.Add(TimelineService.RequestSample(i, RenderWidth, result.paddedStart, result.paddedEnd));
             }
-            UpdateTrackDTO(trackDTOList);
 
+            UpdateTrackDTO(trackDTOList);
             CreateMarkerDTO();
 
             supressZoom = true;
-            Zoom = zoomFactor;
+            Zoom = result.zoomFactor;
             supressZoom = false;
         }
 
         [RelayCommand]
-        private async Task MarkerClick(MarkerDTO marker)
+        private void MarkerClick(MarkerDTO marker)
         {
             currentMarkerID = marker.Marker.ID;
         }
 
         [RelayCommand]
-        private async Task MarkerDelete(MarkerDTO marker)
+        private void MarkerDelete(MarkerDTO marker)
         {
             AudioEngine.Project.DeleteMarker(marker.Marker.ID);
 
@@ -486,13 +457,13 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
-        private async Task Replay()
+        private void Replay()
         {
             AudioEngine.Replay();
         }
 
         [RelayCommand]
-        private async Task MuteAllTracks()
+        private void MuteAllTracks()
         {
             AudioEngine.MuteAllTracks();
         }
@@ -505,7 +476,7 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
-        private async Task Pause()
+        private void Pause()
         {
             if (!IsProjectLoaded)
             {
@@ -526,24 +497,21 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
-        private async Task AddTrack()
+        private void AddTrack()
         {
-            var fileDialog = new OpenFileDialog
-            {
-                Filter = "Mp3 (*.mp3)|*.mp3"
-            };
+            var filePath = DialogService.OpenFile("Mp3 (*.mp3)|*.mp3");
 
-            if (fileDialog.ShowDialog() == DialogResult.OK)
+            if (!string.IsNullOrEmpty(filePath))
             {
                 AudioEngine.Stop();
 
-                var projectfilePath = fileDialog.FileName;
+                var projectfilePath = filePath;
                 var track = ResourceManager.ImportTrack(new FileLocation(projectfilePath), resourceHandler);
 
                 Project.AddTrack(track);
 
                 if (Project.Tracks.Count == 1)
-                    ProjectName = Project.Tracks[0].Name;
+                    ProjectName = Project.Tracks[0].Name ?? "No Name Set";
 
                 Project.SetTempo(Speed);
                 CreateTrackDTO();
@@ -555,7 +523,7 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
-        private async Task Play()
+        private void Play()
         {
             if (!IsProjectLoaded)
             {
@@ -566,7 +534,7 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
-        private async Task Mute(object param)
+        private void Mute(object param)
         {
             if (!IsProjectLoaded)
             {
@@ -581,7 +549,7 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
-        private async Task Delete(object param)
+        private void Delete(object param)
         {
             if (param is TrackDTO wrapper)
             {
@@ -600,7 +568,7 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
-        private async Task JumpToSec()
+        private void JumpToSec()
         {
             if (TimeSpan.FromSeconds(JumpToPositionInSec) < TimeSpan.Zero)
             {
@@ -613,12 +581,12 @@ namespace LeaMusicGui
 
 
         [RelayCommand]
-        private async Task JumpToLoopStart()
+        private void JumpToLoopStart()
         {
             if (AudioEngine.LoopStart > TimeSpan.Zero)
             {
                 AudioEngine.AudioJumpToSec(AudioEngine.LoopStart);
-                await Play();
+                Play();
             }
         }
 

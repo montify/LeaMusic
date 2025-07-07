@@ -13,7 +13,7 @@ namespace LeaMusicGui
         private double positionRelativeView;
 
         [ObservableProperty]
-        private Marker marker;
+        private BeatMarker marker;
 
         [ObservableProperty]
         public bool visible = true;

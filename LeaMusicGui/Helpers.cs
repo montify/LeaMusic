@@ -8,6 +8,7 @@ namespace LeaMusicGui
         public static TimeSpan CheckSnapping(AudioEngine audioEngine, double renderWidth, TimeSpan markerPosition, TimeSpan checkPosition, double treshholdInMs)
         {
             var beatmarkers = audioEngine.Project.BeatMarkers;
+
             var endLoopPosition = checkPosition;
             double pixelsPerSecond = renderWidth / audioEngine.ViewDuration.TotalSeconds;
             var diff = (markerPosition - endLoopPosition).Duration();

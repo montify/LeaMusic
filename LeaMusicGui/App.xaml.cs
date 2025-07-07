@@ -1,5 +1,7 @@
 ﻿using LeaMusic.src.AudioEngine_;
 using LeaMusic.src.ResourceManager_;
+using LeaMusic.src.Services;
+
 using LeaMusicGui.Views.DialogServices;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -24,6 +26,8 @@ public partial class App : Application
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<TimelineService>();
         services.AddSingleton<AudioEngine>();
+        services.AddSingleton<TimelineCalculator>();
+        services.AddSingleton<LoopService>();
         services.AddSingleton<IDialogService, DialogService>();
 
         _serviceProvider = services.BuildServiceProvider();
