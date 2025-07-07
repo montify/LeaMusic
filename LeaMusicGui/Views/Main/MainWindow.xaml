@@ -316,7 +316,7 @@
                             Maximum="60"
                             Minimum="1"
                             TickFrequency="0.1"
-                            Value="{Binding Zoom}" />
+                            Value="{Binding SliderZoom}" />
                         <TextBlock Foreground="White" HorizontalAlignment="Center" Text="Zoom" />
                     </StackPanel>
                     <StackPanel Grid.Row="5" HorizontalAlignment="Center">

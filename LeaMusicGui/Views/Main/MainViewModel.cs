@@ -30,6 +30,10 @@ namespace LeaMusicGui
         public double zoom = 1.0f;
 
         [ObservableProperty]
+        public double sliderZoom = 1.0f;
+
+
+        [ObservableProperty]
         public double selectionStartPercentage;
 
         [ObservableProperty]
@@ -37,9 +41,6 @@ namespace LeaMusicGui
 
         [ObservableProperty]
         public double progressInPercentage;
-
-        [ObservableProperty]
-        public double test;
 
         [ObservableProperty]
         public int renderWidth;
@@ -79,9 +80,6 @@ namespace LeaMusicGui
 
         private Project Project { get; set; }
         private bool isSyncEnabled { get; set; } = true;
-
-        //is used when Zoom with mouse, to prevent to fetch waveform twice
-        public bool supressZoom;
 
         public bool IsProjectLoaded => Project != null && Project.Duration > TimeSpan.FromSeconds(1);
 
@@ -305,16 +303,14 @@ namespace LeaMusicGui
         partial void OnZoomChanged(double value)
         {
             Zoom = value;
-            // supressZoom Prevents OnZoomChanged from being called when Zoom is set manually (e.g. during mouse zoom),
-            // so we don't zoom twice or from the wrong position.
-            //I set Zoom in ZoomWaveformMouse() to reflect the ZoomValue in the UI
-            //Supress is false when i zoom with Slider in the UI, because we want zoom in the CurrentPosition, not in the ZoomPosition(mouse)
-            if (!supressZoom)
-            {
-                AudioEngine.ZoomViewWindow(value, AudioEngine.CurrentPosition);
+        }
 
-                UpdateWaveformDTO(RenderWidth);
-            }
+        partial void OnSliderZoomChanged(double value)
+        {
+            Zoom = value;
+
+            AudioEngine.ZoomViewWindow(value, AudioEngine.CurrentPosition);
+            UpdateWaveformDTO(RenderWidth);
         }
 
         public void SetTextMarker()
@@ -341,9 +337,9 @@ namespace LeaMusicGui
             var point = new System.Drawing.Point((int)p.X, (int)p.Y);
 
             var result = TimelineCalculator.ZoomWaveformMouse(point, AudioEngine.ViewStartTime, AudioEngine.ViewDuration,  Zoom, width);
-            supressZoom = true;
+           
             Zoom = result.newZoomFactor;
-            supressZoom = false;
+            SliderZoom = result.newZoomFactor; 
 
             AudioEngine.ZoomViewWindowRelative(result.newZoomFactor, result.zoomStartPosition);
 
@@ -422,6 +418,25 @@ namespace LeaMusicGui
         }
 
         [RelayCommand]
+        public void ZoomFromMouse(double value)
+        {
+            SliderZoom = value;
+        }
+
+        [RelayCommand]
+        public void ZoomFromSlider(double value)
+        {
+            Zoom = value;
+
+
+            AudioEngine.ZoomViewWindow(value, AudioEngine.CurrentPosition);
+
+            UpdateWaveformDTO(RenderWidth);
+
+        }
+
+
+        [RelayCommand]
         public void FitLoopToView()
         {
             var result = TimelineCalculator.FitLoopToView(AudioEngine.LoopStart, AudioEngine.LoopEnd, AudioEngine.TotalDuration);
@@ -437,9 +452,8 @@ namespace LeaMusicGui
             UpdateTrackDTO(trackDTOList);
             CreateMarkerDTO();
 
-            supressZoom = true;
+         
             Zoom = result.zoomFactor;
-            supressZoom = false;
         }
 
         [RelayCommand]
