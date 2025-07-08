@@ -157,27 +157,6 @@
             UpdateMarkers();
         }
 
-        /// <summary>
-        /// Performs a smooth zoom operation on the waveform based on mouse movement.
-        /// The zoom is anchored at the horizontal position of the ZoomStart Position.
-        /// </summary>
-        /// <param name="p">The current mouse position.</param>
-        /// <param name="width">The width of the waveform display in pixels.</param>
-        public void ZoomWaveformMouse(Point p, double width)
-        {
-            var point = new System.Drawing.Point((int)p.X, (int)p.Y);
-
-            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformMouse(point, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration, Zoom, width);
-
-            Zoom = newZoomFactor;
-            SliderZoom = newZoomFactor;
-
-            m_audioEngine.ZoomViewWindowRelative(newZoomFactor, zoomStartPosition);
-
-            UpdateWaveformDTO(RenderWidth);
-            CreateMarkerDTO();
-        }
-
         public void LoopSelection(double startPixel, double endPixel, double renderWidth)
         {
             var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
@@ -200,10 +179,22 @@
             SetOrAdjustLoop(null, endSec); // Only proposing a new end
         }
 
-        [RelayCommand]
-        public void ZoomFromMouse(double value)
+        public void ZoomWaveformMouse(Point p, double width)
         {
-            SliderZoom = value;
+            var point = new System.Drawing.Point((int)p.X, (int)p.Y);
+
+            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformMouse(point, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration, Zoom, width);
+
+            Zoom = newZoomFactor;
+
+            // use lowerCase sliderZoom to avoid Trigger OnSliderZoomChange()
+            sliderZoom = newZoomFactor;
+            OnPropertyChanged(nameof(SliderZoom));
+
+            m_audioEngine.ZoomViewWindowRelative(newZoomFactor, zoomStartPosition);
+
+            UpdateWaveformDTO(RenderWidth);
+            CreateMarkerDTO();
         }
 
         [RelayCommand]
@@ -214,6 +205,12 @@
             m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
 
             UpdateWaveformDTO(RenderWidth);
+        }
+
+        [RelayCommand]
+        public void ZoomFromMouse(double value)
+        {
+            Zoom = value;
         }
 
         [RelayCommand]
@@ -602,17 +599,15 @@
             m_audioEngine.ChangeSpeed(value);
         }
 
-        partial void OnZoomChanged(double value)
-        {
-            Zoom = value;
-        }
-
         partial void OnSliderZoomChanged(double value)
         {
             Zoom = value;
 
-            m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
-            UpdateWaveformDTO(RenderWidth);
+            if (value != -1)
+            {
+                m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
+                UpdateWaveformDTO(RenderWidth);
+            }
         }
     }
 }

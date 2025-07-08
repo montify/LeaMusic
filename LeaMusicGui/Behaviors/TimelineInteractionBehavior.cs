@@ -2,7 +2,6 @@
 {
     using System.Windows;
     using System.Windows.Input;
-    using System.Windows.Media;
     using Microsoft.Xaml.Behaviors;
     using Point = System.Windows.Point;
 
@@ -56,7 +55,6 @@
 
                 Point mousePosition = e.GetPosition(control);
                 ViewModel.ZoomWaveformMouse(mousePosition, control.ActualWidth);
-
             }
 
             // resize loop
