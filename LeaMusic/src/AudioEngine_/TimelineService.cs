@@ -1,4 +1,6 @@
-﻿namespace LeaMusic.src.AudioEngine_
+﻿using LeaMusic.Src.AudioEngine_;
+
+namespace LeaMusic.src.AudioEngine_
 {
     public class TimelineService
     {

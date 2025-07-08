@@ -1,0 +1,18 @@
+{
+  "settings": {
+    "documentationRules": {
+      "documentExposedElements": true,
+      "documentInternalElements": false
+    },
+    "orderingRules": {
+      "usingDirectivesPlacement": "outsideNamespace",
+      "systemUsingDirectivesFirst": true
+    },
+    "readabilityRules": {
+      "prefixLocalCallsWithThis": false
+    },
+    "layoutRules": {
+      "newlineAtEndOfFile": "require"
+    }
+  }
+}

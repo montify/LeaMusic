@@ -1,10 +1,10 @@
-﻿using Microsoft.Xaml.Behaviors;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
-
-namespace LeaMusicGui.Behaviors
+﻿namespace LeaMusicGui.Behaviors
 {
+    using System.Windows;
+    using System.Windows.Input;
+    using System.Windows.Media;
+    using Microsoft.Xaml.Behaviors;
+
     public class BeatMarkerBehavior : Behavior<FrameworkElement>
     {
         protected override void OnAttached()
@@ -24,9 +24,8 @@ namespace LeaMusicGui.Behaviors
             Helpers.DraggedElement = control;
             Helpers.DraggedElement.CaptureMouse();
 
-            ViewModel.isMarkerMoving = true;
+            ViewModel.IsMarkerMoving = true;
         }
-
 
         public MainViewModel ViewModel
         {
@@ -35,11 +34,10 @@ namespace LeaMusicGui.Behaviors
         }
 
         public static readonly DependencyProperty ViewModelProperty =
-       DependencyProperty.Register(
+           DependencyProperty.Register(
            "ViewModel",
            typeof(MainViewModel),
            typeof(BeatMarkerBehavior),
            new PropertyMetadata(null));
-
     }
 }

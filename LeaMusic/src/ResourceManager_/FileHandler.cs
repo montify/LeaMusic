@@ -1,12 +1,12 @@
-﻿using LeaMusic.src.AudioEngine_;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
-using System.Diagnostics;
-using System.IO;
-using System.Text.Json;
-
-namespace LeaMusic.src.ResourceManager_
+﻿namespace LeaMusic.src.ResourceManager_
 {
+    using System.Diagnostics;
+    using System.IO;
+    using System.Text.Json;
+    using LeaMusic.src.AudioEngine_;
+    using NAudio.Wave;
+    using NAudio.Wave.SampleProviders;
+
     public class FileHandler : IResourceHandler
     {
         public FileHandler()
@@ -21,14 +21,15 @@ namespace LeaMusic.src.ResourceManager_
 
                 var pathName = Path.GetFileName(projectDirectoryPath.Path);
 
-                //Detect if the user select the project folder or the parentFolder
+                // Detect if the user select the project folder or the parentFolder
                 if (pathName == project.Name)
+                {
                     projectDirectory = OpenOrCreateDirectory(projectDirectoryPath.Path);
+                }
                 else
                 {
                     projectDirectory = OpenOrCreateDirectory(Path.Combine(projectDirectoryPath.Path, project.Name));
                 }
-
 
                 var audioFilesDirectory = OpenOrCreateDirectory($"{projectDirectory.FullName}/AudioFiles");
                 var waveformDirectory = OpenOrCreateDirectory($"{projectDirectory.FullName}/Waveforms");
@@ -38,16 +39,20 @@ namespace LeaMusic.src.ResourceManager_
                     track.AudioRelativePath = $"{audioFilesDirectory.Name}/{track.AudioFileName}";
                     track.WaveformRelativePath = $"{waveformDirectory.Name}/{track.AudioFileName}.waveformat";
 
-                    //only trigger for first time Save
+                    // only trigger for first time Save
                     if (!File.Exists(audioFilesDirectory.FullName + "/" + track.AudioFileName))
+                    {
                         File.Copy(track.OriginFilePath, audioFilesDirectory.FullName + "/" + track.AudioFileName, overwrite: true);
+                    }
 
-                    var waveform = track.waveformProvider.waveformBuffer;
+                    var waveform = track.WaveformProvider.WaveformBuffer;
 
                     var waveFormFilePath = waveformDirectory.FullName + $"\\{track.AudioFileName}.waveformat";
 
                     if (!File.Exists(waveFormFilePath))
+                    {
                         WriteWaveformBinary(waveform, waveFormFilePath);
+                    }
                 }
 
                 JsonSerializerOptions o = new JsonSerializerOptions();
@@ -62,62 +67,59 @@ namespace LeaMusic.src.ResourceManager_
 
         public Track? ImportTrack(Location location, LeaResourceManager resourceManager)
         {
-
-
             if (location is FileLocation projectFilePath)
             {
-
                 var track = new Track();
                 track.OriginFilePath = projectFilePath.Path;
                 track.LoadAudioFile(projectFilePath.Path, resourceManager);
-                track.waveformProvider = ImportWaveform(track);
+                track.WaveformProvider = ImportWaveform(track);
 
                 return track;
             }
             else
+            {
                 throw new NotSupportedException("Handler is not a FileHandler");
-
+            }
         }
 
         public Track LoadAudio(Track track, string projectPath, LeaResourceManager resourceManager)
         {
             var audioFilePath = Path.Combine(projectPath, track.AudioRelativePath);
-            // track.LoadAudioFile(audioFilePath, resourceManager);
-            //track = new Track(audioFilePath, resourceManager);
             track.LoadAudioFile(audioFilePath, resourceManager);
-            track.waveformProvider = LoadWaveform(projectPath, track);
+            track.WaveformProvider = LoadWaveform(projectPath, track);
 
             return track;
         }
-
 
         public async Task<Project?> LoadProject(Location projectLocation, LeaResourceManager resourceManager)
         {
             if (projectLocation is FileLocation location)
             {
                 if (string.IsNullOrEmpty(location.Path))
+                {
                     throw new ArgumentNullException("Path cant be null");
+                }
 
                 var file = await File.ReadAllTextAsync(location.Path);
-
                 var project = JsonSerializer.Deserialize<Project>(file);
 
                 if (project == null)
+                {
                     throw new NullReferenceException($"Cant load Project Path: {location.Path}");
+                }
 
                 var projectPath = Path.GetDirectoryName(location.Path);
 
-                // project.ProjectFilePath = Path.Combine(projectPath, project.Name, project.Name + ".prj");
-
                 if (string.IsNullOrEmpty(projectPath))
+                {
                     throw new ArgumentNullException($"Cant find Project path {projectPath}");
+                }
 
                 await Task.Run(() =>
                 {
                     for (int i = 0; i < project.Tracks.Count; i++)
                     {
                         var track = project.Tracks[i];
-                        //var originalFilePath = track.OriginFilePath;
 
                         var trackPath = Path.Combine(projectPath, track.AudioRelativePath);
 
@@ -125,29 +127,61 @@ namespace LeaMusic.src.ResourceManager_
                     }
                 });
 
-                //We assume, for this Programm, that every Audio is the same ( Stems from the Same Audio file) so its safe to use the First track´s Waveformat
+                // We assume, for this Programm, that every Audio is the same ( Stems from the Same Audio file) so its safe to use the First track´s Waveformat
                 project.WaveFormat = project.Tracks[0].Waveformat;
 
                 return project;
-
             }
             else
+            {
                 throw new NotSupportedException("Handler is not a FileHandler");
+            }
         }
 
-        //PRIVATE STUFF
+        public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location projectLocation, LeaResourceManager resourceManager)
+        {
+            if (projectLocation is FileLocation location)
+            {
+                if (string.IsNullOrEmpty(location.Path))
+                {
+                    throw new ArgumentNullException("Path cant be null");
+                }
+
+                var file = File.ReadAllText(location.Path);
+
+                var project = JsonSerializer.Deserialize<Project>(file);
+
+                if (project == null)
+                {
+                    throw new NullReferenceException($"Cant load Project Path: {location.Path}");
+                }
+
+                if (project.LastSaveAt == null)
+                {
+                    throw new NullReferenceException("Cant Fetch MetaData from Project");
+                }
+
+                var projectMetadata = new ProjectMetadata(project.Name, project.LastSaveAt);
+
+                return projectMetadata;
+            }
+            else
+            {
+                throw new NotSupportedException("Handler is not a FileHandler");
+            }
+        }
+
         private ISampleProvider ResampleWav(WaveStream wavestream)
         {
             var resampledAudio = new WdlResamplingSampleProvider(wavestream.ToSampleProvider(), 3000);
 
-            //  WaveFileWriter.CreateWaveFile("C:/t/re.wav", resampledAudio.ToWaveProvider());
             return resampledAudio;
         }
 
         private WaveformProvider ImportWaveform(Track track)
         {
-            var downsampleAudio = ResampleWav(track.audio);
-            var waveformProvider = new WaveformProvider(downsampleAudio, (int)track.audio.TotalTime.TotalSeconds);
+            var downsampleAudio = ResampleWav(track.Audio);
+            var waveformProvider = new WaveformProvider(downsampleAudio, (int)track.Audio.TotalTime.TotalSeconds);
 
             Debug.WriteLine($"Create new Waveform from new ImportedTrack: {track.AudioFileName}");
             return waveformProvider;
@@ -156,8 +190,11 @@ namespace LeaMusic.src.ResourceManager_
         private DirectoryInfo OpenOrCreateDirectory(string path)
         {
             var projectDirectory = new DirectoryInfo(path);
+
             if (!projectDirectory.Exists)
+            {
                 projectDirectory = Directory.CreateDirectory($"{path}");
+            }
 
             return projectDirectory;
         }
@@ -190,7 +227,9 @@ namespace LeaMusic.src.ResourceManager_
             var waveFormRelativePath = track.WaveformRelativePath;
 
             if (!Path.Exists(waveformPath))
+            {
                 throw new FileNotFoundException($"Cant load Waveform: {waveformPath}");
+            }
 
             var waveform = ReadWaveformBinary(waveformPath);
             waveformProvider = new WaveformProvider(waveform, new WaveFormat(3000, 32, 2));
@@ -198,31 +237,6 @@ namespace LeaMusic.src.ResourceManager_
             Debug.WriteLine($"Load existing Waveform from existing Track: {track.AudioFileName}");
 
             return waveformProvider;
-        }
-
-        public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location projectLocation, LeaResourceManager resourceManager)
-        {
-            if (projectLocation is FileLocation location)
-            {
-                if (string.IsNullOrEmpty(location.Path))
-                    throw new ArgumentNullException("Path cant be null");
-
-                var file =  File.ReadAllText(location.Path);
-
-                var project = JsonSerializer.Deserialize<Project>(file);
-
-                if (project == null)
-                    throw new NullReferenceException($"Cant load Project Path: {location.Path}");
-
-                if (project.LastSaveAt == null)
-                    throw new NullReferenceException("Cant Fetch MetaData from Project");
-
-                var projectMetadata = new ProjectMetadata(project.Name, project.LastSaveAt);
-
-                return projectMetadata;
-            }
-            else
-                throw new NotSupportedException("Handler is not a FileHandler");
         }
     }
 }

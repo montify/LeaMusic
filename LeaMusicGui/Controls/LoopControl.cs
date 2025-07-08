@@ -1,38 +1,37 @@
-﻿using SkiaSharp;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-
-namespace LeaMusicGui.Controls
+﻿namespace LeaMusicGui.Controls
 {
+    using System.Diagnostics;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Media;
+    using System.Windows.Media.Imaging;
+    using SkiaSharp;
+
     public class LoopControl : UserControl
     {
-        private WriteableBitmap WriteableBitmap;
-        private SKCanvas canvas;
-        private SKSurface surface;
-        private SKPaint paint;
-
-        public int width;
-        private int height;
+        private WriteableBitmap m_writeableBitmap;
+        private SKCanvas m_canvas;
+        private SKSurface m_surface;
+        private SKPaint m_paint;
+        private int m_width;
+        private int m_height;
 
         public LoopControl()
         {
-            WriteableBitmap = new WriteableBitmap(1, 3000, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
-            width = (int)WriteableBitmap.Width;
-            height = (int)WriteableBitmap.Height;
+            m_writeableBitmap = new WriteableBitmap(1, 3000, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
+            m_width = (int)m_writeableBitmap.Width;
+            m_height = (int)m_writeableBitmap.Height;
 
-            var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            var info = new SKImageInfo(m_width, m_height, SKColorType.Bgra8888, SKAlphaType.Premul);
 
-            surface = SKSurface.Create(info);
+            m_surface = SKSurface.Create(info);
 
-            paint = new SKPaint
+            m_paint = new SKPaint
             {
                 Color = SKColor.Parse("#FFFFFF"),
                 IsStroke = true,
                 IsAntialias = true,
-                StrokeWidth = 1
+                StrokeWidth = 1,
             };
 
             UpdateImage();
@@ -40,48 +39,49 @@ namespace LeaMusicGui.Controls
 
         public void UpdateImage()
         {
-            Debug.WriteLine(width);
-            canvas = surface.Canvas;
-            canvas.Clear(new SKColor(0, 0, 0,0));
+            Debug.WriteLine(m_width);
+            m_canvas = m_surface.Canvas;
+            m_canvas.Clear(new SKColor(0, 0, 0, 0));
 
-            for (int i = 0; i < width; i++)
+            for (int i = 0; i < m_width; i++)
             {
-                paint.Style = SKPaintStyle.StrokeAndFill;
+                m_paint.Style = SKPaintStyle.StrokeAndFill;
 
-                paint.Color = SKColors.Green;
-                var rect = new SKRect(0, 0, width, 30);
-                canvas.DrawRect(rect, paint);
-                paint.Color = SKColors.DarkRed.WithAlpha(70);
+                m_paint.Color = SKColors.Green;
+                var rect = new SKRect(0, 0, m_width, 30);
+                m_canvas.DrawRect(rect, m_paint);
+                m_paint.Color = SKColors.DarkRed.WithAlpha(70);
 
-                rect = new SKRect(0, 0, width, height);
-                canvas.DrawRect(rect, paint);
-
+                rect = new SKRect(0, 0, m_width, m_height);
+                m_canvas.DrawRect(rect, m_paint);
             }
-            using (SKImage image = surface.Snapshot())
+
+            using (SKImage image = m_surface.Snapshot())
             using (SKPixmap pixmap = image.PeekPixels())
             {
-                WriteableBitmap.Lock();
+                m_writeableBitmap.Lock();
 
                 unsafe
                 {
                     Buffer.MemoryCopy(
                         source: (void*)pixmap.GetPixels(),
-                        destination: (void*)WriteableBitmap.BackBuffer,
-                        destinationSizeInBytes: WriteableBitmap.BackBufferStride * height,
-                        sourceBytesToCopy: pixmap.RowBytes * height);
+                        destination: (void*)m_writeableBitmap.BackBuffer,
+                        destinationSizeInBytes: m_writeableBitmap.BackBufferStride * m_height,
+                        sourceBytesToCopy: pixmap.RowBytes * m_height);
                 }
 
-                WriteableBitmap.AddDirtyRect(new Int32Rect(0, 0, width, height));
-                WriteableBitmap.Unlock();
+                m_writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, m_width, m_height));
+                m_writeableBitmap.Unlock();
             }
         }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-            drawingContext.DrawImage(WriteableBitmap, new Rect(0, 0, width, height));
-            base.OnRender(drawingContext);
+            drawingContext.DrawImage(m_writeableBitmap, new Rect(0, 0, m_width, m_height));
 
+            base.OnRender(drawingContext);
         }
+
         public float SelectionStartPercentage
         {
             get => (float)GetValue(SelectionStartProperty);
@@ -94,7 +94,6 @@ namespace LeaMusicGui.Controls
             set => SetValue(SelectionEndProperty, value);
         }
 
-       
         private static void OnLoopChange(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is LoopControl control)
@@ -106,13 +105,17 @@ namespace LeaMusicGui.Controls
         }
 
         public static readonly DependencyProperty SelectionStartProperty =
-        DependencyProperty.Register(nameof(SelectionStartPercentage), typeof(float),
-        typeof(LoopControl),
-        new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, OnLoopChange));
+            DependencyProperty.Register(
+            nameof(SelectionStartPercentage),
+            typeof(float),
+            typeof(LoopControl),
+            new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, OnLoopChange));
 
         public static readonly DependencyProperty SelectionEndProperty =
-        DependencyProperty.Register(nameof(SelectionEndPercentage), typeof(float),
-        typeof(LoopControl),
-        new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, OnLoopChange));
+            DependencyProperty.Register(
+            nameof(SelectionEndPercentage),
+            typeof(float),
+            typeof(LoopControl),
+            new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, OnLoopChange));
     }
 }

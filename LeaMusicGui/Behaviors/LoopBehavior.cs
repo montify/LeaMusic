@@ -1,15 +1,15 @@
-﻿using LeaMusicGui.Controls;
-using Microsoft.Xaml.Behaviors;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
-
-namespace LeaMusicGui.Behaviors
+﻿namespace LeaMusicGui.Behaviors
 {
+    using System.Windows;
+    using System.Windows.Input;
+    using System.Windows.Media;
+    using LeaMusicGui.Controls;
+    using Microsoft.Xaml.Behaviors;
+
     public class LoopBehavior : Behavior<FrameworkElement>
     {
         protected override void OnAttached()
-        {        
+        {
             AssociatedObject.MouseDown += OnMouseDown;
             AssociatedObject.MouseLeave += OnMouseLeave;
             AssociatedObject.MouseMove += OnMouseMove;
@@ -21,9 +21,13 @@ namespace LeaMusicGui.Behaviors
             var parent = VisualTreeHelper.GetParent(control) as FrameworkElement;
 
             if (IsOnLefEdgeLoop(control) || IsOnRightEdgeLoop(control))
-                Mouse.OverrideCursor =Cursors.SizeWE;
+            {
+                Mouse.OverrideCursor = Cursors.SizeWE;
+            }
             else
+            {
                 Mouse.OverrideCursor = null;
+            }
         }
 
         private void OnMouseLeave(object sender, MouseEventArgs e)
@@ -34,44 +38,50 @@ namespace LeaMusicGui.Behaviors
         private void OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton != MouseButton.Right)
+            {
                 return;
+            }
 
             var control = (LoopControl)sender;
 
             if (IsOnLefEdgeLoop(control))
-                ViewModel.isLoopBeginDragLeftHandle = true;
+            {
+                ViewModel.IsLoopBeginDragLeftHandle = true;
+            }
 
             if (IsOnRightEdgeLoop(control))
-                ViewModel.isLoopBeginDragRightHandle = true;
+            {
+                ViewModel.IsLoopBeginDragRightHandle = true;
+            }
 
             Helpers.DraggedElement = control;
             Helpers.DraggedElement.CaptureMouse();
         }
 
-        private bool IsOnLefEdgeLoop(object sender, double EdgeThreshold = 20.04f)
+        private bool IsOnLefEdgeLoop(object sender, double edgeThreshold = 20.04f)
         {
             var control = (LoopControl)sender;
             var mousePos = Mouse.GetPosition(control);
 
-            //Because Control is 1px width and we scale based on LoopPercentage it, we need the scaled Width Value with GetScaleX
+            // Because Control is 1px width and we scale based on LoopPercentage it, we need the scaled Width Value with GetScaleX
             double scaleX = GetScaleX(control);
 
             var controlWidth = control.ActualWidth * scaleX;
 
-            return mousePos.X * scaleX <= EdgeThreshold && mousePos.Y < 30;
+            return mousePos.X * scaleX <= edgeThreshold && mousePos.Y < 30;
         }
 
-        private bool IsOnRightEdgeLoop(object sender, double EdgeThreshold = 20.04f)
+        private bool IsOnRightEdgeLoop(object sender, double edgeThreshold = 20.04f)
         {
             var control = (LoopControl)sender;
             var mousePos = Mouse.GetPosition(control);
 
-            //Because COntrol is 1px width and we scale based on LoopPercentage it, we need the scaled Width Value with GetScaleX
+            // Because COntrol is 1px width and we scale based on LoopPercentage it, we need the scaled Width Value with GetScaleX
             double scaleX = GetScaleX(control);
 
             var controlWidth = control.ActualWidth * scaleX;
 
-            return mousePos.X * scaleX > controlWidth - EdgeThreshold && mousePos.Y < 30;
+            return mousePos.X * scaleX > controlWidth - edgeThreshold && mousePos.Y < 30;
         }
 
         private double GetScaleX(UIElement element)
@@ -80,7 +90,9 @@ namespace LeaMusicGui.Behaviors
             {
                 var scale = tg.Children.OfType<ScaleTransform>().FirstOrDefault();
                 if (scale != null)
+                {
                     return scale.ScaleX;
+                }
             }
             else if (element.RenderTransform is ScaleTransform s)
             {

@@ -1,8 +1,8 @@
-﻿using System.Globalization;
-using System.Windows.Data;
-
-namespace LeaMusicGui.Converters
+﻿namespace LeaMusicGui.Converters
 {
+    using System.Globalization;
+    using System.Windows.Data;
+
     public class PlayheadPercentageOffsetMultiConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
@@ -22,5 +22,4 @@ namespace LeaMusicGui.Converters
             throw new NotImplementedException();
         }
     }
-
 }

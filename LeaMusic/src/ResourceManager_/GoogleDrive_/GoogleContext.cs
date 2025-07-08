@@ -1,19 +1,19 @@
-﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.Drive.v3;
-using Google.Apis.Services;
-using Google.Apis.Util.Store;
-using System.Diagnostics;
-using File = Google.Apis.Drive.v3.Data.File;
-
-namespace LeaMusic.src.ResourceManager_.GoogleDrive_
+﻿namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 {
+    using System.Diagnostics;
+    using Google.Apis.Auth.OAuth2;
+    using Google.Apis.Drive.v3;
+    using Google.Apis.Services;
+    using Google.Apis.Util.Store;
+    using File = Google.Apis.Drive.v3.Data.File;
+
     internal class GoogleContext
     {
-        private UserCredential? credential;
-        private DriveService driveService = null!;
+        private readonly string[] m_scopes = { DriveService.Scope.Drive };
+        private readonly string m_applicationName = "Drive API .NET Upload";
 
-        private readonly string[] scopes = { DriveService.Scope.Drive };
-        private readonly string applicationName = "Drive API .NET Upload";
+        private UserCredential? m_credential;
+        private DriveService m_driveService = null!;
 
         public GoogleContext()
         {
@@ -21,45 +21,44 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
         public void CreateDriveService()
         {
-            if (driveService != null)
+            if (m_driveService != null)
+            {
                 return;
+            }
 
-            //TODO: Store credentials not in GIT
+            // TODO: Store credentials not in GIT
             using (var stream = new FileStream("C:/t/credentials.json", FileMode.Open, FileAccess.Read))
             {
                 string credPath = "credentials.json";
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                m_credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
                     GoogleClientSecrets.FromStream(stream).Secrets,
-                    scopes,
+                    m_scopes,
                     "user",
                     CancellationToken.None,
                     new FileDataStore(credPath, true)).Result;
             }
 
-            driveService = new DriveService(new BaseClientService.Initializer()
+            m_driveService = new DriveService(new BaseClientService.Initializer()
             {
-                HttpClientInitializer = credential,
-                ApplicationName = applicationName,
+                HttpClientInitializer = m_credential,
+                ApplicationName = m_applicationName,
             });
 
-            if (driveService == null)
+            if (m_driveService == null)
+            {
                 throw new NullReferenceException("Cant intialize Drive");
+            }
         }
 
-        private void Request_ProgressChanged(Google.Apis.Upload.IUploadProgress progress)
-        {
-            Debug.WriteLine($"Status: {progress.Status}| {progress.BytesSent} bytes");
-        }
-
-        //check
         public File? CreateOrGetFolder(string name)
         {
             if (string.IsNullOrEmpty(name))
+            {
                 throw new ArgumentException("Name can't be null or empty");
+            }
 
             // Check for an existing folder with the given name
-            var listRequest = driveService.Files.List();
-
+            var listRequest = m_driveService.Files.List();
 
             listRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and name = '{name}' and trashed = false";
             listRequest.Fields = "files(id, name)";
@@ -78,10 +77,10 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             var fileMetadata = new File()
             {
                 Name = name,
-                MimeType = "application/vnd.google-apps.folder"
+                MimeType = "application/vnd.google-apps.folder",
             };
 
-            var createRequest = driveService.Files.Create(fileMetadata);
+            var createRequest = m_driveService.Files.Create(fileMetadata);
             createRequest.Fields = "id, name";
             var folder = createRequest.Execute();
 
@@ -89,11 +88,10 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             return folder;
         }
 
-        //check
         public File CreateOrGetSubfolder(File parentFolder, string subfolderName)
         {
             // 1. Prüfen, ob Unterordner schon existiert
-            var listRequest = driveService.Files.List();
+            var listRequest = m_driveService.Files.List();
 
             listRequest.Q = $"mimeType='application/vnd.google-apps.folder' and name='{subfolderName}' and '{parentFolder.Id}' in parents and trashed=false";
             listRequest.Fields = "files(id, name)";
@@ -111,10 +109,10 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
                 {
                     Name = subfolderName,
                     MimeType = "application/vnd.google-apps.folder",
-                    Parents = new List<string> { parentFolder.Id }
+                    Parents = new List<string> { parentFolder.Id },
                 };
 
-                var createRequest = driveService.Files.Create(fileMetadata);
+                var createRequest = m_driveService.Files.Create(fileMetadata);
                 createRequest.Fields = "id";
 
                 var folder = createRequest.Execute();
@@ -130,7 +128,7 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
             do
             {
-                var request = driveService.Files.List();
+                var request = m_driveService.Files.List();
 
                 request.Q = $"'{folderId}' in parents and trashed = false";
                 request.Fields = "nextPageToken, files(id, name)";
@@ -148,16 +146,15 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
                 }
 
                 pageToken = response.NextPageToken;
-
-            } while (pageToken != null);
+            }
+            while (pageToken != null);
 
             return result;
         }
 
-        //check
         public string? GetFolderIdByName(string folderName)
         {
-            var listRequest = driveService.Files.List();
+            var listRequest = m_driveService.Files.List();
 
             listRequest.Q = $"name = '{folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
             listRequest.Fields = "files(id, name)";
@@ -167,27 +164,30 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             return folders.FirstOrDefault()?.Id;
         }
 
-        //check
         public string? GetFolderIdByPath(string path)
         {
             var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
 
             // Remove "root" if user passed it in
             if (segments.First() == "root")
+            {
                 segments.RemoveAt(0);
+            }
 
             string? parentId = "root";
 
             foreach (var segment in segments)
             {
-                var listRequest = driveService.Files.List();
+                var listRequest = m_driveService.Files.List();
                 listRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and name = '{segment}' and '{parentId}' in parents and trashed = false";
                 listRequest.Fields = "files(id, name)";
                 var result = listRequest.Execute();
 
                 var folder = result.Files.FirstOrDefault();
                 if (folder == null)
+                {
                     return null;
+                }
 
                 parentId = folder.Id;
             }
@@ -200,9 +200,11 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             string? folderId = GetFolderIdByPath(folderPath);
 
             if (string.IsNullOrEmpty(folderId))
+            {
                 return null;
+            }
 
-            var fileRequest = driveService.Files.List();
+            var fileRequest = m_driveService.Files.List();
             fileRequest.Q = $"name = '{fileName}' and '{folderId}' in parents and trashed = false";
             fileRequest.Fields = "files(id, name, createdTime)";
 
@@ -211,22 +213,25 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             var file = files.FirstOrDefault();
 
             if (file == null || file.CreatedTimeDateTimeOffset == null)
+            {
                 return null;
+            }
 
             var createTime = file.CreatedTimeDateTimeOffset.Value.DateTime;
 
             return (file.Id, file.Name, createTime);
         }
 
-        //check
         public string? GetFileIdByNameInFolder(string fileName, string folderPath)
         {
             string? folderId = GetFolderIdByPath(folderPath);
 
             if (string.IsNullOrEmpty(folderId))
+            {
                 return null;
+            }
 
-            var fileRequest = driveService.Files.List();
+            var fileRequest = m_driveService.Files.List();
             fileRequest.Q = $"name = '{fileName}' and '{folderId}' in parents and trashed = false";
             fileRequest.Fields = "files(id, name)";
 
@@ -235,7 +240,6 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             return files.FirstOrDefault()?.Id;
         }
 
-        //check
         public async Task UpdateFileByNameInFolder(string filePath, string fileId, string folderId)
         {
             var fileName = Path.GetFileName(filePath);
@@ -244,19 +248,18 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             {
                 Name = fileName,
                 MimeType = "application/zip",
-                Parents = new List<string> { folderId }
+                Parents = new List<string> { folderId },
             };
 
             using var stream = new FileStream(filePath, FileMode.Open);
 
-            var updateRequest = driveService.Files.Update(new File(), fileId, stream, fileMetadata.MimeType);
+            var updateRequest = m_driveService.Files.Update(new File(), fileId, stream, fileMetadata.MimeType);
             updateRequest.Fields = "id, name";
 
             await updateRequest.UploadAsync();
         }
 
-        //check
-        //If file Exist, do nothing
+        // If file Exist, do nothing
         public async Task UploadZipToFolderAsync(string filePath, string folderId)
         {
             var fileName = Path.GetFileName(filePath);
@@ -265,27 +268,28 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             {
                 Name = fileName,
                 MimeType = "application/zip",
-                Parents = new List<string> { folderId }
+                Parents = new List<string> { folderId },
             };
 
             FilesResource.CreateMediaUpload request;
 
-            //check if file exists
+            // check if file exists
             var exist = GetFileIdFromFolder(fileName, "Test/lol");
 
             if (!string.IsNullOrEmpty(exist))
+            {
                 return;
+            }
 
             using var stream = new FileStream(filePath, FileMode.Open);
 
-            request = driveService.Files.Create(fileMetadata, stream, "application/zip");
+            request = m_driveService.Files.Create(fileMetadata, stream, "application/zip");
             request.ProgressChanged += Request_ProgressChanged;
             request.Fields = "id";
 
             await request.UploadAsync();
         }
 
-        //check
         public string? GetFileIdFromFolder(string fileName, string folderPath)
         {
             // First get the folder ID from the folder path (supports nested folders)
@@ -297,7 +301,7 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
             }
 
             // List files inside the folder
-            var fileRequest = driveService.Files.List();
+            var fileRequest = m_driveService.Files.List();
             fileRequest.Q = $"name = '{fileName.Replace("'", "\\'")}' and '{folderId}' in parents and trashed = false";
             fileRequest.Fields = "files(id, name)";
             var files = fileRequest.Execute().Files;
@@ -315,7 +319,7 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
         {
             try
             {
-                driveService.Files.Delete(fileId).Execute();
+                m_driveService.Files.Delete(fileId).Execute();
                 Console.WriteLine($"File with ID '{fileId}' has been deleted.");
             }
             catch (Exception ex)
@@ -326,15 +330,18 @@ namespace LeaMusic.src.ResourceManager_.GoogleDrive_
 
         internal async Task<Stream> GetZipAsStream(string id)
         {
-           // var _ = await driveService.Files.Get(id).ExecuteAsync();
-
-            var request = driveService.Files.Get(id);
+            var request = m_driveService.Files.Get(id);
             var memoryStream = new MemoryStream();
 
             await request.DownloadAsync(memoryStream);
 
             memoryStream.Seek(0, SeekOrigin.Begin);
             return memoryStream;
+        }
+
+        private void Request_ProgressChanged(Google.Apis.Upload.IUploadProgress progress)
+        {
+            Debug.WriteLine($"Status: {progress.Status}| {progress.BytesSent} bytes");
         }
     }
 }

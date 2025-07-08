@@ -1,14 +1,16 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using LeaMusic.src.AudioEngine_;
-using LeaMusic.src.ResourceManager_;
-using LeaMusic.src.Services;
-using System.Collections.ObjectModel;
-using System.Windows.Media;
-using Point = System.Windows.Point;
-
-namespace LeaMusicGui
+﻿namespace LeaMusicGui
 {
+    using System.Collections.ObjectModel;
+    using System.Windows.Media;
+    using CommunityToolkit.Mvvm.ComponentModel;
+    using CommunityToolkit.Mvvm.Input;
+    using LeaMusic.src.AudioEngine_;
+    using LeaMusic.Src.AudioEngine_;
+    using LeaMusic.src.ResourceManager_;
+    using LeaMusic.src.Services;
+    using LeaMusic.Src.Services;
+    using Point = System.Windows.Point;
+
     public partial class MainViewModel : ObservableObject
     {
         [ObservableProperty]
@@ -31,7 +33,6 @@ namespace LeaMusicGui
 
         [ObservableProperty]
         public double sliderZoom = 1.0f;
-
 
         [ObservableProperty]
         public double selectionStartPercentage;
@@ -61,29 +62,33 @@ namespace LeaMusicGui
         public int projectBpm;
 
         [ObservableProperty]
-        bool isProjectLoading;
+        public bool isProjectLoading;
 
-        public bool isLoopBeginDragLeftHandle;
-        public bool isLoopBeginDragRightHandle;
-        public bool isMarkerMoving;
+        public bool IsLoopBeginDragLeftHandle { get; set; }
+
+        public bool IsLoopBeginDragRightHandle { get; set; }
+
+        public bool IsMarkerMoving { get; set; }
+
         public ObservableCollection<TrackDTO> WaveformWrappers { get; set; } = new ObservableCollection<TrackDTO>();
+
         public ObservableCollection<MarkerDTO> BeatMarkers { get; set; } = new ObservableCollection<MarkerDTO>();
-
-        private AudioEngine AudioEngine;
-        private TimelineService TimelineService;
-        private LeaResourceManager ResourceManager;
-        private ProjectService ProjectService;
-        private TimelineCalculator TimelineCalculator;
-        private LoopService LoopService;
-        private IResourceHandler resourceHandler;
-        private IDialogService DialogService;
-
-        private Project Project { get; set; }
-        private bool isSyncEnabled { get; set; } = true;
 
         public bool IsProjectLoaded => Project != null && Project.Duration > TimeSpan.FromSeconds(1);
 
-        Action<string> updateStatus;
+        private Project Project { get; set; }
+
+        private bool IsSyncEnabled { get; set; } = true;
+
+        private AudioEngine m_audioEngine;
+        private TimelineService m_timelineService;
+        private LeaResourceManager m_resourceManager;
+        private ProjectService m_projectService;
+        private TimelineCalculator m_timelineCalculator;
+        private LoopService m_loopService;
+        private IResourceHandler m_resourceHandler;
+        private IDialogService m_dialogService;
+        private Action<string> m_updateStatus;
 
         public MainViewModel(ProjectService projectService,
                              LeaResourceManager resourceManager,
@@ -93,22 +98,21 @@ namespace LeaMusicGui
                              LoopService loopService,
                              IDialogService dialogService)
         {
-
-            ProjectService = projectService;
-            ResourceManager = resourceManager;
-            TimelineService = timelineService;
-            AudioEngine = audioEngine;
-            DialogService = dialogService;
-            TimelineCalculator = timelineCalculator;
-            LoopService = loopService;
+            m_projectService = projectService;
+            m_resourceManager = resourceManager;
+            m_timelineService = timelineService;
+            m_audioEngine = audioEngine;
+            m_dialogService = dialogService;
+            m_timelineCalculator = timelineCalculator;
+            m_loopService = loopService;
 
             statusMessages = "";
 
-            //Create Empty Project for StartUp
+            // Create Empty Project for StartUp
             Project = Project.CreateEmptyProject("TEST");
             ProjectName = "NOT SET";
 
-            resourceHandler = new FileHandler();
+            m_resourceHandler = new FileHandler();
 
             audioEngine.MountProject(Project);
 
@@ -118,7 +122,7 @@ namespace LeaMusicGui
 
             CompositionTarget.Rendering += (sender, e) => audioEngine.Update();
 
-            updateStatus = (message) =>
+            m_updateStatus = (message) =>
             {
                 StatusMessages = message;
             };
@@ -126,15 +130,14 @@ namespace LeaMusicGui
 
         private async Task SaveProject()
         {
-            await ProjectService.SaveProject(Project, updateStatus);
+            await m_projectService.SaveProject(Project, m_updateStatus);
         }
 
         private async Task LoadProject()
         {
-            //TMP
-            isSyncEnabled = true;
+            IsSyncEnabled = true;
 
-            var project = await ProjectService.LoadProjectAsync(isGoogleDriveSync: isSyncEnabled, updateStatus);
+            var project = await m_projectService.LoadProjectAsync(isGoogleDriveSync: IsSyncEnabled, m_updateStatus);
 
             if (project == null)
             {
@@ -148,8 +151,8 @@ namespace LeaMusicGui
 
             ProjectName = Project.Name;
 
-            AudioEngine.MountProject(Project);
-            AudioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
+            m_audioEngine.MountProject(Project);
+            m_audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
 
             CreateTrackDTO();
             CreateMarkerDTO();
@@ -164,7 +167,7 @@ namespace LeaMusicGui
 
             for (int i = 0; i < Project.Tracks.Count; i++)
             {
-                trackDTOList.Add(TimelineService.RequestSample(i, (int)newWidth));
+                trackDTOList.Add(m_timelineService.RequestSample(i, (int)newWidth));
             }
 
             UpdateTrackDTO(trackDTOList);
@@ -177,7 +180,7 @@ namespace LeaMusicGui
                 if (IsMarkerVisible(BeatMarkers[i]))
                 {
                     BeatMarkers[i].Visible = true;
-                    BeatMarkers[i].PositionRelativeView = TimelineCalculator.CalculateSecRelativeToViewWindowPercentage(BeatMarkers[i].Marker.Position, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
+                    BeatMarkers[i].PositionRelativeView = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(BeatMarkers[i].Marker.Position, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration);
                 }
                 else
                 {
@@ -185,19 +188,21 @@ namespace LeaMusicGui
                 }
             }
 
-            ProjectBpm = AudioEngine.CalculateBpm(beatsPerMeasure: 4);
+            ProjectBpm = m_audioEngine.CalculateBpm(beatsPerMeasure: 4);
         }
 
         // currentMarkerID is set when the User click on the marker(Command) in the View,
         // after that OnRightMouseDown() invoke this Method and currentMarkerID is used to find the Marker the User clicked on.
+        private int m_currentMarkerID = 0;
 
-        int currentMarkerID = 0;
         public void MoveMarker(Point position, int renderWidth)
         {
-            var marker = AudioEngine.Project.BeatMarkers.Where(marker => marker.ID == currentMarkerID).FirstOrDefault();
+            var marker = m_audioEngine.Project.BeatMarkers.Where(marker => marker.ID == m_currentMarkerID).FirstOrDefault();
 
             if (marker != null)
-                marker.Position = TimeSpan.FromSeconds(TimelineCalculator.ConvertPixelToSecond(position.X, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, renderWidth));
+            {
+                marker.Position = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(position.X, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, renderWidth));
+            }
 
             UpdateMarkers();
         }
@@ -207,11 +212,13 @@ namespace LeaMusicGui
             for (int i = 0; i < waveforms.Count; i++)
             {
                 if (WaveformWrappers.Count < waveforms.Count)
+                {
                     WaveformWrappers.Add(new TrackDTO());
+                }
 
                 WaveformWrappers[i].Waveform = waveforms[i];
-                WaveformWrappers[i].Name = AudioEngine.Project.Tracks[i].Name ?? "No Name Set";
-                WaveformWrappers[i].TrackID = AudioEngine.Project.Tracks[i].ID;
+                WaveformWrappers[i].Name = m_audioEngine.Project.Tracks[i].Name ?? "No Name Set";
+                WaveformWrappers[i].TrackID = m_audioEngine.Project.Tracks[i].ID;
             }
         }
 
@@ -220,7 +227,9 @@ namespace LeaMusicGui
             var trackDTOList = new List<Memory<float>>();
 
             for (int i = 0; i < Project.Tracks.Count; i++)
-                trackDTOList.Add(TimelineService.RequestSample(i, 1200));
+            {
+                trackDTOList.Add(m_timelineService.RequestSample(i, 1200));
+            }
 
             UpdateTrackDTO(trackDTOList);
         }
@@ -229,13 +238,13 @@ namespace LeaMusicGui
         internal void CreateMarkerDTO()
         {
             BeatMarkers.Clear();
-            for (int i = 0; i < AudioEngine.Project.BeatMarkers.Count; i++)
+            for (int i = 0; i < m_audioEngine.Project.BeatMarkers.Count; i++)
             {
-                var marker = AudioEngine.Project.BeatMarkers[i];
+                var marker = m_audioEngine.Project.BeatMarkers[i];
 
                 var w = new MarkerDTO();
                 w.Marker = marker;
-                w.PositionRelativeView = TimelineCalculator.CalculateSecRelativeToViewWindowPercentage(marker.Position, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
+                w.PositionRelativeView = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(marker.Position, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration);
                 w.Marker.ID = marker.ID;
                 w.Marker.Description = marker.Description;
                 BeatMarkers.Add(w);
@@ -244,8 +253,10 @@ namespace LeaMusicGui
 
         private bool IsMarkerVisible(MarkerDTO testMarker)
         {
-            if (testMarker.Marker.Position < AudioEngine.ViewStartTime || testMarker.Marker.Position > AudioEngine.ViewEndTime)
+            if (testMarker.Marker.Position < m_audioEngine.ViewStartTime || testMarker.Marker.Position > m_audioEngine.ViewEndTime)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -255,31 +266,31 @@ namespace LeaMusicGui
             TotalProjectDuration = Project.Duration.TotalSeconds;
             CurrentPlayTime = positionInSec.TotalSeconds;
 
-            ProgressInPercentage = (AudioEngine.CurrentPosition.TotalSeconds / AudioEngine.TotalDuration.TotalSeconds) * 100;
+            ProgressInPercentage = (m_audioEngine.CurrentPosition.TotalSeconds / m_audioEngine.TotalDuration.TotalSeconds) * 100;
 
             //scroll view when Playhead reach the end of the view
-            if (AudioEngine.CurrentPosition >= AudioEngine.ViewEndTime)
+            if (m_audioEngine.CurrentPosition >= m_audioEngine.ViewEndTime)
             {
-                AudioEngine.ZoomViewWindow(Zoom, AudioEngine.CurrentPosition + AudioEngine.halfViewWindow);
+                m_audioEngine.ZoomViewWindow(Zoom, m_audioEngine.CurrentPosition + m_audioEngine.HalfViewWindow);
                 UpdateWaveformDTO(RenderWidth);
             }
         }
 
         private void AudioEngine_OnLoopChange(TimeSpan startSec, TimeSpan endSec)
         {
-            SelectionStartPercentage = TimelineCalculator.CalculateSecRelativeToViewWindowPercentage(startSec, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
-            SelectionEndPercentage = TimelineCalculator.CalculateSecRelativeToViewWindowPercentage(endSec, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
+            SelectionStartPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(startSec, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration);
+            SelectionEndPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(endSec, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration);
         }
 
         private void AudioEngine_OnPlayHeadChange(TimeSpan positionInSeconds)
         {
-            PlayheadPercentage = TimelineCalculator.CalculateSecRelativeToViewWindowPercentage(positionInSeconds, AudioEngine.ViewStartTime, AudioEngine.ViewDuration);
+            PlayheadPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(positionInSeconds, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration);
             UpdateMarkers();
         }
 
         partial void OnPitchChanged(int value)
         {
-            AudioEngine.ChangePitch(value);
+            m_audioEngine.ChangePitch(value);
         }
 
         partial void OnProjectNameChanged(string value)
@@ -290,14 +301,14 @@ namespace LeaMusicGui
 
         partial void OnScrollChanged(double value)
         {
-            AudioEngine.ScrollWaveForm(value);
+            m_audioEngine.ScrollWaveForm(value);
 
             UpdateWaveformDTO(RenderWidth);
         }
 
         partial void OnSpeedChanged(double value)
         {
-            AudioEngine.ChangeSpeed(value);
+            m_audioEngine.ChangeSpeed(value);
         }
 
         partial void OnZoomChanged(double value)
@@ -309,19 +320,19 @@ namespace LeaMusicGui
         {
             Zoom = value;
 
-            AudioEngine.ZoomViewWindow(value, AudioEngine.CurrentPosition);
+            m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
             UpdateWaveformDTO(RenderWidth);
         }
 
         public void SetTextMarker()
         {
-            AudioEngine.AddMarker(AudioEngine.CurrentPosition, "B");
+            m_audioEngine.AddMarker(m_audioEngine.CurrentPosition, "B");
             CreateMarkerDTO();
         }
 
         public void ResetZoomParameter()
         {
-            TimelineCalculator.ResetZoomParameter();
+            m_timelineCalculator.ResetZoomParameter();
 
             //zoomStartPositionSetOnce = false;
         }
@@ -336,85 +347,88 @@ namespace LeaMusicGui
         {
             var point = new System.Drawing.Point((int)p.X, (int)p.Y);
 
-            var result = TimelineCalculator.ZoomWaveformMouse(point, AudioEngine.ViewStartTime, AudioEngine.ViewDuration,  Zoom, width);
-           
+            var result = m_timelineCalculator.ZoomWaveformMouse(point, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration,  Zoom, width);
+
             Zoom = result.newZoomFactor;
-            SliderZoom = result.newZoomFactor; 
+            SliderZoom = result.newZoomFactor;
 
-            AudioEngine.ZoomViewWindowRelative(result.newZoomFactor, result.zoomStartPosition);
-
-            UpdateWaveformDTO(RenderWidth);
-            CreateMarkerDTO();
-        }
-
-        private void SetOrAdjustLoop(TimeSpan? proposedStart, TimeSpan? proposedEnd)
-        {
-            // Determine the actual start and end for the loop operation
-            // Use existing LoopStart/LoopEnd if not explicitly provided
-            TimeSpan currentLoopStart = proposedStart ?? AudioEngine.LoopStart;
-            TimeSpan currentLoopEnd = proposedEnd ?? AudioEngine.LoopEnd;
-
-            if(proposedStart != null)
-                currentLoopStart = SnappingService.SnapToMarkers(
-                currentLoopStart,
-                AudioEngine.Project.BeatMarkers,
-                AudioEngine.ViewStartTime,
-                AudioEngine.ViewDuration,
-                RenderWidth, thresholdInMs: 10);
-
-
-            if (proposedEnd != null)
-                currentLoopEnd = SnappingService.SnapToMarkers(
-                currentLoopEnd,
-                AudioEngine.Project.BeatMarkers,
-                AudioEngine.ViewStartTime,
-                AudioEngine.ViewDuration,
-                RenderWidth,
-                thresholdInMs: 10);
-
-            // Use the LoopPlaybackService to determine the final action
-            var loopAction = LoopService.DetermineLoopAction(currentLoopStart, currentLoopEnd);
-
-            if (!loopAction.ShouldSetLoop && !loopAction.ShouldJump)
-            {
-                return; // Service decided to ignore this input
-            }
-
-            if (loopAction.ShouldSetLoop)
-            {
-                AudioEngine.Loop(loopAction.LoopStart, loopAction.LoopEnd);
-            }
-
-            if (loopAction.ShouldJump)
-            {
-                AudioEngine.AudioJumpToSec(loopAction.JumpToPosition);
-            }
+            m_audioEngine.ZoomViewWindowRelative(result.newZoomFactor, result.zoomStartPosition);
 
             UpdateWaveformDTO(RenderWidth);
             CreateMarkerDTO();
         }
 
-     
         public void LoopSelection(double startPixel, double endPixel, double renderWidth)
         {
-            var startSec = TimeSpan.FromSeconds(TimelineCalculator.ConvertPixelToSecond(startPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
-            var endSec = TimeSpan.FromSeconds(TimelineCalculator.ConvertPixelToSecond(endPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
             SetOrAdjustLoop(startSec, endSec);
         }
 
         public void LoopSelectionStart(double startPixel, double renderWidth)
         {
-            var startSec = TimeSpan.FromSeconds(TimelineCalculator.ConvertPixelToSecond(startPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
-            
+            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+
             SetOrAdjustLoop(startSec, null); // Only proposing a new start
         }
 
         public void LoopSelectionEnd(double endPixel, double renderWidth)
         {
-            var endSec = TimeSpan.FromSeconds(TimelineCalculator.ConvertPixelToSecond(endPixel, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
-           
+            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+
             SetOrAdjustLoop(null, endSec); // Only proposing a new end
+        }
+
+        private void SetOrAdjustLoop(TimeSpan? proposedStart, TimeSpan? proposedEnd)
+        {
+            // Determine the actual start and end for the loop operation
+            // Use existing LoopStart/LoopEnd if not explicitly provided
+            TimeSpan currentLoopStart = proposedStart ?? m_audioEngine.LoopStart;
+            TimeSpan currentLoopEnd = proposedEnd ?? m_audioEngine.LoopEnd;
+
+            if (proposedStart != null)
+            {
+                currentLoopStart = SnappingService.SnapToMarkers(
+                currentLoopStart,
+                m_audioEngine.Project.BeatMarkers,
+                m_audioEngine.ViewStartTime,
+                m_audioEngine.ViewDuration,
+                RenderWidth,
+                thresholdInMs: 10);
+            }
+
+            if (proposedEnd != null)
+            {
+                currentLoopEnd = SnappingService.SnapToMarkers(
+                currentLoopEnd,
+                m_audioEngine.Project.BeatMarkers,
+                m_audioEngine.ViewStartTime,
+                m_audioEngine.ViewDuration,
+                RenderWidth,
+                thresholdInMs: 10);
+            }
+
+            // Use the LoopPlaybackService to determine the final action
+            var loopAction = m_loopService.DetermineLoopAction(currentLoopStart, currentLoopEnd);
+
+            if (!loopAction.shouldSetLoop && !loopAction.shouldJump)
+            {
+                return; // Service decided to ignore this input
+            }
+
+            if (loopAction.shouldSetLoop)
+            {
+                m_audioEngine.Loop(loopAction.loopStart, loopAction.loopEnd);
+            }
+
+            if (loopAction.shouldJump)
+            {
+                m_audioEngine.AudioJumpToSec(loopAction.jumpToPosition);
+            }
+
+            UpdateWaveformDTO(RenderWidth);
+            CreateMarkerDTO();
         }
 
         [RelayCommand]
@@ -428,44 +442,40 @@ namespace LeaMusicGui
         {
             Zoom = value;
 
-
-            AudioEngine.ZoomViewWindow(value, AudioEngine.CurrentPosition);
+            m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
 
             UpdateWaveformDTO(RenderWidth);
-
         }
-
 
         [RelayCommand]
         public void FitLoopToView()
         {
-            var result = TimelineCalculator.FitLoopToView(AudioEngine.LoopStart, AudioEngine.LoopEnd, AudioEngine.TotalDuration);
-         
-            AudioEngine.ZoomViewWindow(result.zoomFactor, result.paddedStart, result.paddedEnd);
+            var result = m_timelineCalculator.FitLoopToView(m_audioEngine.LoopStart, m_audioEngine.LoopEnd, m_audioEngine.TotalDuration);
+
+            m_audioEngine.ZoomViewWindow(result.zoomFactor, result.paddedStart, result.paddedEnd);
 
             var trackDTOList = new List<Memory<float>>();
             for (int i = 0; i < Project.Tracks.Count; i++)
             {
-                trackDTOList.Add(TimelineService.RequestSample(i, RenderWidth, result.paddedStart, result.paddedEnd));
+                trackDTOList.Add(m_timelineService.RequestSample(i, RenderWidth, result.paddedStart, result.paddedEnd));
             }
 
             UpdateTrackDTO(trackDTOList);
             CreateMarkerDTO();
 
-         
             Zoom = result.zoomFactor;
         }
 
         [RelayCommand]
         private void MarkerClick(MarkerDTO marker)
         {
-            currentMarkerID = marker.Marker.ID;
+            m_currentMarkerID = marker.Marker.ID;
         }
 
         [RelayCommand]
         private void MarkerDelete(MarkerDTO marker)
         {
-            AudioEngine.Project.DeleteMarker(marker.Marker.ID);
+            m_audioEngine.Project.DeleteMarker(marker.Marker.ID);
 
             CreateMarkerDTO();
         }
@@ -473,19 +483,19 @@ namespace LeaMusicGui
         [RelayCommand]
         private void Replay()
         {
-            AudioEngine.Replay();
+            m_audioEngine.Replay();
         }
 
         [RelayCommand]
         private void MuteAllTracks()
         {
-            AudioEngine.MuteAllTracks();
+            m_audioEngine.MuteAllTracks();
         }
 
         [RelayCommand]
         private async Task SaveProjectFile()
         {
-            resourceHandler = new FileHandler();
+            m_resourceHandler = new FileHandler();
             await SaveProject();
         }
 
@@ -498,13 +508,13 @@ namespace LeaMusicGui
                 return;
             }
 
-            AudioEngine.Pause();
+            m_audioEngine.Pause();
         }
 
         [RelayCommand]
         private async Task LoadProjectFile()
         {
-            resourceHandler = new FileHandler();
+            m_resourceHandler = new FileHandler();
             await LoadProject();
 
             StatusMessages = $"Project: {Project.Name} loaded!";
@@ -513,26 +523,28 @@ namespace LeaMusicGui
         [RelayCommand]
         private void AddTrack()
         {
-            var filePath = DialogService.OpenFile("Mp3 (*.mp3)|*.mp3");
+            var filePath = m_dialogService.OpenFile("Mp3 (*.mp3)|*.mp3");
 
             if (!string.IsNullOrEmpty(filePath))
             {
-                AudioEngine.Stop();
+                m_audioEngine.Stop();
 
                 var projectfilePath = filePath;
-                var track = ResourceManager.ImportTrack(new FileLocation(projectfilePath), resourceHandler);
+                var track = m_resourceManager.ImportTrack(new FileLocation(projectfilePath), m_resourceHandler);
 
                 Project.AddTrack(track);
 
                 if (Project.Tracks.Count == 1)
+                {
                     ProjectName = Project.Tracks[0].Name ?? "No Name Set";
+                }
 
                 Project.SetTempo(Speed);
                 CreateTrackDTO();
 
-                //Check if audioengine is playing while addTrack, when true continue playing
-                AudioEngine.MountProject(Project);
-                AudioEngine.AudioJumpToSec(AudioEngine.CurrentPosition);
+                // Check if audioengine is playing while addTrack, when true continue playing
+                m_audioEngine.MountProject(Project);
+                m_audioEngine.AudioJumpToSec(m_audioEngine.CurrentPosition);
             }
         }
 
@@ -544,7 +556,8 @@ namespace LeaMusicGui
                 StatusMessages = "Pleas load a Project...";
                 return;
             }
-            AudioEngine.Play();
+
+            m_audioEngine.Play();
         }
 
         [RelayCommand]
@@ -558,7 +571,7 @@ namespace LeaMusicGui
 
             if (param is TrackDTO wrapper)
             {
-                AudioEngine.MuteTrack(wrapper.TrackID);
+                m_audioEngine.MuteTrack(wrapper.TrackID);
             }
         }
 
@@ -567,14 +580,14 @@ namespace LeaMusicGui
         {
             if (param is TrackDTO wrapper)
             {
-                var track = AudioEngine.Project.Tracks.Where(t => t.ID == wrapper.TrackID).FirstOrDefault();
+                var track = m_audioEngine.Project.Tracks.Where(t => t.ID == wrapper.TrackID).FirstOrDefault();
 
                 if (track != null)
                 {
-                    AudioEngine.Project.Tracks.Remove(track);
+                    m_audioEngine.Project.Tracks.Remove(track);
                     WaveformWrappers.Remove(wrapper);
 
-                    AudioEngine.ReloadMixerInputs();
+                    m_audioEngine.ReloadMixerInputs();
 
                     StatusMessages = $"Track: {track.Name} deleted!";
                 }
@@ -590,19 +603,17 @@ namespace LeaMusicGui
                 return;
             }
 
-            AudioEngine.AudioJumpToSec(TimeSpan.FromSeconds(JumpToPositionInSec));
+            m_audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(JumpToPositionInSec));
         }
-
 
         [RelayCommand]
         private void JumpToLoopStart()
         {
-            if (AudioEngine.LoopStart > TimeSpan.Zero)
+            if (m_audioEngine.LoopStart > TimeSpan.Zero)
             {
-                AudioEngine.AudioJumpToSec(AudioEngine.LoopStart);
+                m_audioEngine.AudioJumpToSec(m_audioEngine.LoopStart);
                 Play();
             }
         }
-
     }
 }

@@ -7,6 +7,7 @@
     public class FileLocation : Location
     {
         public string Path { get; set; }
+
         public FileLocation(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -18,7 +19,7 @@
 
     public class GDriveLocation : Location
     {
-        public string gDriverootFolderPath { get; set; }
+        public string GDriverootFolderPath { get; set; }
 
         public string ProjectName { get; set; }
 
@@ -26,12 +27,9 @@
 
         public GDriveLocation(string gDriveRootFolder, string localProjectFilePath, string projectName)
         {
-            this.gDriverootFolderPath = gDriveRootFolder;
+            GDriverootFolderPath = gDriveRootFolder;
             ProjectName = projectName;
             LocalProjectFilePath = localProjectFilePath;
         }
-
-      
-
     }
 }

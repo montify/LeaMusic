@@ -1,86 +1,76 @@
-﻿using SkiaSharp;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-
-namespace LeaMusicGui.Controls
+﻿namespace LeaMusicGui.Controls
 {
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Media;
+    using System.Windows.Media.Imaging;
+    using SkiaSharp;
+
     public class PlayheadControl : UserControl
     {
-        private WriteableBitmap WriteableBitmap;
-        private SKCanvas canvas;
-        private SKSurface surface;
-        private SKPaint paint;
-
-        private int width;
-        private int height;
-
+        private WriteableBitmap m_writeableBitmap;
+        private SKCanvas m_canvas;
+        private SKSurface m_surface;
+        private SKPaint m_paint;
+        private int m_width;
+        private int m_height;
 
         public PlayheadControl()
         {
-            WriteableBitmap = CreateImage(100, 300);
-            width = (int)WriteableBitmap.Width;
-            height = (int)WriteableBitmap.Height;
+            m_writeableBitmap = CreateImage(100, 300);
+            m_width = (int)m_writeableBitmap.Width;
+            m_height = (int)m_writeableBitmap.Height;
 
-            var info = new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            var info = new SKImageInfo(m_width, m_height, SKColorType.Bgra8888, SKAlphaType.Premul);
 
-            surface = SKSurface.Create(info);
+            m_surface = SKSurface.Create(info);
 
-            paint = new SKPaint
+            m_paint = new SKPaint
             {
                 Color = SKColor.Parse("#FFFFFF"),
                 IsStroke = true,
                 IsAntialias = true,
-                StrokeWidth = 1
+                StrokeWidth = 1,
             };
 
-            //Plan is to render the playhead once, and move its position with offset instead redraw everytime, so just draw it once
             UpdateImage();
         }
 
         public void UpdateImage()
         {
-            canvas = surface.Canvas;
-            canvas.Clear(new SKColor(130, 130, 130));
+            m_canvas = m_surface.Canvas;
+            m_canvas.Clear(new SKColor(130, 130, 130));
 
-            for (int i = 0; i < width; i++)
+            for (int i = 0; i < m_width; i++)
             {
-                paint.Style = SKPaintStyle.Stroke;
-                paint.Color = SKColor.Parse("#000000");
+                m_paint.Style = SKPaintStyle.Stroke;
+                m_paint.Color = SKColor.Parse("#000000");
 
-                //Progress
-                var progressStart = new SKPoint(i, -height);
-                var progressEnd = new SKPoint(i, height);
+                // Progress
+                var progressStart = new SKPoint(i, -m_height);
+                var progressEnd = new SKPoint(i, m_height);
 
-                paint.Color = SKColor.Parse("#913d23");
-                canvas.DrawLine(progressStart, progressEnd, paint);
-
+                m_paint.Color = SKColor.Parse("#913d23");
+                m_canvas.DrawLine(progressStart, progressEnd, m_paint);
             }
 
-            using (SKImage image = surface.Snapshot())
+            using (SKImage image = m_surface.Snapshot())
             using (SKPixmap pixmap = image.PeekPixels())
             {
-                WriteableBitmap.Lock();
+                m_writeableBitmap.Lock();
 
                 unsafe
                 {
                     Buffer.MemoryCopy(
                         source: (void*)pixmap.GetPixels(),
-                        destination: (void*)WriteableBitmap.BackBuffer,
-                        destinationSizeInBytes: WriteableBitmap.BackBufferStride * height,
-                        sourceBytesToCopy: pixmap.RowBytes * height);
+                        destination: (void*)m_writeableBitmap.BackBuffer,
+                        destinationSizeInBytes: m_writeableBitmap.BackBufferStride * m_height,
+                        sourceBytesToCopy: pixmap.RowBytes * m_height);
                 }
 
-                WriteableBitmap.AddDirtyRect(new Int32Rect(0, 0, width, height));
-                WriteableBitmap.Unlock();
+                m_writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, m_width, m_height));
+                m_writeableBitmap.Unlock();
             }
-        }
-
-        protected override void OnRender(DrawingContext drawingContext)
-        {
-            drawingContext.DrawImage(WriteableBitmap, new Rect(0, 0, Width, Height));
-            base.OnRender(drawingContext);
         }
 
         public WriteableBitmap CreateImage(int width, int height)
@@ -88,5 +78,10 @@ namespace LeaMusicGui.Controls
             return new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
         }
 
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            drawingContext.DrawImage(m_writeableBitmap, new Rect(0, 0, Width, Height));
+            base.OnRender(drawingContext);
+        }
     }
 }

@@ -1,12 +1,9 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-
-namespace LeaMusicGui.Controls.TrackControl_
+﻿namespace LeaMusicGui.Controls.TrackControl_
 {
-    /// <summary>
-    /// Interaction logic for TrackControl.xaml
-    /// </summary>
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Input;
+
     public partial class TrackControl : UserControl
     {
         public TrackControl()
@@ -15,18 +12,17 @@ namespace LeaMusicGui.Controls.TrackControl_
         }
 
         public static readonly DependencyProperty TrackIDProperty =
-         DependencyProperty.Register(
-             nameof(TrackID),
-             typeof(float),
-             typeof(TrackControl),
-             new PropertyMetadata(null));
+            DependencyProperty.Register(
+            nameof(TrackID),
+            typeof(float),
+            typeof(TrackControl),
+            new PropertyMetadata(null));
 
         public int TrackID
         {
             get => (int)GetValue(TrackIDProperty);
             set => SetValue(TrackIDProperty, value);
         }
-
 
         public float HeightScaleFactor
         {
@@ -53,7 +49,6 @@ namespace LeaMusicGui.Controls.TrackControl_
             get => (ReadOnlyMemory<float>)GetValue(WaveformDataProperty);
             set => SetValue(WaveformDataProperty, value);
         }
-
 
         public static readonly DependencyProperty MuteProperty =
         DependencyProperty.Register(
@@ -87,11 +82,10 @@ namespace LeaMusicGui.Controls.TrackControl_
             set { SetValue(MuteProperty, value); }
         }
 
-
         public static readonly DependencyProperty ParentViewModelProperty =
-    DependencyProperty.Register(nameof(ParentViewModel), typeof(MainViewModel), typeof(TrackControl));
-
-
-
+            DependencyProperty.Register(
+                nameof(ParentViewModel),
+                typeof(MainViewModel),
+                typeof(TrackControl));
     }
 }

@@ -1,9 +1,9 @@
 ﻿public record LoopCommand(
-        TimeSpan LoopStart,
-        TimeSpan LoopEnd,
-        TimeSpan JumpToPosition,
-        bool ShouldSetLoop,
-        bool ShouldJump);
+        TimeSpan loopStart,
+        TimeSpan loopEnd,
+        TimeSpan jumpToPosition,
+        bool shouldSetLoop,
+        bool shouldJump);
 
 namespace LeaMusic.src.Services
 {
@@ -14,15 +14,15 @@ namespace LeaMusic.src.Services
             // Your existing logic from the first LoopSelection method
             if (startSec >= endSec || endSec - startSec <= TimeSpan.Zero)
             {
-                return new LoopCommand(TimeSpan.Zero, TimeSpan.Zero, startSec, ShouldSetLoop: true, ShouldJump: true);
+                return new LoopCommand(TimeSpan.Zero, TimeSpan.Zero, startSec, shouldSetLoop: true, shouldJump: true);
             }
             else if (endSec - startSec < TimeSpan.FromMilliseconds(50))
             {
-                return new LoopCommand(TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero, ShouldSetLoop: false, ShouldJump: false);
+                return new LoopCommand(TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero, shouldSetLoop: false, shouldJump: false);
             }
             else
             {
-                return new LoopCommand(startSec, endSec, startSec, ShouldSetLoop: true, ShouldJump: true);
+                return new LoopCommand(startSec, endSec, startSec, shouldSetLoop: true, shouldJump: true);
             }
         }
     }

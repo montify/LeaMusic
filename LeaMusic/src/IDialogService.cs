@@ -2,9 +2,12 @@
 {
     public interface IDialogService
     {
-        string? Save();
-        string? OpenFile(string filter);
+        public string? Save();
+
+        public string? OpenFile(string filter);
+
         public bool EnableSync();
+
         public bool AskDownloadGoogleDrive(DateTime localDate, DateTime googleDriveDate);
     }
 }

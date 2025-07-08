@@ -1,9 +1,8 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using LeaMusic.src.AudioEngine_;
-using System.Drawing;
-
-namespace LeaMusicGui
+﻿namespace LeaMusicGui
 {
+    using CommunityToolkit.Mvvm.ComponentModel;
+    using LeaMusic.Src.AudioEngine_;
+
     public partial class MarkerDTO : ObservableObject
     {
         [ObservableProperty]
@@ -16,6 +15,6 @@ namespace LeaMusicGui
         private BeatMarker marker;
 
         [ObservableProperty]
-        public bool visible = true;
+        private bool visible = true;
     }
 }

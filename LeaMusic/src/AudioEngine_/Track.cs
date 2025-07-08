@@ -1,29 +1,39 @@
-﻿using LeaMusic.src.AudioEngine_.Streams;
-using LeaMusic.src.ResourceManager_;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
-using System.Text.Json.Serialization;
-
-namespace LeaMusic.src.AudioEngine_
+﻿namespace LeaMusic.src.AudioEngine_
 {
+    using System.Text.Json.Serialization;
+    using LeaMusic.src.AudioEngine_.Streams;
+    using LeaMusic.src.ResourceManager_;
+    using NAudio.Wave;
+    using NAudio.Wave.SampleProviders;
+
     public class Track : IDisposable
     {
-        public static int UNIQUE_ID = 0;
+        private static int m_uniqueId = 0;
 
-        internal WaveStream audio = null!;
-        internal RubberBandWaveStream? rubberBandWaveStream;
-        internal LoopStream loopStream = null!;
-        internal WaveformProvider waveformProvider = null!;
+        public WaveStream Audio { get; private set; }
 
-        public VolumeSampleProvider volumeStream = null!;
+        public RubberBandWaveStream RubberBandWaveStream { get; private set; }
+
+        public WaveformProvider WaveformProvider { get; set; }
+
+        public VolumeSampleProvider VolumeStream { get; private set; }
+
+        public LoopStream LoopStream { get; private set; }
+    
         public TimeSpan ClipDuration { get; set; }
+
         public WaveFormat? Waveformat { get; set; }
+
         public int ID { get; set; }
+
         public string? AudioFileName { get; set; }
+
         public string? AudioRelativePath { get; set; }
+
         public string? WaveformRelativePath { get; set; }
 
         public string? Name { get; private set; }
+
         [JsonIgnore]
         public string? OriginFilePath { get; set; }
 
@@ -39,19 +49,19 @@ namespace LeaMusic.src.AudioEngine_
 
             AudioFileName = Path.GetFileName(audioFilePath);
 
-            audio = resourceManager.LoadAudioFile(audioFilePath);
+            Audio = resourceManager.LoadAudioFile(audioFilePath);
             Name = Path.GetFileNameWithoutExtension(OriginFilePath);
 
-            Waveformat = audio.WaveFormat;
-            ClipDuration = audio.TotalTime;
+            Waveformat = Audio.WaveFormat;
+            ClipDuration = Audio.TotalTime;
 
             try
             {
-                loopStream = new LoopStream(audio, 0, ClipDuration.TotalSeconds);
-                rubberBandWaveStream = new RubberBandWaveStream(loopStream);
-                volumeStream = new VolumeSampleProvider(rubberBandWaveStream.ToSampleProvider());
+                LoopStream = new LoopStream(Audio, 0, ClipDuration.TotalSeconds);
+                RubberBandWaveStream = new RubberBandWaveStream(LoopStream);
+                VolumeStream = new VolumeSampleProvider(RubberBandWaveStream.ToSampleProvider());
 
-                ID = ++UNIQUE_ID;
+                ID = ++m_uniqueId;
             }
             catch (Exception)
             {
@@ -62,20 +72,20 @@ namespace LeaMusic.src.AudioEngine_
 
         public void JumpToPosition(TimeSpan position)
         {
-            loopStream.JumpToSeconds(position.TotalSeconds);
+            LoopStream.JumpToSeconds(position.TotalSeconds);
         }
 
         public void SetVolumte(float volume)
         {
-            volumeStream.Volume = volume;
+            VolumeStream.Volume = volume;
         }
 
         public void Dispose()
         {
-            audio?.Dispose();
-            loopStream?.Dispose();
-            rubberBandWaveStream = null;
-            volumeStream = null;
+            Audio?.Dispose();
+            LoopStream?.Dispose();
+            RubberBandWaveStream = null;
+            VolumeStream = null;
         }
     }
 }

@@ -1,14 +1,16 @@
-﻿using System.Globalization;
-using System.Windows.Data;
-
-namespace LeaMusicGui.Converters
+﻿namespace LeaMusicGui.Converters
 {
+    using System.Globalization;
+    using System.Windows.Data;
+
     public class LoopWidthPercentageConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (double.TryParse(values[0].ToString(), out double loopStartPercentage))
+            {
                 if (double.TryParse(values[1].ToString(), out double loopEndPercentage))
+                {
                     if (double.TryParse(values[2].ToString(), out double renderWidth))
                     {
                         var start = (loopStartPercentage / 100.0f) * renderWidth;
@@ -16,6 +18,8 @@ namespace LeaMusicGui.Converters
                         var width = end - start;
                         return width;
                     }
+                }
+            }
 
             return 0.0;
         }
@@ -30,6 +34,4 @@ namespace LeaMusicGui.Converters
             throw new NotImplementedException();
         }
     }
-
-
 }

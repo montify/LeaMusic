@@ -4,51 +4,54 @@ namespace LeaMusic.src.AudioEngine_.Streams
 {
     public class LoopStream : WaveStream
     {
-        private readonly WaveStream sourceStream;
-        public readonly long loopStartBytes;
-        public readonly long loopEndBytes;
-        public readonly long startPosition;
+        private readonly WaveStream m_sourceStream;
+        private readonly long m_loopStartBytes;
+        private readonly long m_loopEndBytes;
+        private readonly long m_startPosition;
 
         public LoopStream(WaveStream source, double startTimeSec, double loopDurationSec)
         {
-            sourceStream = source;
-            startPosition = (long)(startTimeSec * source.WaveFormat.AverageBytesPerSecond);
-            loopStartBytes = startPosition;
-            loopEndBytes = loopStartBytes + (long)(loopDurationSec * source.WaveFormat.AverageBytesPerSecond);
+            m_sourceStream = source;
+            m_startPosition = (long)(startTimeSec * source.WaveFormat.AverageBytesPerSecond);
+            m_loopStartBytes = m_startPosition;
+            m_loopEndBytes = m_loopStartBytes + (long)(loopDurationSec * source.WaveFormat.AverageBytesPerSecond);
 
             // Ensure we don't exceed file length
-            if (loopEndBytes > sourceStream.Length)
-                loopEndBytes = sourceStream.Length;
+            if (m_loopEndBytes > m_sourceStream.Length)
+            {
+                m_loopEndBytes = m_sourceStream.Length;
+            }
 
-            sourceStream.Position = startPosition;
+            m_sourceStream.Position = m_startPosition;
         }
 
         public void JumpToSeconds(double startTimeSec)
         {
-            sourceStream.CurrentTime = TimeSpan.FromSeconds(startTimeSec);
+            m_sourceStream.CurrentTime = TimeSpan.FromSeconds(startTimeSec);
         }
 
-        public override WaveFormat WaveFormat => sourceStream.WaveFormat;
+        public override WaveFormat WaveFormat => m_sourceStream.WaveFormat;
 
-        public override long Length => loopEndBytes - loopStartBytes;
+        public override long Length => m_loopEndBytes - m_loopStartBytes;
 
         public override long Position
         {
-            get => sourceStream.Position - loopStartBytes;
+            get => m_sourceStream.Position - m_loopStartBytes;
             set
             {
-                long newPos = loopStartBytes + value;
-                if (newPos >= loopEndBytes)
-                    newPos = loopStartBytes;
+                long newPos = m_loopStartBytes + value;
+                if (newPos >= m_loopEndBytes)
+                {
+                    newPos = m_loopStartBytes;
+                }
 
-                sourceStream.Position = newPos;
+                m_sourceStream.Position = newPos;
             }
         }
 
+        public float CurrentPositionInSec => (float)Position / m_sourceStream.WaveFormat.AverageBytesPerSecond;
 
-        public float CurrentPositionInSec => (float)Position / sourceStream.WaveFormat.AverageBytesPerSecond;
-        public float TotalLengthInSec => (float)sourceStream.Length / sourceStream.WaveFormat.AverageBytesPerSecond;
-
+        public float TotalLengthInSec => (float)m_sourceStream.Length / m_sourceStream.WaveFormat.AverageBytesPerSecond;
 
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -56,29 +59,28 @@ namespace LeaMusic.src.AudioEngine_.Streams
 
             while (totalBytesRead < count)
             {
-                long bytesRemainingUntilLoopEnd = loopEndBytes - sourceStream.Position;
+                long bytesRemainingUntilLoopEnd = m_loopEndBytes - m_sourceStream.Position;
                 int bytesToRead = (int)Math.Min(count - totalBytesRead, bytesRemainingUntilLoopEnd);
 
-                int bytesRead = sourceStream.Read(buffer, offset + totalBytesRead, bytesToRead);
+                int bytesRead = m_sourceStream.Read(buffer, offset + totalBytesRead, bytesToRead);
 
                 if (bytesRead == 0)
                 {
                     // End of stream — jump to loop start
-                    sourceStream.Position = loopStartBytes;
+                    m_sourceStream.Position = m_loopStartBytes;
                     continue;
                 }
 
                 totalBytesRead += bytesRead;
 
                 // If we reached loop end, wrap around
-                if (sourceStream.Position >= loopEndBytes)
+                if (m_sourceStream.Position >= m_loopEndBytes)
                 {
-                    sourceStream.Position = loopStartBytes;
+                    m_sourceStream.Position = m_loopStartBytes;
                 }
             }
 
             return totalBytesRead;
         }
-
     }
 }

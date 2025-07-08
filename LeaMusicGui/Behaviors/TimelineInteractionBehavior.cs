@@ -1,12 +1,11 @@
-﻿using Microsoft.Xaml.Behaviors;
-using System.Drawing;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
-using Point = System.Windows.Point;
-
-namespace LeaMusicGui.Behaviors
+﻿namespace LeaMusicGui.Behaviors
 {
+    using System.Windows;
+    using System.Windows.Input;
+    using System.Windows.Media;
+    using Microsoft.Xaml.Behaviors;
+    using Point = System.Windows.Point;
+
     public record class SelectionRange
     {
         public float Start { get; set; }
@@ -15,9 +14,9 @@ namespace LeaMusicGui.Behaviors
 
     public class TimelineInteractionBehavior : Behavior<FrameworkElement>
     {
-        SelectionRange selectionRange = new SelectionRange();
+        private SelectionRange m_selectionRange = new SelectionRange();
 
-        bool isZoom;
+        private bool m_isZoom;
 
         protected override void OnAttached()
         {
@@ -37,10 +36,10 @@ namespace LeaMusicGui.Behaviors
             {
                  Point mousePosition = e.GetPosition(childControl);
 
-                if (mousePosition.Y > 30)
-                {
-                    isZoom = true;
-                }
+                 if (mousePosition.Y > 30)
+                 {
+                    m_isZoom = true;
+                 }
             }
         }
 
@@ -48,25 +47,30 @@ namespace LeaMusicGui.Behaviors
         {
             var control = sender as FrameworkElement;
 
-            //ZOOM
-            if (isZoom)
+            if (m_isZoom)
             {
                 if (control != null)
                 {
                    Point mousePosition = e.GetPosition(control);
-                    ViewModel.ZoomWaveformMouse(mousePosition, control.ActualWidth);
+                   ViewModel.ZoomWaveformMouse(mousePosition, control.ActualWidth);
                 }
             }
 
-            //resize loop
-            if (ViewModel.isLoopBeginDragLeftHandle)
+            // resize loop
+            if (ViewModel.IsLoopBeginDragLeftHandle)
+            {
                 ViewModel.LoopSelectionStart(Mouse.GetPosition(control).X, control.ActualWidth);
+            }
 
-            if (ViewModel.isLoopBeginDragRightHandle)
+            if (ViewModel.IsLoopBeginDragRightHandle)
+            {
                 ViewModel.LoopSelectionEnd(Mouse.GetPosition(control).X, control.ActualWidth);
+            }
 
-            if (ViewModel.isMarkerMoving)
+            if (ViewModel.IsMarkerMoving)
+            {
                 ViewModel.MoveMarker(Mouse.GetPosition(control), (int)control.ActualWidth);
+            }
         }
 
         private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -76,28 +80,32 @@ namespace LeaMusicGui.Behaviors
             {
                Point mousePosition = e.GetPosition(childControl);
 
-                selectionRange.End = (float)mousePosition.X;
+               m_selectionRange.End = (float)mousePosition.X;
 
-                ViewModel.LoopSelection(selectionRange.Start, selectionRange.End, childControl.ActualWidth);
+               ViewModel.LoopSelection(m_selectionRange.Start, m_selectionRange.End, childControl.ActualWidth);
             }
 
-            //Loop 
-            if (ViewModel.isLoopBeginDragRightHandle)
-                ViewModel.LoopSelectionEnd(Mouse.GetPosition(childControl).X, childControl.ActualWidth); 
+            // Loop
+            if (ViewModel.IsLoopBeginDragRightHandle)
+            {
+                ViewModel.LoopSelectionEnd(Mouse.GetPosition(childControl).X, childControl.ActualWidth);
+            }
         }
 
         private void OnWindowMouseUp(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton != MouseButton.Right)
+            {
                 return;
+            }
 
             var control = (Window)sender;
             var parent = VisualTreeHelper.GetParent(control) as FrameworkElement;
 
-            if (isZoom)
+            if (m_isZoom)
             {
                 ViewModel.ResetZoomParameter();
-                isZoom = false;
+                m_isZoom = false;
             }
 
             if (Helpers.DraggedElement != null)
@@ -105,15 +113,21 @@ namespace LeaMusicGui.Behaviors
                 Helpers.DraggedElement.ReleaseMouseCapture();
                 Helpers.DraggedElement = null;
 
-                //ReleaseLoopHandle
-                if (ViewModel.isLoopBeginDragLeftHandle)
-                    ViewModel.isLoopBeginDragLeftHandle = false;
+                // ReleaseLoopHandle
+                if (ViewModel.IsLoopBeginDragLeftHandle)
+                {
+                    ViewModel.IsLoopBeginDragLeftHandle = false;
+                }
 
-                if (ViewModel.isLoopBeginDragRightHandle)
-                    ViewModel.isLoopBeginDragRightHandle = false;
+                if (ViewModel.IsLoopBeginDragRightHandle)
+                {
+                    ViewModel.IsLoopBeginDragRightHandle = false;
+                }
 
-                if (ViewModel.isMarkerMoving)
-                    ViewModel.isMarkerMoving = false;
+                if (ViewModel.IsMarkerMoving)
+                {
+                    ViewModel.IsMarkerMoving = false;
+                }
             }
         }
 
@@ -124,8 +138,8 @@ namespace LeaMusicGui.Behaviors
             {
                 Point mousePosition = e.GetPosition(childControl);
 
-                selectionRange = new SelectionRange();
-                selectionRange.Start = (float)mousePosition.X;
+                m_selectionRange = new SelectionRange();
+                m_selectionRange.Start = (float)mousePosition.X;
             }
         }
 
@@ -136,10 +150,10 @@ namespace LeaMusicGui.Behaviors
         }
 
         public static readonly DependencyProperty ViewModelProperty =
-       DependencyProperty.Register(
-           "ViewModel",
-           typeof(MainViewModel),
-           typeof(TimelineInteractionBehavior),
-           new PropertyMetadata(null));
+            DependencyProperty.Register(
+            "ViewModel",
+            typeof(MainViewModel),
+            typeof(TimelineInteractionBehavior),
+            new PropertyMetadata(null));
     }
 }

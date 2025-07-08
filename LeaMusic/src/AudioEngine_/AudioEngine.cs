@@ -1,36 +1,53 @@
-﻿using LeaMusic.Extensions;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
-using System.Diagnostics;
-
-namespace LeaMusic.src.AudioEngine_
+﻿namespace LeaMusic.Src.AudioEngine_
 {
+    using System;
+    using System.Diagnostics;
+    using LeaMusic.Extensions;
+    using LeaMusic.src.AudioEngine_;
+    using NAudio.Wave;
+    using NAudio.Wave.SampleProviders;
+
     public class AudioEngine
     {
         public Project Project { get; private set; }
-        public TimeSpan ViewStartTime;
-        public TimeSpan ViewEndTime;
-        public TimeSpan ViewDuration;
-        public TimeSpan InitStart { get; private set; }
-        public TimeSpan AccumulatedProgress { get; private set; }
-        public TimeSpan LastUpdateTime { get; private set; }
-        public TimeSpan CurrentPosition { get; set; }
-        public TimeSpan TotalDuration { get; set; }
-        public TimeSpan LoopStart { get; private set; }
-        public TimeSpan LoopEnd { get; private set; }
-        public TimeSpan JumpToPosition;
 
-        private MixingSampleProvider mixer;
-        private WaveOutEvent waveOut;
-        private Stopwatch sw = new Stopwatch();
+        public TimeSpan ViewStartTime { get; private set; }
+
+        public TimeSpan ViewEndTime { get; private set; }
+
+        public TimeSpan ViewDuration { get; private set; }
+
+        public TimeSpan InitStart { get; private set; }
+
+        public TimeSpan AccumulatedProgress { get; private set; }
+
+        public TimeSpan LastUpdateTime { get; private set; }
+
+        public TimeSpan CurrentPosition { get; set; }
+
+        public TimeSpan TotalDuration { get; set; }
+
+        public TimeSpan LoopStart { get; private set; }
+
+        public TimeSpan LoopEnd { get; private set; }
+
+        public TimeSpan HalfViewWindow { get; private set; }
+
+        private MixingSampleProvider m_mixer;
+        private WaveOutEvent m_waveOut;
+        private Stopwatch m_sw = new Stopwatch();
         private TimeSpan m_oldPosition;
         private TimeSpan m_oldLoopStart = TimeSpan.FromSeconds(-1);
-        private double Speed = 1;
-        private double Zoom { get; set; } = 1;
+        private double m_speed = 1;
+
+        private double m_zoom = 1;
+
         private double m_oldZoom = -1;
 
         public event Action<TimeSpan> OnUpdate;
+
         public event Action<TimeSpan> OnProgressChange;
+
         public event Action<TimeSpan, TimeSpan> OnLoopChange;
 
         public AudioEngine()
@@ -39,26 +56,26 @@ namespace LeaMusic.src.AudioEngine_
 
         public void MountProject(Project project)
         {
-            Zoom = 1;
+            m_zoom = 1;
 
-            waveOut?.Stop();
-            waveOut = new WaveOutEvent();
+            m_waveOut?.Stop();
+            m_waveOut = new WaveOutEvent();
             Project = project;
 
             TotalDuration = TimeSpan.FromSeconds(Project.Duration.TotalSeconds);
 
-            mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
+            m_mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
 
             ReloadMixerInputs();
 
             ViewStartTime = TimeSpan.Zero;
             ViewEndTime = TotalDuration;
-            waveOut.DesiredLatency = 450;
+            m_waveOut.DesiredLatency = 450;
 
-            //TODO: Init can happen only once in wavOut Lifetime, this is a Hack lol
+            // TODO: Init can happen only once in wavOut Lifetime, this is a Hack lol
             try
             {
-                waveOut.Init(mixer);
+                m_waveOut.Init(m_mixer);
             }
             catch (Exception)
             {
@@ -74,7 +91,7 @@ namespace LeaMusic.src.AudioEngine_
 
             OnUpdate?.Invoke(CurrentPosition);
 
-            //If CurrentPosition moves
+            // If CurrentPosition moves
             if (CurrentPosition != m_oldPosition)
             {
                 OnProgressChange?.Invoke(CurrentPosition);
@@ -84,11 +101,11 @@ namespace LeaMusic.src.AudioEngine_
 
         public void ReloadMixerInputs()
         {
-            mixer.RemoveAllMixerInputs();
+            m_mixer.RemoveAllMixerInputs();
 
             foreach (var track in Project.Tracks)
             {
-                mixer.AddMixerInput(track.volumeStream);
+                m_mixer.AddMixerInput(track.VolumeStream);
             }
         }
 
@@ -100,7 +117,7 @@ namespace LeaMusic.src.AudioEngine_
 
         public void ZoomViewWindow(double zoomFactor, TimeSpan start, TimeSpan end)
         {
-            Zoom = zoomFactor;
+            m_zoom = zoomFactor;
             ViewStartTime = start;
             ViewEndTime = end;
 
@@ -110,19 +127,18 @@ namespace LeaMusic.src.AudioEngine_
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
         }
 
-        public TimeSpan halfViewWindow;
         public void ZoomViewWindow(double zoomFactor, TimeSpan zoomPosition)
         {
-            Zoom = zoomFactor;
+            m_zoom = zoomFactor;
 
-            if (Zoom != 1)
+            if (m_zoom != 1)
             {
                 TimeSpan baseWindow = TotalDuration;
                 TimeSpan timeWindow = baseWindow / zoomFactor;
-                halfViewWindow = timeWindow / 2.0f;
+                HalfViewWindow = timeWindow / 2.0f;
 
-                ViewStartTime = zoomPosition - halfViewWindow;
-                ViewEndTime = zoomPosition + halfViewWindow;
+                ViewStartTime = zoomPosition - HalfViewWindow;
+                ViewEndTime = zoomPosition + HalfViewWindow;
 
                 ViewStartTime = TimeSpan.FromSeconds(Math.Max(0, ViewStartTime.TotalSeconds));
                 ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds));
@@ -136,19 +152,19 @@ namespace LeaMusic.src.AudioEngine_
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
         }
 
-        //Used for Zoom with mouse
+        // Used for Zoom with mouse
         public void ZoomViewWindowRelative(double zoomFactor, TimeSpan zoomPosition)
         {
-            Zoom = zoomFactor;
+            m_zoom = zoomFactor;
 
-            if (Zoom != 1)
+            if (m_zoom != 1)
             {
                 TimeSpan baseWindow = TotalDuration;
-                TimeSpan timeWindow = baseWindow / Zoom;
+                TimeSpan timeWindow = baseWindow / m_zoom;
 
                 double relativePos = (zoomPosition - ViewStartTime) / ViewDuration;
 
-                ViewStartTime = zoomPosition - timeWindow * relativePos;
+                ViewStartTime = zoomPosition - (timeWindow * relativePos);
                 ViewEndTime = ViewStartTime + timeWindow;
 
                 // New view start time to keep zoomPosition at the same relative position
@@ -164,13 +180,13 @@ namespace LeaMusic.src.AudioEngine_
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
         }
 
-        private double oldScrollValue = 0;
+        private double m_oldScrollValue = 0;
 
         public void ScrollWaveForm(double scrollFactor)
         {
-            double diff = scrollFactor - oldScrollValue;
+            double diff = scrollFactor - m_oldScrollValue;
 
-            //NOTE: When add Slider value direct, it never goes back to the origin Value, use difference :D
+            // NOTE: When add Slider value direct, it never goes back to the origin Value, use difference :D
             ViewStartTime += TimeSpan.FromSeconds(diff);
             ViewEndTime += TimeSpan.FromSeconds(diff);
 
@@ -184,14 +200,16 @@ namespace LeaMusic.src.AudioEngine_
 
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
 
-            oldScrollValue = scrollFactor;
+            m_oldScrollValue = scrollFactor;
         }
 
         public int CalculateBpm(int beatsPerMeasure)
         {
             var markers = Project.BeatMarkers;
             if (markers.Count < 2)
+            {
                 return 0;
+            }
 
             var bpmList = new List<double>();
 
@@ -203,44 +221,52 @@ namespace LeaMusic.src.AudioEngine_
             }
 
             return (int)Math.Round(bpmList.Average());
-
         }
+
         public void Play()
         {
-            if (waveOut.PlaybackState == PlaybackState.Playing)
-                waveOut.Stop();
+            if (m_waveOut.PlaybackState == PlaybackState.Playing)
+            {
+                m_waveOut.Stop();
+            }
 
-            waveOut.Play();
-            sw.Start();
+            m_waveOut.Play();
+            m_sw.Start();
         }
 
         public void Pause()
         {
-            if (waveOut.PlaybackState == PlaybackState.Playing)
-                waveOut.Pause();
+            if (m_waveOut.PlaybackState == PlaybackState.Playing)
+            {
+                m_waveOut.Pause();
+            }
 
-            sw.Stop();
+            m_sw.Stop();
         }
 
         public void ChangeSpeed(double speed)
         {
-            Speed = speed;
+            m_speed = speed;
 
             var old = CurrentPosition;
-            var oldPlaybackState = waveOut.PlaybackState;
+            var oldPlaybackState = m_waveOut.PlaybackState;
 
-            if (waveOut.PlaybackState == PlaybackState.Playing)
+            if (m_waveOut.PlaybackState == PlaybackState.Playing)
+            {
                 Pause();
+            }
 
             ////hm this keeps palyhead in sync when slowdown while play
             AudioJumpToSec(TimeSpan.FromSeconds(CurrentPosition.TotalMilliseconds + 1));
 
-            Project.SetTempo(Math.Round(Speed, 2));
+            Project.SetTempo(Math.Round(m_speed, 2));
 
             AudioJumpToSec(old);
 
             if (oldPlaybackState == PlaybackState.Playing)
+            {
                 Play();
+            }
         }
 
         public void ChangePitch(int semitones)
@@ -248,12 +274,14 @@ namespace LeaMusic.src.AudioEngine_
             var pitch = Math.Pow(2.0, semitones / 12.0);
 
             foreach (var track in Project.Tracks)
-                track.rubberBandWaveStream.SetPitch(pitch);
+            {
+                track.RubberBandWaveStream.SetPitch(pitch);
+            }
         }
 
         public void Replay()
         {
-            if (waveOut.PlaybackState == PlaybackState.Playing)
+            if (m_waveOut.PlaybackState == PlaybackState.Playing)
             {
                 AudioJumpToSec(LoopStart);
                 Play();
@@ -262,16 +290,17 @@ namespace LeaMusic.src.AudioEngine_
 
         public void Stop()
         {
-            waveOut?.Stop();
+            m_waveOut?.Stop();
         }
 
         public void MuteTrack(int trackID)
         {
-
             var track = Project.Tracks.Where(t => t.ID == trackID).FirstOrDefault();
 
             if (track == null)
+            {
                 return;
+            }
 
             if (track.IsMuted)
             {
@@ -305,20 +334,19 @@ namespace LeaMusic.src.AudioEngine_
             }
         }
 
-
         public void AudioJumpToSec(TimeSpan sec)
         {
-
-            if (waveOut == null)
+            if (m_waveOut == null)
+            {
                 return;
+            }
 
-            waveOut.Stop();
-
+            m_waveOut.Stop();
 
             // Project.ResetTracks();
             CurrentPosition = sec;
 
-            sw.Reset();
+            m_sw.Reset();
             InitStart = sec;
 
             Project.JumpToSeconds(sec);
@@ -342,12 +370,13 @@ namespace LeaMusic.src.AudioEngine_
             LoopEnd = endSec;
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
         }
+
         private void CalculateProgress()
         {
-            TimeSpan now = sw.Elapsed;
+            TimeSpan now = m_sw.Elapsed;
             TimeSpan deltaRealTime = now - LastUpdateTime;
 
-            AccumulatedProgress += deltaRealTime * Speed;
+            AccumulatedProgress += deltaRealTime * m_speed;
             LastUpdateTime = now;
             CurrentPosition = InitStart + AccumulatedProgress;
         }
@@ -357,21 +386,21 @@ namespace LeaMusic.src.AudioEngine_
             bool isLoop = LoopEnd.TotalSeconds - LoopStart.TotalSeconds > 0;
             if (isLoop)
             {
-                //when reach end of Loop, go back to loopStart
+                // when reach end of Loop, go back to loopStart
                 if (CurrentPosition >= LoopEnd)
                 {
                     AudioJumpToSec(LoopStart);
                     Play();
                 }
 
-                //if zoom OR LoopStartSelection change
-                if (m_oldZoom != Zoom || LoopStart.TotalSeconds != m_oldLoopStart.TotalSeconds)
+                // if zoom OR LoopStartSelection change
+                if (m_oldZoom != m_zoom || LoopStart.TotalSeconds != m_oldLoopStart.TotalSeconds)
                 {
                     Debug.WriteLine("AudioEngine.UpdateLoop INVOKE");
                     OnLoopChange?.Invoke(LoopStart, LoopEnd);
                     m_oldLoopStart = LoopStart;
 
-                    m_oldZoom = Zoom;
+                    m_oldZoom = m_zoom;
                 }
             }
             else

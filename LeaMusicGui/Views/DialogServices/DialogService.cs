@@ -1,16 +1,16 @@
-﻿using LeaMusic.src.AudioEngine_;
-using System.Windows;
-using System.Windows.Forms;
-
-namespace LeaMusicGui.Views.DialogServices
+﻿namespace LeaMusicGui.Views.DialogServices
 {
+    using System.Windows;
+    using System.Windows.Forms;
+    using LeaMusic.src.AudioEngine_;
+
     public class DialogService : IDialogService
     {
         public string? OpenFile(string filter)
         {
             var dialog = new OpenFileDialog { Filter = filter };
-            return dialog.ShowDialog() == DialogResult.OK ? dialog.FileName : null;
 
+            return dialog.ShowDialog() == DialogResult.OK ? dialog.FileName : null;
         }
 
         public string? Save()
@@ -24,9 +24,13 @@ namespace LeaMusicGui.Views.DialogServices
             var result = System.Windows.MessageBox.Show("Do you want to Sync with GoogleDrive?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
+            {
                 return true;
+            }
             else
+            {
                 return false;
+            }
         }
 
         public bool AskDownloadGoogleDrive(DateTime localDate, DateTime googleDriveDate)
@@ -34,9 +38,13 @@ namespace LeaMusicGui.Views.DialogServices
             var result = System.Windows.MessageBox.Show($"The Project on GoogleDrive is newer, do you want do download it? \n Local: {localDate} \n GoogleDrive: {googleDriveDate}", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
+            {
                 return true;
+            }
             else
+            {
                 return false;
+            }
         }
     }
 }
