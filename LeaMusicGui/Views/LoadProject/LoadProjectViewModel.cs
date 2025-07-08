@@ -1,29 +1,25 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using HandyControl.Controls;
-using System.Collections.ObjectModel;
-using System.Windows.Input;
-
-
-namespace LeaMusicGui
+﻿namespace LeaMusicGui
 {
+    using System.Collections.ObjectModel;
+    using CommunityToolkit.Mvvm.ComponentModel;
+
     public partial class LoadProjectViewModel : ObservableObject
     {
-        public MainViewModel parentViewModel;
-
+        [ObservableProperty]
+        private ObservableCollection<string> googleDriveProjectListValue = new ObservableCollection<string>();
 
         [ObservableProperty]
-        public ObservableCollection<string> googleDriveProjectList = new ObservableCollection<string>();
-
-        [ObservableProperty]
-        private string selectedProject = string.Empty;
+        private string m_selectedProject = string.Empty;
+        private MainViewModel m_parentViewModel;
 
         public LoadProjectViewModel(MainViewModel parentViewModel)
         {
             if (parentViewModel == null)
+            {
                 throw new NullReferenceException("Please set ParentViewModel");
+            }
 
-            this.parentViewModel = parentViewModel;
+            m_parentViewModel = parentViewModel;
         }
 
         partial void OnSelectedProjectChanged(string value)
@@ -31,8 +27,7 @@ namespace LeaMusicGui
             if (string.IsNullOrEmpty(value))
                 return;
 
-            parentViewModel.ProjectName = value;
+            m_parentViewModel.ProjectName = value;
         }
-
     }
 }

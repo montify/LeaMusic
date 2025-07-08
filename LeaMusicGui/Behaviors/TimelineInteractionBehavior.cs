@@ -14,7 +14,7 @@
 
     public class TimelineInteractionBehavior : Behavior<FrameworkElement>
     {
-        private SelectionRange m_selectionRange = new SelectionRange();
+        private SelectionRange m_selectionRange = new ();
 
         private bool m_isZoom;
 
@@ -49,27 +49,30 @@
 
             if (m_isZoom)
             {
-                if (control != null)
+                if (control == null)
                 {
-                   Point mousePosition = e.GetPosition(control);
-                   ViewModel.ZoomWaveformMouse(mousePosition, control.ActualWidth);
+                    return;
                 }
+
+                Point mousePosition = e.GetPosition(control);
+                ViewModel.ZoomWaveformMouse(mousePosition, control.ActualWidth);
+
             }
 
             // resize loop
             if (ViewModel.IsLoopBeginDragLeftHandle)
             {
-                ViewModel.LoopSelectionStart(Mouse.GetPosition(control).X, control.ActualWidth);
+                ViewModel.LoopSelectionStart(Mouse.GetPosition(control).X, control!.ActualWidth);
             }
 
             if (ViewModel.IsLoopBeginDragRightHandle)
             {
-                ViewModel.LoopSelectionEnd(Mouse.GetPosition(control).X, control.ActualWidth);
+                ViewModel.LoopSelectionEnd(Mouse.GetPosition(control).X, control!.ActualWidth);
             }
 
             if (ViewModel.IsMarkerMoving)
             {
-                ViewModel.MoveMarker(Mouse.GetPosition(control), (int)control.ActualWidth);
+                ViewModel.MoveMarker(Mouse.GetPosition(control), (int)control!.ActualWidth);
             }
         }
 
@@ -100,7 +103,6 @@
             }
 
             var control = (Window)sender;
-            var parent = VisualTreeHelper.GetParent(control) as FrameworkElement;
 
             if (m_isZoom)
             {

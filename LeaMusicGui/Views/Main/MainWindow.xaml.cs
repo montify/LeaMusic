@@ -1,44 +1,45 @@
-﻿using System.Windows;
-using System.Windows.Input;
-
-namespace LeaMusicGui;
-// Notes:
-/*
- * 1)
- * use double the whole line down to actual index the buffer (buffer[(int)start, (int)end]),
- * cast it at the very end, because int can only index whole numbers x, no x.xxx :D
- * 2)
- * Use "VisibleWindow(VisibleSecondStart, VisibleSecondEnd) for calculation(Relative to VisibleWindow) MousePosition and Progressbar
- * because when zoom in (more than 1x) it starts to break :D
- * 
-*/
-
-public partial class MainWindow : Window
+﻿namespace LeaMusicGui
 {
-    public MainWindow()
-    {
-        InitializeComponent();
-    }
+    using System.Windows;
+    using System.Windows.Input;
 
-    private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-    {
-        var viewModel = (MainViewModel)DataContext;
+    // Notes:
+    /*
+     * 1)
+     * use double the whole line down to actual index the buffer (buffer[(int)start, (int)end]),
+     * cast it at the very end, because int can only index whole numbers x, no x.xxx :D
+     * 2)
+     * Use "VisibleWindow(VisibleSecondStart, VisibleSecondEnd) for calculation(Relative to VisibleWindow) MousePosition and Progressbar
+     * because when zoom in (more than 1x) it starts to break :D
+     *
+    */
 
-        if (e.Key == Key.T)
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
         {
-            viewModel.SetTextMarker();
+            InitializeComponent();
         }
-    }
 
-    private void MainCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        if (DataContext is MainViewModel vm)
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (e.NewSize.Width != vm.RenderWidth)
+            var viewModel = (MainViewModel)DataContext;
+
+            if (e.Key == Key.T)
             {
-                vm.RenderWidth = (int)e.NewSize.Width;
+                viewModel.SetTextMarker();
+            }
+        }
+
+        private void MainCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                if (e.NewSize.Width != vm.RenderWidth)
+                {
+                    vm.RenderWidth = (int)e.NewSize.Width;
+                }
             }
         }
     }
-
 }

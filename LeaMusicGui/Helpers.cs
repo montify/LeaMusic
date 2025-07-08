@@ -1,5 +1,4 @@
-﻿using LeaMusic.src.AudioEngine_;
-using LeaMusic.Src.AudioEngine_;
+﻿using LeaMusic.Src.AudioEngine_;
 using System.Windows;
 
 namespace LeaMusicGui
@@ -16,12 +15,13 @@ namespace LeaMusicGui
             var snapTimeThreshold = TimeSpan.FromSeconds(treshholdInMs / pixelsPerSecond);
 
             if (diff < snapTimeThreshold)
+            {
                 checkPosition = markerPosition;
+            }
 
             return checkPosition;
         }
 
         public static UIElement? DraggedElement { get; set; } = null;
-
     }
 }

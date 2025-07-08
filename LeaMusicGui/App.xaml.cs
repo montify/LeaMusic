@@ -1,49 +1,47 @@
-﻿using LeaMusic.src.AudioEngine_;
-using LeaMusic.src.ResourceManager_;
-using LeaMusic.src.Services;
-using LeaMusic.Src.AudioEngine_;
-using LeaMusic.Src.Services;
-using LeaMusicGui.Views.DialogServices;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Configuration;
-using System.Data;
-using System.Windows;
-
-namespace LeaMusicGui;
-
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
-public partial class App : Application
+﻿namespace LeaMusicGui
 {
-    private readonly IServiceProvider _serviceProvider;
-    public App()
+    using System.Windows;
+    using LeaMusic.src.AudioEngine_;
+    using LeaMusic.Src.AudioEngine_;
+    using LeaMusic.src.ResourceManager_;
+    using LeaMusic.src.Services;
+    using LeaMusic.Src.Services;
+    using LeaMusicGui.Views.DialogServices;
+    using Microsoft.Extensions.DependencyInjection;
+
+    /// <summary>
+    /// Interaction logic for App.xaml.
+    /// </summary>
+    public partial class App : Application
     {
-        var services = new ServiceCollection();
+        private readonly IServiceProvider m_serviceProvider;
 
-        services.AddSingleton<LeaResourceManager>();
-        services.AddSingleton<ProjectService>();
-        services.AddSingleton<MainViewModel>();
-        services.AddSingleton<TimelineService>();
-        services.AddSingleton<AudioEngine>();
-        services.AddSingleton<TimelineCalculator>();
-        services.AddSingleton<LoopService>();
-        services.AddSingleton<IDialogService, DialogService>();
-
-        _serviceProvider = services.BuildServiceProvider();
-    }
-
-    protected override void OnStartup(StartupEventArgs e)
-    {
-        var mainWindow = new MainWindow
+        public App()
         {
-            DataContext = _serviceProvider.GetRequiredService<MainViewModel>()
-        };
+            var services = new ServiceCollection();
 
-        mainWindow.Show();
+            services.AddSingleton<LeaResourceManager>();
+            services.AddSingleton<ProjectService>();
+            services.AddSingleton<MainViewModel>();
+            services.AddSingleton<TimelineService>();
+            services.AddSingleton<AudioEngine>();
+            services.AddSingleton<TimelineCalculator>();
+            services.AddSingleton<LoopService>();
+            services.AddSingleton<IDialogService, DialogService>();
 
-        base.OnStartup(e);
+            m_serviceProvider = services.BuildServiceProvider();
+        }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            var mainWindow = new MainWindow
+            {
+                DataContext = m_serviceProvider.GetRequiredService<MainViewModel>(),
+            };
+
+            mainWindow.Show();
+
+            base.OnStartup(e);
+        }
     }
 }
-

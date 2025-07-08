@@ -10,14 +10,19 @@
     {
         private static int m_uniqueId = 0;
 
+        [JsonIgnore]
         public WaveStream Audio { get; private set; }
 
+        [JsonIgnore]
         public RubberBandWaveStream RubberBandWaveStream { get; private set; }
 
+        [JsonIgnore]
         public WaveformProvider WaveformProvider { get; set; }
 
+        [JsonIgnore]
         public VolumeSampleProvider VolumeStream { get; private set; }
 
+        [JsonIgnore]
         public LoopStream LoopStream { get; private set; }
     
         public TimeSpan ClipDuration { get; set; }

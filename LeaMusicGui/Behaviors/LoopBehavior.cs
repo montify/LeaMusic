@@ -102,17 +102,17 @@
             return 1.0;
         }
 
+        public static readonly DependencyProperty ViewModelProperty =
+            DependencyProperty.Register(
+            "ViewModel",
+            typeof(MainViewModel),
+            typeof(LoopBehavior),
+            new PropertyMetadata(null));
+
         public MainViewModel ViewModel
         {
             get { return (MainViewModel)GetValue(ViewModelProperty); }
             set { SetValue(ViewModelProperty, value); }
         }
-
-        public static readonly DependencyProperty ViewModelProperty =
-       DependencyProperty.Register(
-           "ViewModel",
-           typeof(MainViewModel),
-           typeof(LoopBehavior),
-           new PropertyMetadata(null));
     }
 }
