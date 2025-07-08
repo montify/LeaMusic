@@ -17,8 +17,9 @@
     MinWidth="1334"
     MinHeight="800"
     KeyDown="Window_KeyDown"
-    mc:Ignorable="d">
- 
+    mc:Ignorable="d"
+     d:DataContext="{d:DesignInstance local:MainViewModel}">
+
     <Window.Resources>
         <local1:LoopWidthPercentageConverter x:Key="LoopWidthPercentageConverter" />
         <local1:PlayheadPercentageOffsetMultiConverter x:Key="PlayheadPercentageOffsetMultiConverter" />
@@ -43,6 +44,7 @@
                     <MenuItem Command="{Binding SaveProjectFileCommand}" Header="_Save Project" />
                     <MenuItem Command="{Binding AddTrackCommand}" Header="_Add Track" />
                     <Separator />
+                    <MenuItem Command="{Binding ShowGdriveExplorerCommand}" Header="_GDrive" />
                     <MenuItem Header="_Exit" />
                 </MenuItem>
             </Menu>

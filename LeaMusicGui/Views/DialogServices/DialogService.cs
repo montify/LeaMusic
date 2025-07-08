@@ -46,5 +46,17 @@
                 return false;
             }
         }
+
+        public string ShowGDriveExplorer()
+        {
+            var pr = new LoadProjectWindow
+            {
+                DataContext = new LoadProjectViewModel()
+            };
+
+            pr.ShowDialog();
+
+            return "AA";
+        }
     }
 }

@@ -9,5 +9,7 @@
         public bool EnableSync();
 
         public bool AskDownloadGoogleDrive(DateTime localDate, DateTime googleDriveDate);
+
+        public string ShowGDriveExplorer();
     }
 }

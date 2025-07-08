@@ -194,5 +194,13 @@
                 throw e;
             }
         }
+
+        public List<string> ListAllProjects()
+        {
+            var rootFolderId = m_context.GetFolderIdByName("LeaRoot");
+            var projects = m_context.GetAllProjectsName(rootFolderId);
+
+            return projects;
+        }
     }
 }

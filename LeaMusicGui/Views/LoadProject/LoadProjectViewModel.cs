@@ -2,32 +2,44 @@
 {
     using System.Collections.ObjectModel;
     using CommunityToolkit.Mvvm.ComponentModel;
+    using CommunityToolkit.Mvvm.Input;
+    using LeaMusic.src.ResourceManager_.GoogleDrive_;
 
     public partial class LoadProjectViewModel : ObservableObject
     {
         [ObservableProperty]
-        private ObservableCollection<string> googleDriveProjectListValue = new ObservableCollection<string>();
+        private ObservableCollection<string> m_projectList = new ObservableCollection<string>();
 
         [ObservableProperty]
         private string m_selectedProject = string.Empty;
-        private MainViewModel m_parentViewModel;
 
-        public LoadProjectViewModel(MainViewModel parentViewModel)
+        public Action? RequestClose { get; set; }
+
+        public LoadProjectViewModel()
         {
-            if (parentViewModel == null)
-            {
-                throw new NullReferenceException("Please set ParentViewModel");
-            }
+            var gDriveHandler = new GoogleDriveHandler("LeaRoot", null);
 
-            m_parentViewModel = parentViewModel;
+            var projects = new ObservableCollection<string>(gDriveHandler.ListAllProjects());
+
+            foreach (var p in projects)
+            {
+                ProjectList.Add(p);
+            }
         }
 
         partial void OnSelectedProjectChanged(string value)
         {
             if (string.IsNullOrEmpty(value))
                 return;
+        }
 
-            m_parentViewModel.ProjectName = value;
+        [RelayCommand]
+        private void ConfirmSelection()
+        {
+            if (!string.IsNullOrEmpty(SelectedProject))
+            {
+                RequestClose?.Invoke(); // Close the window
+            }
         }
     }
 }

@@ -10,8 +10,7 @@
     Title="LoadProjectWindow"
     Width="350"
     Height="411"
-    d:DataContext="{d:DesignInstance Type=vm:LoadProjectViewModel,
-                                     IsDesignTimeCreatable=True}"
+  
     Background="#424651"
     ResizeMode="NoResize"
     WindowStartupLocation="CenterOwner"
@@ -40,17 +39,17 @@
             <!--  Project List  -->
             <ListBox
                 MinHeight="200"
-                ItemsSource="{Binding GoogleDriveProjectList}"
+                ItemsSource="{Binding ProjectList}"
                 SelectedItem="{Binding SelectedProject, Mode=TwoWay}" />
             <Separator />
 
-            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+            <!--<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                 <Button
                     Margin="0,0,50,0"
                     Click="LoadButton_Click"
                     Content="Load" />
                 <Button Click="CodeButton_Click" Content="Close" />
-            </StackPanel>
+            </StackPanel>-->
         </StackPanel>
     </Grid>
 </Window>

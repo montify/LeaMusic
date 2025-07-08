@@ -10,6 +10,7 @@
     using LeaMusic.src.Services;
     using LeaMusic.Src.Services;
     using Point = System.Windows.Point;
+    using LeaMusic.src.ResourceManager_.GoogleDrive_;
 
     public partial class MainViewModel : ObservableObject
     {
@@ -380,6 +381,21 @@
                 m_audioEngine.AudioJumpToSec(m_audioEngine.LoopStart);
                 Play();
             }
+        }
+
+        [RelayCommand]
+        public void ShowGdriveExplorer()
+        {
+            var projectName = m_dialogService.ShowGDriveExplorer();
+
+            // var gdriveLocation = new GDriveLocation("LeaRoot", projectName, projectName);
+
+            // var gDriveHandler = new GoogleDriveHandler("LeaRoot", null);
+
+            // var project = await m_resourceManager.LoadProject(gdriveLocation, gDriveHandler);
+
+            // TODO: Implement to load from google Drive from Explorer
+            throw new NotImplementedException();
         }
 
         internal void SetTextMarker()

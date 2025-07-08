@@ -8,6 +8,8 @@
     using LeaMusic.Src.Services;
     using LeaMusicGui.Views.DialogServices;
     using Microsoft.Extensions.DependencyInjection;
+    using LeaMusicGui.Views;
+    using SkiaSharp;
 
     /// <summary>
     /// Interaction logic for App.xaml.
@@ -28,7 +30,7 @@
             services.AddSingleton<TimelineCalculator>();
             services.AddSingleton<LoopService>();
             services.AddSingleton<IDialogService, DialogService>();
-
+            services.AddSingleton<LoadProjectViewModel>();
             m_serviceProvider = services.BuildServiceProvider();
         }
 

@@ -4,20 +4,21 @@ namespace LeaMusicGui.Views
 {
     public partial class LoadProjectWindow : Window
     {
-        public LoadProjectWindow(LoadProjectViewModel vm)
+        public LoadProjectWindow()
         {
             InitializeComponent();
-        }
 
-        private void LoadButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = true;
-            Close();
-        }
-
-        private void CodeButton_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
+            Loaded += (_, _) =>
+            {
+                if (DataContext is LoadProjectViewModel vm)
+                {
+                    vm.RequestClose = () =>
+                    {
+                        DialogResult = true; // mark as success
+                        Close();
+                    };
+                }
+            };
         }
     }
 }
