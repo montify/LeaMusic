@@ -173,10 +173,10 @@
                 UpdateImage();
                 InvalidateVisual();
 
-                m_oldZoom = vm.Zoom;
+                m_oldZoom = vm.SliderZoom;
 
-                vm.Zoom = m_oldZoom + 0.1f;
-                vm.Zoom = m_oldZoom;
+                vm.SliderZoom = m_oldZoom + 0.1f;
+                vm.SliderZoom = m_oldZoom;
             }
         }
 
