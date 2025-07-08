@@ -402,13 +402,9 @@
         {
             IsSyncEnabled = true;
 
-            var project = await m_projectService.LoadProjectAsync(isGoogleDriveSync: IsSyncEnabled, m_updateStatus);
+            Project? project = null;
 
-            if (project == null)
-            {
-                StatusMessages = "Cant Load Project";
-                return;
-            }
+            project = await m_projectService.LoadProjectAsync(isGoogleDriveSync: IsSyncEnabled, m_updateStatus);
 
             Project?.Dispose();
 

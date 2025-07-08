@@ -169,23 +169,30 @@
 
         public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location, LeaResourceManager resourceManager)
         {
-            var rootFolderId = m_context.GetFolderIdByName(m_rootFolder);
-
-            if (string.IsNullOrEmpty(rootFolderId))
+            try
             {
-                throw new Exception("Cant find rootFolder");
+                var rootFolderId = m_context.GetFolderIdByName(m_rootFolder);
+
+                if (string.IsNullOrEmpty(rootFolderId))
+                {
+                    throw new Exception("Cant find rootFolder");
+                }
+
+                var rawMetaData = m_context.GetFileMetadataByNameInFolder(projectName + ".zip", m_rootFolder);
+
+                if (rawMetaData == null)
+                {
+                    return await Task.FromResult<ProjectMetadata?>(null);
+                }
+
+                var metaData = new ProjectMetadata(rawMetaData.Value.Name, rawMetaData.Value.CreatedTime.Value);
+
+                return await Task.FromResult(metaData);
             }
-
-            var rawMetaData = m_context.GetFileMetadataByNameInFolder(projectName + ".zip", m_rootFolder);
-
-            if (rawMetaData == null)
+            catch (Exception e)
             {
-                return await Task.FromResult<ProjectMetadata?>(null);
+                throw e;
             }
-
-            var metaData = new ProjectMetadata(rawMetaData.Value.Name, rawMetaData.Value.CreatedTime.Value);
-
-            return await Task.FromResult(metaData);
         }
     }
 }

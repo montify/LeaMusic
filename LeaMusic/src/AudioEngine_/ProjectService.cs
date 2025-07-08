@@ -36,7 +36,18 @@ namespace LeaMusic.src.AudioEngine_
 
             // Fetch project Metadata, and compare on Date
             ProjectMetadata? fileMetaData = m_resourceManager.GetProjectMetaData($"{projectName}.zip", location, fileHandler);
-            ProjectMetadata? gDriveMetaData = m_resourceManager.GetProjectMetaData($"{projectName}", null, googleDriveHandler);
+
+            ProjectMetadata? gDriveMetaData = null;
+
+            try
+            {
+               gDriveMetaData = m_resourceManager.GetProjectMetaData($"{projectName}", null, googleDriveHandler);
+            }
+            catch (Exception)
+            {
+                statusCallback?.Invoke("No Internet Connection, load Project from Local File");
+                isGoogleDriveSync = false;
+            }
 
             Project? project = null;
 
