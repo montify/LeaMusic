@@ -1,6 +1,6 @@
 ﻿using LeaMusic.Src.AudioEngine_;
 
-namespace LeaMusic.src.AudioEngine_
+namespace LeaMusic.src.Services
 {
     public class TimelineService
     {

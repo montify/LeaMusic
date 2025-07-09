@@ -11,6 +11,7 @@
     using LeaMusic.Src.Services;
     using Point = System.Windows.Point;
     using LeaMusic.src.ResourceManager_.GoogleDrive_;
+    using System.Diagnostics;
 
     public partial class MainViewModel : ObservableObject
     {
@@ -87,6 +88,7 @@
         private readonly ProjectService m_projectService;
         private readonly TimelineCalculator m_timelineCalculator;
         private readonly LoopService m_loopService;
+        private readonly ConnectionMonitorService m_connectionMonitorService;
         private readonly IDialogService m_dialogService;
         private readonly Action<string> m_updateStatus;
         private IResourceHandler m_resourceHandler;
@@ -102,6 +104,7 @@
                              AudioEngine audioEngine,
                              TimelineCalculator timelineCalculator,
                              LoopService loopService,
+                             ConnectionMonitorService connectionMonitorService,
                              IDialogService dialogService)
         {
             m_projectService = projectService;
@@ -111,7 +114,7 @@
             m_dialogService = dialogService;
             m_timelineCalculator = timelineCalculator;
             m_loopService = loopService;
-
+            m_connectionMonitorService = connectionMonitorService;
             statusMessages = string.Empty;
 
             // Create Empty Project for StartUp
@@ -416,11 +419,14 @@
 
         private async Task LoadProject()
         {
-            IsSyncEnabled = true;
-
             Project? project = null;
 
             project = await m_projectService.LoadProjectAsync(isGoogleDriveSync: IsSyncEnabled, m_updateStatus);
+
+            if (project == null)
+            {
+                return;
+            }
 
             Project?.Dispose();
 

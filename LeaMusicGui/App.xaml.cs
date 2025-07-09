@@ -31,6 +31,7 @@
             services.AddSingleton<LoopService>();
             services.AddSingleton<IDialogService, DialogService>();
             services.AddSingleton<LoadProjectViewModel>();
+            services.AddSingleton<ConnectionMonitorService>();
             m_serviceProvider = services.BuildServiceProvider();
         }
 
