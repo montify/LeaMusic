@@ -14,5 +14,9 @@
 
         public const double MinZoom = 1;
         public const double MaxZoom = 60;
+
+        public const string TmpDirectoryFilePath = "C:/LeaProjects";
+        public const string TmpZipFilePath = "C:/LeaProjects/tmpZipFiles";
+        public const string TmpZipExtractionDirectoryPath = "C:/LeaProjects/tmp";
     }
 }

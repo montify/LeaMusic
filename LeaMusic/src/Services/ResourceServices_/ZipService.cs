@@ -5,13 +5,6 @@ namespace LeaMusic.src.Services.ResourceServices_
 
     public class ZipService : IZipService
     {
-        private readonly IFileSystemService m_fileSystemService;
-
-        public ZipService(IFileSystemService fileSystemService)
-        {
-            m_fileSystemService = fileSystemService;
-        }
-
         public void CreateFromDirectory(string sourceDirectory, string destinationArchiveFileName)
         {
             ZipFile.CreateFromDirectory(sourceDirectory, destinationArchiveFileName, CompressionLevel.Optimal, true);
@@ -19,7 +12,7 @@ namespace LeaMusic.src.Services.ResourceServices_
 
         public void ExtractToDirectory(Stream stream, string destinationDirectory)
         {
-            ZipFile.ExtractToDirectory(stream, m_fileSystemService.GetDirectoryName(destinationDirectory), overwriteFiles: true);
+            ZipFile.ExtractToDirectory(stream, destinationDirectory, overwriteFiles: true);
         }
     }
 }

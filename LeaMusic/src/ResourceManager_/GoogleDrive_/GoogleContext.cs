@@ -272,14 +272,6 @@
 
             FilesResource.CreateMediaUpload request;
 
-            // check if file exists
-            var exist = GetFileIdFromFolder(fileName, "Test/lol");
-
-            if (!string.IsNullOrEmpty(exist))
-            {
-                return;
-            }
-
             using var stream = new FileStream(filePath, FileMode.Open);
 
             request = m_driveService.Files.Create(fileMetadata, stream, "application/zip");
