@@ -4,10 +4,11 @@
     using System.IO;
     using System.Text.Json;
     using LeaMusic.src.AudioEngine_;
+    using LeaMusic.src.Services.ResourceServices_;
     using NAudio.Wave;
     using NAudio.Wave.SampleProviders;
 
-    public class FileHandler : IResourceHandler
+    public class FileHandler : ILocalFileHandler
     {
         public FileHandler()
         {

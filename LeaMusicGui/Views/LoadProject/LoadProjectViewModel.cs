@@ -17,14 +17,14 @@
 
         public LoadProjectViewModel()
         {
-            var gDriveHandler = new GoogleDriveHandler("LeaRoot", null);
+            //var gDriveHandler = new GoogleDriveHandler()
 
-            var projects = new ObservableCollection<string>(gDriveHandler.ListAllProjects());
+            //var projects = new ObservableCollection<string>(gDriveHandler.ListAllProjects());
 
-            foreach (var p in projects)
-            {
-                ProjectList.Add(p);
-            }
+            //foreach (var p in projects)
+            //{
+            //    ProjectList.Add(p);
+            //}
         }
 
         partial void OnSelectedProjectChanged(string value)

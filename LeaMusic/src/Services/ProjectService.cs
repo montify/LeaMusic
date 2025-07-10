@@ -2,15 +2,24 @@
 {
     using LeaMusic.src.AudioEngine_;
     using LeaMusic.src.ResourceManager_;
-    using LeaMusic.src.ResourceManager_.GoogleDrive_;
+    using LeaMusic.src.Services.ResourceServices_;
 
     public class ProjectService
     {
         private IDialogService m_dialogService;
         private LeaResourceManager m_resourceManager;
         private ConnectionMonitorService m_connectionMonitorService;
+        private ILocalFileHandler m_localFileHandler;
+        private IGoogleDriveHandler m_googleDriveHandler;
+        private IFileSystemService m_fileSystemService;
 
-        public ProjectService(IDialogService dialogService, LeaResourceManager resourceManager, ConnectionMonitorService connectionMonitorService)
+        public ProjectService(
+            IDialogService dialogService,
+            LeaResourceManager resourceManager,
+            ConnectionMonitorService connectionMonitorService,
+            ILocalFileHandler localFileHandler,
+            IGoogleDriveHandler googleDriveHandler,
+            IFileSystemService fileSystemService)
         {
             if (dialogService == null || resourceManager == null)
             {
@@ -20,6 +29,9 @@
             m_dialogService = dialogService;
             m_resourceManager = resourceManager;
             m_connectionMonitorService = connectionMonitorService;
+            m_localFileHandler = localFileHandler;
+            m_googleDriveHandler = googleDriveHandler;
+            m_fileSystemService = fileSystemService;
         }
 
         public async Task<Project?> LoadProjectAsync(bool isGoogleDriveSync, Action<string>? statusCallback)
@@ -32,13 +44,10 @@
             }
 
             var location = new FileLocation(filePath);
-            var projectName = Path.GetFileNameWithoutExtension(location.Path);
+            var projectName = m_fileSystemService.GetFileNameWithoutExtension(location.Path);
 
-            var fileHandler = new FileHandler();
-            var googleDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
-
-            ProjectMetadata? localMeta = m_resourceManager.GetProjectMetaData($"{projectName}.zip", location, fileHandler);
-            ProjectMetadata? gDriveMeta = await TryGetGoogleDriveMetadataAsync(projectName, googleDriveHandler, statusCallback);
+            ProjectMetadata? localMeta = m_resourceManager.GetProjectMetaData($"{projectName}.zip", location, m_localFileHandler);
+            ProjectMetadata? gDriveMeta = await TryGetGoogleDriveMetadataAsync(projectName, m_googleDriveHandler, statusCallback);
 
             bool shouldUseGDrive = gDriveMeta != null &&
                                    localMeta?.lastSavedAt < gDriveMeta.lastSavedAt &&
@@ -49,12 +58,12 @@
                 var gdriveLocation = new GDriveLocation("LeaRoot", filePath, projectName);
 
                 statusCallback?.Invoke("Loading Project from google Drive");
-                return await m_resourceManager.LoadProject(gdriveLocation, googleDriveHandler);
+                return await m_resourceManager.LoadProject(gdriveLocation, m_googleDriveHandler);
             }
 
             statusCallback?.Invoke("Loading Project from File");
 
-            return await m_resourceManager.LoadProject(location, fileHandler);
+            return await m_resourceManager.LoadProject(location, m_localFileHandler);
         }
 
         public async Task SaveProject(Project project, Action<string>? statusCallback)
@@ -76,9 +85,7 @@
                     return;
                 }
 
-                var fileHandler = new FileHandler();
-
-                await SaveLocalAsync(project, filePath, fileHandler);
+                await SaveLocalAsync(project, filePath, m_localFileHandler);
 
                 if (!await m_connectionMonitorService.CheckInternetConnection())
                 {
@@ -88,7 +95,7 @@
 
                 if (m_dialogService.EnableSync())
                 {
-                    await SaveToGoogleDriveAsync(project, statusCallback, fileHandler);   
+                    await SaveToGoogleDriveAsync(project, statusCallback, m_localFileHandler);
                 }
             }
             catch (Exception e)
@@ -98,7 +105,7 @@
             }
         }
 
-        private async Task<ProjectMetadata?> TryGetGoogleDriveMetadataAsync(string projectName, GoogleDriveHandler handler, Action<string>? statusCallback)
+        private async Task<ProjectMetadata?> TryGetGoogleDriveMetadataAsync(string projectName, IGoogleDriveHandler handler, Action<string>? statusCallback)
         {
             if (!await m_connectionMonitorService.CheckInternetConnection())
             {
@@ -116,18 +123,16 @@
             }
         }
 
-        private async Task SaveLocalAsync(Project project, string filePath, FileHandler fileHandler)
+        private async Task SaveLocalAsync(Project project, string filePath, ILocalFileHandler fileHandler)
         {
             await m_resourceManager.SaveProject(project, new FileLocation(filePath), fileHandler);
         }
 
-        private async Task SaveToGoogleDriveAsync(Project project, Action<string>? statusCallback, FileHandler fileHandler)
+        private async Task SaveToGoogleDriveAsync(Project project, Action<string>? statusCallback, ILocalFileHandler fileHandler)
         {
-            var gDriveHandler = new GoogleDriveHandler("LeaRoot", fileHandler);
-
             statusCallback?.Invoke("Start Save Project to Google Drive");
 
-            await m_resourceManager.SaveProject(project, default, gDriveHandler);
+            await m_resourceManager.SaveProject(project, default, m_googleDriveHandler);
 
             statusCallback?.Invoke("Project successfully saved to GoogleDrive");
         }

@@ -1,7 +1,7 @@
-﻿using LeaMusic.Src.AudioEngine_;
-
-namespace LeaMusic.src.Services
+﻿namespace LeaMusic.src.Services
 {
+    using LeaMusic.Src.AudioEngine_;
+
     public class TimelineService
     {
         public AudioEngine AudioEngine { get; private set; }

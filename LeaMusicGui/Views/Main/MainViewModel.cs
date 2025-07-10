@@ -10,8 +10,7 @@
     using LeaMusic.src.Services;
     using LeaMusic.Src.Services;
     using Point = System.Windows.Point;
-    using LeaMusic.src.ResourceManager_.GoogleDrive_;
-    using System.Diagnostics;
+    using LeaMusic;
 
     public partial class MainViewModel : ObservableObject
     {
@@ -91,7 +90,6 @@
         private readonly ConnectionMonitorService m_connectionMonitorService;
         private readonly IDialogService m_dialogService;
         private readonly Action<string> m_updateStatus;
-        private IResourceHandler m_resourceHandler;
 
         // currentMarkerID is set when the User click on the marker(Command) in the View,
         // after that OnRightMouseDown() invoke this Method and currentMarkerID is used to find the Marker the User clicked on.
@@ -120,8 +118,6 @@
             // Create Empty Project for StartUp
             Project = Project.CreateEmptyProject("TEST");
             ProjectName = "NOT SET";
-
-            m_resourceHandler = new FileHandler();
 
             audioEngine.MountProject(Project);
 
@@ -265,7 +261,6 @@
         [RelayCommand]
         public async Task SaveProjectFile()
         {
-            m_resourceHandler = new FileHandler();
             await SaveProject();
         }
 
@@ -284,7 +279,6 @@
         [RelayCommand]
         public async Task LoadProjectFile()
         {
-            m_resourceHandler = new FileHandler();
             await LoadProject();
 
             StatusMessages = $"Project: {Project.Name} loaded!";
@@ -300,7 +294,10 @@
                 m_audioEngine.Stop();
 
                 var projectfilePath = filePath;
-                var track = m_resourceManager.ImportTrack(new FileLocation(projectfilePath), m_resourceHandler);
+
+                //TODO: Move to ProjectService
+                var localFileHandler = new FileHandler();
+                var track = m_resourceManager.ImportTrack(new FileLocation(projectfilePath), localFileHandler);
 
                 Project.AddTrack(track);
 
@@ -477,7 +474,7 @@
                 m_audioEngine.ViewStartTime,
                 m_audioEngine.ViewDuration,
                 RenderWidth,
-                thresholdInMs: 10);
+                thresholdInMs: AppConstants.SnappingTreshholdInMs);
             }
 
             if (proposedEnd != null)
@@ -488,7 +485,7 @@
                 m_audioEngine.ViewStartTime,
                 m_audioEngine.ViewDuration,
                 RenderWidth,
-                thresholdInMs: 10);
+                thresholdInMs: AppConstants.SnappingTreshholdInMs);
             }
 
             // Use the LoopPlaybackService to determine the final action

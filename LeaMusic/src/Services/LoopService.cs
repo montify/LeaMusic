@@ -16,7 +16,7 @@ namespace LeaMusic.src.Services
             {
                 return new LoopCommand(TimeSpan.Zero, TimeSpan.Zero, startSec, shouldSetLoop: true, shouldJump: true);
             }
-            else if (endSec - startSec < TimeSpan.FromMilliseconds(50))
+            else if (endSec - startSec < TimeSpan.FromMilliseconds(AppConstants.MinimumLoopTimeInMs))
             {
                 return new LoopCommand(TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero, shouldSetLoop: false, shouldJump: false);
             }

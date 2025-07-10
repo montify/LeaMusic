@@ -1,6 +1,7 @@
 ﻿namespace LeaMusic.src.ResourceManager_
 {
     using LeaMusic.src.AudioEngine_;
+    using LeaMusic.src.Services.ResourceServices_;
     using NAudio.Wave;
 
     // Import: Create a track from an audio file that does not yet exist in the project (generate a new waveform file).
@@ -21,7 +22,7 @@
         // Import: When the Audio IS NOT in the Project/Audio Folder
         // Load: When the Audio IS IN the Project/Audio Folder
         // So Import copy the AudioFile from Source to Project/audioFolder
-        public Track ImportTrack(Location trackLocation, IResourceHandler handler)
+        public Track ImportTrack(Location trackLocation, ILocalFileHandler handler)
         {
            return handler.ImportTrack(trackLocation, this);
         }

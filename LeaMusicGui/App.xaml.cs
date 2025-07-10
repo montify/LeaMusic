@@ -4,12 +4,12 @@
     using LeaMusic.src.AudioEngine_;
     using LeaMusic.Src.AudioEngine_;
     using LeaMusic.src.ResourceManager_;
+    using LeaMusic.src.ResourceManager_.GoogleDrive_;
     using LeaMusic.src.Services;
     using LeaMusic.Src.Services;
+    using LeaMusic.src.Services.ResourceServices_;
     using LeaMusicGui.Views.DialogServices;
     using Microsoft.Extensions.DependencyInjection;
-    using LeaMusicGui.Views;
-    using SkiaSharp;
 
     /// <summary>
     /// Interaction logic for App.xaml.
@@ -21,17 +21,24 @@
         public App()
         {
             var services = new ServiceCollection();
-
+            services.AddSingleton<ILocalFileHandler, LocalFileHandler>();
+            services.AddSingleton<IGoogleDriveHandler, GoogleDriveHandler>();
             services.AddSingleton<LeaResourceManager>();
             services.AddSingleton<ProjectService>();
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<TimelineService>();
             services.AddSingleton<AudioEngine>();
             services.AddSingleton<TimelineCalculator>();
+
             services.AddSingleton<LoopService>();
             services.AddSingleton<IDialogService, DialogService>();
             services.AddSingleton<LoadProjectViewModel>();
             services.AddSingleton<ConnectionMonitorService>();
+            services.AddSingleton<IProjectSerializer, ProjectJsonSerializer>();
+            services.AddSingleton<IWaveformService, WaveformService>();
+            services.AddSingleton<IMetadataService, LocalFileMetaDataService>();
+            services.AddSingleton<IFileSystemService, LocalFileSystemService>();
+            services.AddSingleton<IZipService, ZipService>();
             m_serviceProvider = services.BuildServiceProvider();
         }
 

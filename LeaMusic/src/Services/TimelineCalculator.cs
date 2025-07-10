@@ -17,9 +17,9 @@
                 m_zoomStartMouseY = p.Y;
             }
 
-            double zoomSensitivity = 0.002f;
-            double maxZoom = 60;
-            double minZoom = 1;
+            double zoomSensitivity = AppConstants.ZoomSensitivity;
+            double maxZoom = AppConstants.MaxZoom;
+            double minZoom = AppConstants.MinZoom;
             double zoomRange = maxZoom - minZoom;
 
             var delta = p.Y - m_zoomStartMouseY;

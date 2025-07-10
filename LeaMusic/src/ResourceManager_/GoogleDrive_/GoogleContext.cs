@@ -10,7 +10,6 @@
     internal class GoogleContext
     {
         private readonly string[] m_scopes = { DriveService.Scope.Drive };
-        private readonly string m_applicationName = "Drive API .NET Upload";
 
         private UserCredential? m_credential;
         private DriveService m_driveService = null!;
@@ -27,7 +26,7 @@
             }
 
             // TODO: Store credentials not in GIT
-            using (var stream = new FileStream("C:/t/credentials.json", FileMode.Open, FileAccess.Read))
+            using (var stream = new FileStream(AppConstants.GoogleAuthCredentialPath, FileMode.Open, FileAccess.Read))
             {
                 string credPath = "credentials.json";
                 m_credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
@@ -41,7 +40,7 @@
             m_driveService = new DriveService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = m_credential,
-                ApplicationName = m_applicationName,
+                ApplicationName = AppConstants.GoogleDriveRootFolderName,
             });
 
             if (m_driveService == null)
