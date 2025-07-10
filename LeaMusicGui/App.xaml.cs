@@ -29,7 +29,7 @@
             services.AddSingleton<TimelineService>();
             services.AddSingleton<AudioEngine>();
             services.AddSingleton<TimelineCalculator>();
-
+            services.AddSingleton<ISyncService, SyncService>();
             services.AddSingleton<LoopService>();
             services.AddSingleton<IDialogService, DialogService>();
             services.AddSingleton<LoadProjectViewModel>();

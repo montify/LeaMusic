@@ -9,12 +9,13 @@
 
     public class ProjectService
     {
-        private IDialogService m_dialogService;
-        private IResourceManager m_resourceManager;
-        private ConnectionMonitorService m_connectionMonitorService;
-        private ILocalFileHandler m_localFileHandler;
-        private IGoogleDriveHandler m_googleDriveHandler;
-        private IFileSystemService m_fileSystemService;
+        private readonly IDialogService m_dialogService;
+        private readonly IResourceManager m_resourceManager;
+        private readonly ConnectionMonitorService m_connectionMonitorService;
+        private readonly ILocalFileHandler m_localFileHandler;
+        private readonly IGoogleDriveHandler m_googleDriveHandler;
+        private readonly IFileSystemService m_fileSystemService;
+        private readonly ISyncService m_syncService;
 
         public ProjectService(
             IDialogService dialogService,
@@ -22,7 +23,8 @@
             ConnectionMonitorService connectionMonitorService,
             ILocalFileHandler localFileHandler,
             IGoogleDriveHandler googleDriveHandler,
-            IFileSystemService fileSystemService)
+            IFileSystemService fileSystemService,
+            ISyncService syncService)
         {
             if (dialogService == null || resourceManager == null)
             {
@@ -35,6 +37,7 @@
             m_localFileHandler = localFileHandler;
             m_googleDriveHandler = googleDriveHandler;
             m_fileSystemService = fileSystemService;
+            m_syncService = syncService;
         }
 
         public async Task<Project?> LoadProjectAsync(bool isGoogleDriveSync, Action<string>? statusCallback)
@@ -49,12 +52,7 @@
             var location = new FileLocation(filePath);
             var projectName = m_fileSystemService.GetFileNameWithoutExtension(location.Path);
 
-            ProjectMetadata? localMeta = m_resourceManager.GetProjectMetaData($"{projectName}.zip", location, m_localFileHandler);
-            ProjectMetadata? gDriveMeta = await TryGetGoogleDriveMetadataAsync(projectName, m_googleDriveHandler, statusCallback);
-
-            bool shouldUseGDrive = gDriveMeta != null &&
-                                   localMeta?.lastSavedAt < gDriveMeta.lastSavedAt &&
-                                   m_dialogService.AskDownloadGoogleDrive(localDate: localMeta.lastSavedAt, googleDriveDate: gDriveMeta.lastSavedAt);
+            bool shouldUseGDrive = await m_syncService.DetermineSyncLocationAsync(projectName, location, statusCallback);
 
             if (shouldUseGDrive)
             {
@@ -125,24 +123,6 @@
             else
             {
                 throw new NotSupportedException("Handler is not a FileHandler");
-            }
-        }
-
-        private async Task<ProjectMetadata?> TryGetGoogleDriveMetadataAsync(string projectName, IGoogleDriveHandler handler, Action<string>? statusCallback)
-        {
-            if (!await m_connectionMonitorService.CheckInternetConnection())
-            {
-                return null;
-            }
-
-            try
-            {
-                return m_resourceManager.GetProjectMetaData(projectName, null, handler);
-            }
-            catch
-            {
-                statusCallback?.Invoke("No Internet Connection, load Project from Local File");
-                return null;
             }
         }
 
