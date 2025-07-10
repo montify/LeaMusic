@@ -1,13 +1,16 @@
 ﻿namespace LeaMusic.src.Services
 {
+    using System.Diagnostics;
     using LeaMusic.src.AudioEngine_;
-    using LeaMusic.src.ResourceManager_;
+    using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
+    using NAudio.Wave;
+    using NAudio.Wave.SampleProviders;
 
     public class ProjectService
     {
         private IDialogService m_dialogService;
-        private LeaResourceManager m_resourceManager;
+        private IResourceManager m_resourceManager;
         private ConnectionMonitorService m_connectionMonitorService;
         private ILocalFileHandler m_localFileHandler;
         private IGoogleDriveHandler m_googleDriveHandler;
@@ -15,7 +18,7 @@
 
         public ProjectService(
             IDialogService dialogService,
-            LeaResourceManager resourceManager,
+            IResourceManager resourceManager,
             ConnectionMonitorService connectionMonitorService,
             ILocalFileHandler localFileHandler,
             IGoogleDriveHandler googleDriveHandler,
@@ -105,6 +108,26 @@
             }
         }
 
+        public Track? ImportTrack(Location location)
+        {
+            if (location is FileLocation projectFilePath)
+            {
+                var track = new Track();
+                track.OriginFilePath = projectFilePath.Path;
+
+                var audio = m_resourceManager.LoadAudioFile(projectFilePath.Path);
+
+                track.AddAudioFile(projectFilePath.Path, audio);
+                track.WaveformProvider = ImportWaveform(track);
+
+                return track;
+            }
+            else
+            {
+                throw new NotSupportedException("Handler is not a FileHandler");
+            }
+        }
+
         private async Task<ProjectMetadata?> TryGetGoogleDriveMetadataAsync(string projectName, IGoogleDriveHandler handler, Action<string>? statusCallback)
         {
             if (!await m_connectionMonitorService.CheckInternetConnection())
@@ -135,6 +158,22 @@
             await m_resourceManager.SaveProject(project, default, m_googleDriveHandler);
 
             statusCallback?.Invoke("Project successfully saved to GoogleDrive");
+        }
+
+        private ISampleProvider ResampleWav(WaveStream wavestream)
+        {
+            var resampledAudio = new WdlResamplingSampleProvider(wavestream.ToSampleProvider(), 3000);
+
+            return resampledAudio;
+        }
+
+        private WaveformProvider ImportWaveform(Track track)
+        {
+            var downsampleAudio = ResampleWav(track.Audio);
+            var waveformProvider = new WaveformProvider(downsampleAudio, (int)track.Audio.TotalTime.TotalSeconds);
+
+            Debug.WriteLine($"Create new Waveform from new ImportedTrack: {track.AudioFileName}");
+            return waveformProvider;
         }
     }
 }

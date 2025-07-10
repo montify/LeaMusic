@@ -2,7 +2,6 @@
 {
     using System.Text.Json.Serialization;
     using LeaMusic.src.AudioEngine_.Streams;
-    using LeaMusic.src.ResourceManager_;
     using NAudio.Wave;
     using NAudio.Wave.SampleProviders;
 
@@ -11,7 +10,7 @@
         private static int m_uniqueId = 0;
 
         [JsonIgnore]
-        public WaveStream Audio { get; private set; }
+        public WaveStream Audio { get; set; }
 
         [JsonIgnore]
         public RubberBandWaveStream RubberBandWaveStream { get; private set; }
@@ -24,7 +23,7 @@
 
         [JsonIgnore]
         public LoopStream LoopStream { get; private set; }
-    
+
         public TimeSpan ClipDuration { get; set; }
 
         public WaveFormat? Waveformat { get; set; }
@@ -48,13 +47,13 @@
         {
         }
 
-        public void LoadAudioFile(string audioFilePath, LeaResourceManager resourceManager)
+        public void AddAudioFile(string audioFilePath, WaveStream audio)
         {
+            Audio = audio;
             OriginFilePath = audioFilePath;
 
             AudioFileName = Path.GetFileName(audioFilePath);
 
-            Audio = resourceManager.LoadAudioFile(audioFilePath);
             Name = Path.GetFileNameWithoutExtension(OriginFilePath);
 
             Waveformat = Audio.WaveFormat;

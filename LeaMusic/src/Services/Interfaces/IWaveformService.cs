@@ -1,4 +1,4 @@
-﻿namespace LeaMusic.src.Services.ResourceServices_
+﻿namespace LeaMusic.src.Services.Interfaces
 {
     using LeaMusic.src.AudioEngine_;
 

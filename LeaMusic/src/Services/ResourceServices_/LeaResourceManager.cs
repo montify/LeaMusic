@@ -1,17 +1,17 @@
-﻿namespace LeaMusic.src.ResourceManager_
+﻿namespace LeaMusic.src.Services.ResourceServices_
 {
     using LeaMusic.src.AudioEngine_;
-    using LeaMusic.src.Services.ResourceServices_;
+    using LeaMusic.src.Services.Interfaces;
     using NAudio.Wave;
 
     // Import: Create a track from an audio file that does not yet exist in the project (generate a new waveform file).
     // Load: Load a track from an existing project (load an existing waveform file).
-    public class LeaResourceManager
+    public class LeaResourceManager : IResourceManager
     {
         // TODO: Cache Resources!
         public async Task<Project> LoadProject(Location location, IResourceHandler handler)
         {
-            return await handler.LoadProject(location, this);
+            return await handler.LoadProject(location);
         }
 
         public async Task SaveProject(Project project, Location projectFilePath, IResourceHandler handler)
@@ -24,15 +24,15 @@
         // So Import copy the AudioFile from Source to Project/audioFolder
         public Track ImportTrack(Location trackLocation, ILocalFileHandler handler)
         {
-           return handler.ImportTrack(trackLocation, this);
+           return handler.ImportTrack(trackLocation);
         }
 
         public ProjectMetadata? GetProjectMetaData(string projectName, Location location, IResourceHandler handler)
         {
-            return handler.GetProjectMetadata(projectName, location, this)?.Result;
+            return handler.GetProjectMetadata(projectName, location)?.Result;
         }
 
-        internal WaveStream LoadAudioFile(string path)
+        public WaveStream LoadAudioFile(string path)
         {
             return new Mp3FileReader(path);
         }

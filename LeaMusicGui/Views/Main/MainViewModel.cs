@@ -4,13 +4,13 @@
     using System.Windows.Media;
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.Mvvm.Input;
+    using LeaMusic;
     using LeaMusic.src.AudioEngine_;
     using LeaMusic.Src.AudioEngine_;
-    using LeaMusic.src.ResourceManager_;
     using LeaMusic.src.Services;
     using LeaMusic.Src.Services;
+    using LeaMusic.src.Services.ResourceServices_;
     using Point = System.Windows.Point;
-    using LeaMusic;
 
     public partial class MainViewModel : ObservableObject
     {
@@ -83,7 +83,7 @@
 
         private readonly AudioEngine m_audioEngine;
         private readonly TimelineService m_timelineService;
-        private readonly LeaResourceManager m_resourceManager;
+        private readonly IResourceManager m_resourceManager;
         private readonly ProjectService m_projectService;
         private readonly TimelineCalculator m_timelineCalculator;
         private readonly LoopService m_loopService;
@@ -97,7 +97,7 @@
 
         public MainViewModel(
                              ProjectService projectService,
-                             LeaResourceManager resourceManager,
+                             IResourceManager resourceManager,
                              TimelineService timelineService,
                              AudioEngine audioEngine,
                              TimelineCalculator timelineCalculator,
@@ -187,7 +187,7 @@
 
             Zoom = newZoomFactor;
 
-            // use lowerCase sliderZoom to avoid Trigger OnSliderZoomChange()
+            // Note: use lowerCase sliderZoom to avoid Trigger OnSliderZoomChange()
             sliderZoom = newZoomFactor;
             OnPropertyChanged(nameof(SliderZoom));
 
@@ -295,9 +295,13 @@
 
                 var projectfilePath = filePath;
 
-                //TODO: Move to ProjectService
-                var localFileHandler = new FileHandler();
-                var track = m_resourceManager.ImportTrack(new FileLocation(projectfilePath), localFileHandler);
+                var track = m_projectService.ImportTrack(new FileLocation(projectfilePath));
+
+                if (track == null)
+                {
+                    StatusMessages = "Cant import Track";
+                    return;
+                }
 
                 Project.AddTrack(track);
 

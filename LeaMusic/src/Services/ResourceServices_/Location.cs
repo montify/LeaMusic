@@ -1,4 +1,4 @@
-﻿namespace LeaMusic.src.ResourceManager_
+﻿namespace LeaMusic.src.Services.ResourceServices_
 {
     public class Location
     {

@@ -1,6 +1,7 @@
-﻿namespace LeaMusic.src.ResourceManager_.GoogleDrive_
+﻿namespace LeaMusic.src.Services.ResourceServices_.GoogleDrive_
 {
     using LeaMusic.src.AudioEngine_;
+    using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
 
     public class GoogleDriveHandler : IGoogleDriveHandler
@@ -9,18 +10,21 @@
         private readonly ILocalFileHandler m_fileHandler;
         private readonly IFileSystemService m_fileSystemService;
         private readonly IZipService m_zipService;
+        private readonly IResourceManager m_resourceManager;
 
         private GoogleContext m_driveContext;
 
         public GoogleDriveHandler(
             ILocalFileHandler fileHandler,
             IFileSystemService fileSystemService,
-            IZipService zipService)
+            IZipService zipService,
+            IResourceManager resourceManager)
         {
             m_fileHandler = fileHandler;
             m_fileSystemService = fileSystemService;
             m_driveContext = new GoogleContext();
             m_zipService = zipService;
+            m_resourceManager = resourceManager;
 
             if (m_driveContext == null)
             {
@@ -30,9 +34,9 @@
             m_driveContext.CreateDriveService();
         }
 
-        public Track ImportTrack(Location trackLocation, LeaResourceManager leaResourceManager)
+        public Track ImportTrack(Location trackLocation)
         {
-            var track = m_fileHandler.ImportTrack(trackLocation, leaResourceManager);
+            var track = m_fileHandler.ImportTrack(trackLocation);
 
             if (track == null)
             {
@@ -42,12 +46,12 @@
             return track;
         }
 
-        public Track LoadAudio(Track track, string projectPath, LeaResourceManager resourceManager)
+        public Track LoadAudio(Track track, string projectPath)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Project?> LoadProject(Location location, LeaResourceManager resourceManager)
+        public async Task<Project?> LoadProject(Location location)
         {
             // appRootFolder is the Folder, that LeaMusic sees as root. It must be in Gdrives root
             if (location is GDriveLocation gLocation)
@@ -81,7 +85,7 @@
                     m_zipService.ExtractToDirectory(stream, extractTo);
                 }
 
-                var project = await m_fileHandler.LoadProject(new FileLocation(gLocation.LocalProjectFilePath), resourceManager);
+                var project = await m_fileHandler.LoadProject(new FileLocation(gLocation.LocalProjectFilePath));
 
                 if (project == null)
                 {
@@ -160,7 +164,7 @@
             }
         }
 
-        public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location, LeaResourceManager resourceManager)
+        public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location)
         {
             try
             {

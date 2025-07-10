@@ -1,15 +1,14 @@
-﻿using LeaMusic.src.AudioEngine_;
-using LeaMusic.src.ResourceManager_;
-
-namespace LeaMusic.src.Services.ResourceServices_
+﻿namespace LeaMusic.src.Services.ResourceServices_
 {
+    using LeaMusic.src.Services.Interfaces;
+
     public class LocalFileMetaDataService : IMetadataService
     {
-        private IProjectSerializer m_ProjectSerializer;
+        private IProjectSerializer m_projectSerializer;
 
         public LocalFileMetaDataService(IProjectSerializer projectSerializer)
         {
-            m_ProjectSerializer = projectSerializer;
+            m_projectSerializer = projectSerializer;
         }
 
         public ProjectMetadata? GetMetaData(Location projectLocation)
@@ -23,14 +22,14 @@ namespace LeaMusic.src.Services.ResourceServices_
 
                 var file = File.ReadAllText(location.Path);
 
-                var project = m_ProjectSerializer.Deserialize(file);
+                var project = m_projectSerializer.Deserialize(file);
 
                 if (project == null)
                 {
                     throw new NullReferenceException($"Cant load Project Path: {location.Path}");
                 }
 
-                if (project.LastSaveAt == null)
+                if (project.LastSaveAt == default)
                 {
                     throw new NullReferenceException("Cant Fetch MetaData from Project");
                 }

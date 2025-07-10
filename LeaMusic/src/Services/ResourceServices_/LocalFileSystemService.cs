@@ -1,4 +1,4 @@
-﻿using LeaMusic.src.ResourceManager_;
+﻿using LeaMusic.src.Services.Interfaces;
 
 namespace LeaMusic.src.Services.ResourceServices_
 {

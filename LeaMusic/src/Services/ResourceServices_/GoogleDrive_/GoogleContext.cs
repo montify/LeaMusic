@@ -1,4 +1,4 @@
-﻿namespace LeaMusic.src.ResourceManager_.GoogleDrive_
+﻿namespace LeaMusic.src.Services.ResourceServices_.GoogleDrive_
 {
     using System.Diagnostics;
     using Google.Apis.Auth.OAuth2;
@@ -104,7 +104,7 @@
             else
             {
                 // Ordner existiert nicht, neu erstellen
-                var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+                var fileMetadata = new File()
                 {
                     Name = subfolderName,
                     MimeType = "application/vnd.google-apps.folder",

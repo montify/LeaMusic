@@ -1,6 +1,7 @@
 ﻿namespace LeaMusic.src.Services.ResourceServices_
 {
     using LeaMusic.src.AudioEngine_;
+    using LeaMusic.src.Services.Interfaces;
     using NAudio.Wave;
     using NAudio.Wave.SampleProviders;
 
@@ -8,7 +9,6 @@
     {
         public WaveformProvider GenerateFromAudio(Track track)
         {
-            // Your existing ResampleWav logic goes here
             var resampler = new WdlResamplingSampleProvider(track.Audio.ToSampleProvider(), 3000);
             return new WaveformProvider(resampler, (int)track.Audio.TotalTime.TotalSeconds);
         }

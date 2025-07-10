@@ -3,11 +3,11 @@
     using System.Windows;
     using LeaMusic.src.AudioEngine_;
     using LeaMusic.Src.AudioEngine_;
-    using LeaMusic.src.ResourceManager_;
-    using LeaMusic.src.ResourceManager_.GoogleDrive_;
     using LeaMusic.src.Services;
     using LeaMusic.Src.Services;
+    using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
+    using LeaMusic.src.Services.ResourceServices_.GoogleDrive_;
     using LeaMusicGui.Views.DialogServices;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -23,7 +23,7 @@
             var services = new ServiceCollection();
             services.AddSingleton<ILocalFileHandler, LocalFileHandler>();
             services.AddSingleton<IGoogleDriveHandler, GoogleDriveHandler>();
-            services.AddSingleton<LeaResourceManager>();
+            services.AddSingleton<IResourceManager, LeaResourceManager>();
             services.AddSingleton<ProjectService>();
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<TimelineService>();
@@ -39,6 +39,7 @@
             services.AddSingleton<IMetadataService, LocalFileMetaDataService>();
             services.AddSingleton<IFileSystemService, LocalFileSystemService>();
             services.AddSingleton<IZipService, ZipService>();
+            services.AddSingleton<IBinaryWriter, WaveformBinaryWriter>();
             m_serviceProvider = services.BuildServiceProvider();
         }
 

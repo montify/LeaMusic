@@ -2,6 +2,7 @@
 {
     using System.Text.Json;
     using LeaMusic.src.AudioEngine_;
+    using LeaMusic.src.Services.Interfaces;
 
     public class ProjectJsonSerializer : IProjectSerializer
     {

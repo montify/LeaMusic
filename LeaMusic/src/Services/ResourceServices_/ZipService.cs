@@ -1,6 +1,7 @@
 ﻿
 namespace LeaMusic.src.Services.ResourceServices_
 {
+    using LeaMusic.src.Services.Interfaces;
     using System.IO.Compression;
 
     public class ZipService : IZipService

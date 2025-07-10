@@ -1,7 +1,7 @@
 ﻿namespace LeaMusic.src.Services.ResourceServices_
 {
     using LeaMusic.src.AudioEngine_;
-    using LeaMusic.src.ResourceManager_;
+    using LeaMusic.src.Services.Interfaces;
 
     public class LocalFileHandler : ILocalFileHandler
     {
@@ -9,27 +9,39 @@
         private readonly IWaveformService m_waveformService;
         private readonly IMetadataService m_localmedatDataService;
         private readonly IFileSystemService m_localFileSystemService;
+        private readonly IBinaryWriter m_waveformBinaryWriter;
+        private readonly IResourceManager m_resourceManager;
 
-        public LocalFileHandler(IProjectSerializer serializer, IWaveformService waveformService, IMetadataService localmedatDataService, IFileSystemService localFileSystemService)
+        public LocalFileHandler(
+            IProjectSerializer serializer,
+            IWaveformService waveformService,
+            IMetadataService localmedatDataService,
+            IFileSystemService localFileSystemService,
+            IBinaryWriter waveformBinaryWriter,
+            IResourceManager leaResourceManager)
         {
             m_projectSerializer = serializer;
             m_waveformService = waveformService;
             m_localmedatDataService = localmedatDataService;
             m_localFileSystemService = localFileSystemService;
+            m_waveformBinaryWriter = waveformBinaryWriter;
+            m_resourceManager = leaResourceManager;
         }
 
-        public Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location, LeaResourceManager resourceManager)
+        public Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location)
         {
             return Task.FromResult(m_localmedatDataService.GetMetaData(location));
         }
 
-        public Track ImportTrack(Location trackLocation, LeaResourceManager leaResourceManager)
+        public Track ImportTrack(Location trackLocation)
         {
             if (trackLocation is FileLocation projectFilePath)
             {
                 var track = new Track();
                 track.OriginFilePath = projectFilePath.Path;
-                track.LoadAudioFile(projectFilePath.Path, leaResourceManager);
+
+                var audio = m_resourceManager.LoadAudioFile(projectFilePath.Path);
+                track.AddAudioFile(projectFilePath.Path, audio);
 
                 track.WaveformProvider = m_waveformService.GenerateFromAudio(track);
                 return track;
@@ -40,17 +52,18 @@
             }
         }
 
-        public Track LoadAudio(Track track, string projectPath, LeaResourceManager resourceManager)
+        public Track LoadAudio(Track track, string projectPath)
         {
             var audioFilePath = m_localFileSystemService.CombinePaths(projectPath, track.AudioRelativePath);
 
-            track.LoadAudioFile(audioFilePath, resourceManager);
+            var audio = m_resourceManager.LoadAudioFile(audioFilePath);
+            track.AddAudioFile(audioFilePath, audio);
 
             track.WaveformProvider = m_waveformService.GenerateFromAudio(track);
             return track;
         }
 
-        public async Task<Project?> LoadProject(Location projectLocation, LeaResourceManager resourceManager)
+        public async Task<Project?> LoadProject(Location projectLocation)
         {
             if (projectLocation is FileLocation location)
             {
@@ -83,7 +96,7 @@
 
                         var trackPath = m_localFileSystemService.CombinePaths(projectPath, track.AudioRelativePath);
 
-                        track = LoadAudio(track, projectPath, resourceManager);
+                        track = LoadAudio(track, projectPath);
                     }
                 });
 
@@ -126,7 +139,6 @@
                     track.WaveformRelativePath = $"{waveformDirectory.Name}/{track.AudioFileName}.waveformat";
 
                     // only trigger for first time Save
-
                     if (!m_localFileSystemService.FileExists(audioFilesDirectory.FullName + "/" + track.AudioFileName))
                     {
                         m_localFileSystemService.CopyFile(track.OriginFilePath, audioFilesDirectory.FullName + "/" + track.AudioFileName, overwrite: true);
@@ -148,32 +160,11 @@
             }
 
             return Task.CompletedTask;
-
-            throw new NotImplementedException();
         }
-
-        //private DirectoryInfo OpenOrCreateDirectory(string path)
-        //{
-        //    var projectDirectory = new DirectoryInfo(path);
-
-        //    if (!projectDirectory.Exists)
-        //    {
-        //        projectDirectory = Directory.CreateDirectory($"{path}");
-        //    }
-
-        //    return projectDirectory;
-        //}
 
         private void WriteWaveformBinary(float[] audioSamples, string path)
         {
-            using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
-            {
-                foreach (float sample in audioSamples)
-                {
-                    writer.Write(sample);
-                }
-            }
+            m_waveformBinaryWriter.WriteWaveformBinary(audioSamples, path);
         }
-
     }
 }
