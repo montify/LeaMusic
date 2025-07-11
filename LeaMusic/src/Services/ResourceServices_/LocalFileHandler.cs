@@ -28,9 +28,9 @@
             m_resourceManager = leaResourceManager;
         }
 
-        public Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location)
+        public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location)
         {
-            return Task.FromResult(m_localmedatDataService.GetMetaData(location));
+            return await m_localmedatDataService.GetMetaData(location);
         }
 
         public Track ImportTrack(Location trackLocation)

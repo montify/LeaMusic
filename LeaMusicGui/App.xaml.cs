@@ -21,6 +21,8 @@
         public App()
         {
             var services = new ServiceCollection();
+            services.AddSingleton<IGoogleContext, GoogleContext>();
+            
             services.AddSingleton<ILocalFileHandler, LocalFileHandler>();
             services.AddSingleton<IGoogleDriveHandler, GoogleDriveHandler>();
             services.AddSingleton<IResourceManager, LeaResourceManager>();
@@ -37,9 +39,11 @@
             services.AddSingleton<IProjectSerializer, ProjectJsonSerializer>();
             services.AddSingleton<IWaveformService, WaveformService>();
             services.AddSingleton<IMetadataService, LocalFileMetaDataService>();
+            services.AddSingleton<GoogleDriveMetaDataService>();
             services.AddSingleton<IFileSystemService, LocalFileSystemService>();
             services.AddSingleton<IZipService, ZipService>();
             services.AddSingleton<IBinaryWriter, WaveformBinaryWriter>();
+           
             m_serviceProvider = services.BuildServiceProvider();
         }
 

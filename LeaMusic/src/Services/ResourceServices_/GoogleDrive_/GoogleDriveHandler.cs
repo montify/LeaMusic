@@ -10,21 +10,22 @@
         private readonly ILocalFileHandler m_fileHandler;
         private readonly IFileSystemService m_fileSystemService;
         private readonly IZipService m_zipService;
-        private readonly IResourceManager m_resourceManager;
-
-        private GoogleContext m_driveContext;
+        private readonly GoogleDriveMetaDataService m_googleDriveMetaDataService;
+        private IGoogleContext m_driveContext;
 
         public GoogleDriveHandler(
             ILocalFileHandler fileHandler,
             IFileSystemService fileSystemService,
             IZipService zipService,
-            IResourceManager resourceManager)
+            GoogleDriveMetaDataService googleDriveMetaDataService,
+            IGoogleContext googleContext)
         {
             m_fileHandler = fileHandler;
             m_fileSystemService = fileSystemService;
-            m_driveContext = new GoogleContext();
+            m_driveContext = googleContext;
             m_zipService = zipService;
-            m_resourceManager = resourceManager;
+          
+            m_googleDriveMetaDataService = googleDriveMetaDataService;
 
             if (m_driveContext == null)
             {
@@ -78,8 +79,7 @@
                     var projectDirectoryPath = m_fileSystemService.GetDirectoryName(gLocation.LocalProjectFilePath);
 
                     m_fileSystemService.DeleteDirectoryRecursive(projectDirectoryPath);
-                  //  m_fileSystemService.CreateDirectory(projectDirectoryPath);
-
+                
                     var extractTo = m_fileSystemService.GetDirectoryName(projectDirectoryPath);
 
                     m_zipService.ExtractToDirectory(stream, extractTo);
@@ -166,30 +166,7 @@
 
         public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location)
         {
-            try
-            {
-                var rootFolderId = m_driveContext.GetFolderIdByName(AppConstants.GoogleDriveRootFolderName);
-
-                if (string.IsNullOrEmpty(rootFolderId))
-                {
-                    throw new Exception("Cant find rootFolder");
-                }
-
-                var rawMetaData = m_driveContext.GetFileMetadataByNameInFolder(projectName + ".zip", AppConstants.GoogleDriveRootFolderName);
-
-                if (rawMetaData == null)
-                {
-                    return await Task.FromResult<ProjectMetadata?>(null);
-                }
-
-                var metaData = new ProjectMetadata(rawMetaData.Value.Name, rawMetaData.Value.CreatedTime.Value);
-
-                return await Task.FromResult(metaData);
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
+            return await m_googleDriveMetaDataService.GetMetaData(location);
         }
 
         public List<string> ListAllProjects()

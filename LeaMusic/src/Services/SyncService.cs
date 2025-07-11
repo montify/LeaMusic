@@ -48,7 +48,8 @@
 
             try
             {
-                return m_resourceManager.GetProjectMetaData(projectName, null, handler);
+                var location = new GDriveLocation(AppConstants.GoogleDriveRootFolderName, null, projectName);
+                return m_resourceManager.GetProjectMetaData(projectName, location, handler);
             }
             catch
             {

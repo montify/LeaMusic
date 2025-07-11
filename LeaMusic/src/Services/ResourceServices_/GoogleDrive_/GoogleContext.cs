@@ -7,7 +7,7 @@
     using Google.Apis.Util.Store;
     using File = Google.Apis.Drive.v3.Data.File;
 
-    internal class GoogleContext
+    public class GoogleContext : IGoogleContext
     {
         private readonly string[] m_scopes = { DriveService.Scope.Drive };
 
@@ -319,7 +319,7 @@
             }
         }
 
-        internal async Task<Stream> GetZipAsStream(string id)
+        public async Task<Stream> GetZipAsStream(string id)
         {
             var request = m_driveService.Files.Get(id);
             var memoryStream = new MemoryStream();
