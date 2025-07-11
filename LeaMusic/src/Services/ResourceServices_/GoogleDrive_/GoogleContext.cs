@@ -5,6 +5,7 @@
     using Google.Apis.Drive.v3;
     using Google.Apis.Services;
     using Google.Apis.Util.Store;
+    using LeaMusic.src.Services.Interfaces;
     using File = Google.Apis.Drive.v3.Data.File;
 
     public class GoogleContext : IGoogleContext

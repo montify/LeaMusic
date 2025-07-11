@@ -1,7 +1,8 @@
-﻿namespace LeaMusic.src.Services.ResourceServices_
+﻿using LeaMusic.src.Services.ResourceServices_;
+
+namespace LeaMusic.src.Services.Interfaces
 {
     using LeaMusic.src.AudioEngine_;
-    using LeaMusic.src.Services.Interfaces;
     using NAudio.Wave;
 
     public interface IResourceManager

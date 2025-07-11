@@ -11,6 +11,7 @@
     using LeaMusic.Src.Services;
     using LeaMusic.src.Services.ResourceServices_;
     using Point = System.Windows.Point;
+    using LeaMusic.src.Services.Interfaces;
 
     public partial class MainViewModel : ObservableObject
     {

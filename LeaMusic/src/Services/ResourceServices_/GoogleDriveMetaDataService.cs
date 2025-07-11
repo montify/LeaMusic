@@ -1,7 +1,6 @@
 ﻿namespace LeaMusic.src.Services.ResourceServices_
 {
     using LeaMusic.src.Services.Interfaces;
-    using LeaMusic.src.Services.ResourceServices_.GoogleDrive_;
 
     public class GoogleDriveMetaDataService : IMetadataService
     {

@@ -1,4 +1,4 @@
-﻿namespace LeaMusic.src.Services.ResourceServices_.GoogleDrive_
+﻿namespace LeaMusic.src.Services.Interfaces
 {
     using File = Google.Apis.Drive.v3.Data.File;
 
