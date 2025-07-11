@@ -1,7 +1,6 @@
 ﻿namespace LeaMusicGui
 {
     using System.Windows;
-    using LeaMusic.src.AudioEngine_;
     using LeaMusic.Src.AudioEngine_;
     using LeaMusic.src.Services;
     using LeaMusic.Src.Services;
@@ -10,6 +9,8 @@
     using LeaMusic.src.Services.ResourceServices_.GoogleDrive_;
     using LeaMusicGui.Views.DialogServices;
     using Microsoft.Extensions.DependencyInjection;
+    using LeaMusic.src.AudioEngine_.Interfaces;
+    using LeaMusic.src.AudioEngine_;
 
     /// <summary>
     /// Interaction logic for App.xaml.
@@ -29,7 +30,9 @@
             services.AddSingleton<ProjectService>();
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<TimelineService>();
-            services.AddSingleton<AudioEngine>();
+            services.AddSingleton<IMixer, NaudioMixer>();
+            services.AddSingleton<IAudioPlayer, WaveOutAudioPlayer>();
+            services.AddSingleton<AudioEngine>();          
             services.AddSingleton<TimelineCalculator>();
             services.AddSingleton<ISyncService, SyncService>();
             services.AddSingleton<LoopService>();

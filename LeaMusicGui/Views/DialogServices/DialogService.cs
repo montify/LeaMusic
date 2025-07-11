@@ -2,7 +2,7 @@
 {
     using System.Windows;
     using System.Windows.Forms;
-    using LeaMusic.src.AudioEngine_;
+    using LeaMusic.src.Services.Interfaces;
 
     public class DialogService : IDialogService
     {

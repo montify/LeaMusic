@@ -4,8 +4,9 @@
     using System.Diagnostics;
     using LeaMusic.Extensions;
     using LeaMusic.src.AudioEngine_;
-    using NAudio.Wave;
-    using NAudio.Wave.SampleProviders;
+    using LeaMusic.src.AudioEngine_.Interfaces;
+    using LeaMusic.src.Services.Interfaces;
+    using PlaybackState = LeaMusic.src.AudioEngine_.PlaybackState;
 
     public class AudioEngine
     {
@@ -33,8 +34,10 @@
 
         public TimeSpan HalfViewWindow { get; private set; }
 
-        private MixingSampleProvider m_mixer;
-        private WaveOutEvent m_waveOut;
+        // private MixingSampleProvider m_mixer;
+        private readonly IMixer m_mixer;
+
+        private IAudioPlayer m_audioPlayer;
         private Stopwatch m_sw = new Stopwatch();
         private TimeSpan m_oldPosition;
         private TimeSpan m_oldLoopStart = TimeSpan.FromSeconds(-1);
@@ -50,32 +53,28 @@
 
         public event Action<TimeSpan, TimeSpan> OnLoopChange;
 
-        public AudioEngine()
+        public AudioEngine(IAudioPlayer audioPlayer, IMixer mixer)
         {
+            m_audioPlayer = audioPlayer;
+            m_mixer = mixer;
         }
 
         public void MountProject(Project project)
         {
             m_zoom = 1;
 
-            m_waveOut?.Stop();
-            m_waveOut = new WaveOutEvent();
             Project = project;
 
             TotalDuration = TimeSpan.FromSeconds(Project.Duration.TotalSeconds);
-
-            m_mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(44100, 2));
 
             ReloadMixerInputs();
 
             ViewStartTime = TimeSpan.Zero;
             ViewEndTime = TotalDuration;
-            m_waveOut.DesiredLatency = 450;
 
-            // TODO: Init can happen only once in wavOut Lifetime, this is a Hack lol
             try
             {
-                m_waveOut.Init(m_mixer);
+                m_audioPlayer.Init(m_mixer);
             }
             catch (Exception)
             {
@@ -105,7 +104,7 @@
 
             foreach (var track in Project.Tracks)
             {
-                m_mixer.AddMixerInput(track.VolumeStream);
+                m_mixer.AddMixerInput(track);
             }
         }
 
@@ -225,20 +224,20 @@
 
         public void Play()
         {
-            if (m_waveOut.PlaybackState == PlaybackState.Playing)
+            if (m_audioPlayer.GetAudioPlaybackState() == PlaybackState.Playing)
             {
-                m_waveOut.Stop();
+                m_audioPlayer.Stop();
             }
 
-            m_waveOut.Play();
+            m_audioPlayer.Play();
             m_sw.Start();
         }
 
         public void Pause()
         {
-            if (m_waveOut.PlaybackState == PlaybackState.Playing)
+            if (m_audioPlayer.GetAudioPlaybackState() == PlaybackState.Playing)
             {
-                m_waveOut.Pause();
+                m_audioPlayer.Pause();
             }
 
             m_sw.Stop();
@@ -249,9 +248,9 @@
             m_speed = speed;
 
             var old = CurrentPosition;
-            var oldPlaybackState = m_waveOut.PlaybackState;
+            var oldPlaybackState = m_audioPlayer.GetAudioPlaybackState();
 
-            if (m_waveOut.PlaybackState == PlaybackState.Playing)
+            if (m_audioPlayer.GetAudioPlaybackState() == PlaybackState.Playing)
             {
                 Pause();
             }
@@ -281,7 +280,7 @@
 
         public void Replay()
         {
-            if (m_waveOut.PlaybackState == PlaybackState.Playing)
+            if (m_audioPlayer.GetAudioPlaybackState() == PlaybackState.Playing)
             {
                 AudioJumpToSec(LoopStart);
                 Play();
@@ -290,7 +289,7 @@
 
         public void Stop()
         {
-            m_waveOut?.Stop();
+            m_audioPlayer.Stop();
         }
 
         public void MuteTrack(int trackID)
@@ -336,14 +335,13 @@
 
         public void AudioJumpToSec(TimeSpan sec)
         {
-            if (m_waveOut == null)
+            if (m_audioPlayer == null)
             {
                 return;
             }
 
-            m_waveOut.Stop();
+            m_audioPlayer.Stop();
 
-            // Project.ResetTracks();
             CurrentPosition = sec;
 
             m_sw.Reset();

@@ -2,6 +2,8 @@
 {
     public static class AppConstants
     {
+        public const int AudioOffsetInMs = 29;
+
         public const string GoogleDriveRootFolderName = "LeaRoot";
 
         public const string GoogleAuthCredentialPath = "C:/t/credentials.json";

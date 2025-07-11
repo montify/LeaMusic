@@ -114,7 +114,7 @@ namespace LeaMusic.src.AudioEngine_
         /// <param name="position">The target time position to jump to.</param>
         public void JumpToSeconds(TimeSpan position)
         {
-            var offset = TimeSpan.FromMilliseconds(29);
+            var offset = TimeSpan.FromMilliseconds(AppConstants.AudioOffsetInMs);
 
             foreach (var track in Tracks)
             {
