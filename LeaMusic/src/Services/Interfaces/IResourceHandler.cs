@@ -7,8 +7,6 @@
     {
         public Track ImportTrack(Location trackLocation);
 
-        public Track LoadAudio(Track track, string projectPath);
-
         public Task SaveProject(Location projectLocation, Project project);
 
         public Task<Project?> LoadProject(Location projectLocation);

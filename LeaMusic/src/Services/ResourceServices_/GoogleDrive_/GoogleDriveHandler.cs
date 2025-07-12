@@ -47,11 +47,6 @@
             return track;
         }
 
-        public Track LoadAudio(Track track, string projectPath)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<Project?> LoadProject(Location location)
         {
             // appRootFolder is the Folder, that LeaMusic sees as root. It must be in Gdrives root
@@ -79,7 +74,7 @@
                     var projectDirectoryPath = m_fileSystemService.GetDirectoryName(gLocation.LocalProjectFilePath);
 
                     m_fileSystemService.DeleteDirectoryRecursive(projectDirectoryPath);
-                
+
                     var extractTo = m_fileSystemService.GetDirectoryName(projectDirectoryPath);
 
                     m_zipService.ExtractToDirectory(stream, extractTo);
