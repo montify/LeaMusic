@@ -10,14 +10,14 @@
         private readonly ILocalFileHandler m_fileHandler;
         private readonly IFileSystemService m_fileSystemService;
         private readonly IZipService m_zipService;
-        private readonly GoogleDriveMetaDataService m_googleDriveMetaDataService;
+        private readonly IMetadataService m_googleDriveMetaDataService;
         private IGoogleContext m_driveContext;
 
         public GoogleDriveHandler(
             ILocalFileHandler fileHandler,
             IFileSystemService fileSystemService,
             IZipService zipService,
-            GoogleDriveMetaDataService googleDriveMetaDataService,
+            IMetadataService googleDriveMetaDataService,
             IGoogleContext googleContext)
         {
             m_fileHandler = fileHandler;
