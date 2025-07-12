@@ -24,7 +24,7 @@
             m_fileSystemService = fileSystemService;
             m_driveContext = googleContext;
             m_zipService = zipService;
-          
+
             m_googleDriveMetaDataService = googleDriveMetaDataService;
 
             if (m_driveContext == null)

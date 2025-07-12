@@ -8,33 +8,66 @@
     // Load: Load a track from an existing project (load an existing waveform file).
     public class LeaResourceManager : IResourceManager
     {
-        // TODO: Cache Resources!
-        public async Task<Project> LoadProject(Location location, IResourceHandler handler)
+        private readonly ILocalFileHandler m_localFileHandler;
+        private readonly IGoogleDriveHandler m_googleDriveHandler;
+
+        public LeaResourceManager(ILocalFileHandler localFileHandler, IGoogleDriveHandler googleDriveHandler)
         {
-            return await handler.LoadProject(location);
+            m_localFileHandler = localFileHandler;
+            m_googleDriveHandler = googleDriveHandler;
         }
 
-        public async Task SaveProject(Project project, Location projectFilePath, IResourceHandler handler)
+        // TODO: Cache Resources!
+        public async Task<Project?> LoadProject(Location location)
         {
-           await handler.SaveProject(projectFilePath, project);
+            if (location is FileLocation fileLocation)
+            {
+                return await m_localFileHandler.LoadProject(fileLocation);
+            }
+            else if (location is GDriveLocation gDriveLocation)
+            {
+                return await m_googleDriveHandler.LoadProject(gDriveLocation);
+            }
+
+            throw new NotSupportedException("Unknown location type");
+        }
+
+        public async Task SaveProject(Project project, Location location)
+        {
+            if (location is FileLocation fileLocation)
+            {
+                await m_localFileHandler.SaveProject(fileLocation, project);
+                return;
+            }
+            else if (location is GDriveLocation gDriveLocation)
+            {
+                await m_googleDriveHandler.SaveProject(gDriveLocation, project);
+                return;
+            }
+
+            throw new NotSupportedException("Unknown location type");
         }
 
         // Import: When the Audio IS NOT in the Project/Audio Folder
         // Load: When the Audio IS IN the Project/Audio Folder
         // So Import copy the AudioFile from Source to Project/audioFolder
-        public Track ImportTrack(Location trackLocation, ILocalFileHandler handler)
+        public Track ImportTrack(Location trackLocation)
         {
-           return handler.ImportTrack(trackLocation);
+           return m_localFileHandler.ImportTrack(trackLocation);
         }
 
-        public ProjectMetadata? GetProjectMetaData(string projectName, Location location, IResourceHandler handler)
+        public ProjectMetadata? GetProjectMetaData(string projectName, Location location)
         {
-            return handler.GetProjectMetadata(projectName, location)?.Result;
-        }
+            if (location is FileLocation fileLocation)
+            {
+                return m_localFileHandler.GetProjectMetadata(projectName, fileLocation).Result;
+            }
+            else if (location is GDriveLocation gDriveLocation)
+            {
+                return m_googleDriveHandler.GetProjectMetadata(projectName, location)?.Result;
+            }
 
-        public WaveStream LoadAudioFile(string path)
-        {
-            return new Mp3FileReader(path);
+            throw new NotSupportedException("Unknown location type");
         }
     }
 }

@@ -2,6 +2,7 @@
 {
     using LeaMusic.src.AudioEngine_;
     using LeaMusic.src.Services.Interfaces;
+    using NAudio.Wave;
 
     public class LocalFileHandler : ILocalFileHandler
     {
@@ -10,22 +11,19 @@
         private readonly IMetadataService m_localmedatDataService;
         private readonly IFileSystemService m_localFileSystemService;
         private readonly IBinaryWriter m_waveformBinaryWriter;
-        private readonly IResourceManager m_resourceManager;
 
         public LocalFileHandler(
             IProjectSerializer serializer,
             IWaveformService waveformService,
             IMetadataService localmedatDataService,
             IFileSystemService localFileSystemService,
-            IBinaryWriter waveformBinaryWriter,
-            IResourceManager leaResourceManager)
+            IBinaryWriter waveformBinaryWriter)
         {
             m_projectSerializer = serializer;
             m_waveformService = waveformService;
             m_localmedatDataService = localmedatDataService;
             m_localFileSystemService = localFileSystemService;
             m_waveformBinaryWriter = waveformBinaryWriter;
-            m_resourceManager = leaResourceManager;
         }
 
         public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location)
@@ -40,7 +38,7 @@
                 var track = new Track();
                 track.OriginFilePath = projectFilePath.Path;
 
-                var audio = m_resourceManager.LoadAudioFile(projectFilePath.Path);
+                var audio = LoadAudioFromFile(projectFilePath.Path);
                 track.AddAudioFile(projectFilePath.Path, audio);
 
                 track.WaveformProvider = m_waveformService.GenerateFromAudio(track);
@@ -56,11 +54,16 @@
         {
             var audioFilePath = m_localFileSystemService.CombinePaths(projectPath, track.AudioRelativePath);
 
-            var audio = m_resourceManager.LoadAudioFile(audioFilePath);
+            var audio = LoadAudioFromFile(audioFilePath);
             track.AddAudioFile(audioFilePath, audio);
 
             track.WaveformProvider = m_waveformService.GenerateFromAudio(track);
             return track;
+        }
+
+        public WaveStream LoadAudioFromFile(string path)
+        {
+            return new Mp3FileReader(path);
         }
 
         public async Task<Project?> LoadProject(Location projectLocation)

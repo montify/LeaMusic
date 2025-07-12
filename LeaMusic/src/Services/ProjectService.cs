@@ -12,8 +12,6 @@
         private readonly IDialogService m_dialogService;
         private readonly IResourceManager m_resourceManager;
         private readonly ConnectionMonitorService m_connectionMonitorService;
-        private readonly ILocalFileHandler m_localFileHandler;
-        private readonly IGoogleDriveHandler m_googleDriveHandler;
         private readonly IFileSystemService m_fileSystemService;
         private readonly ISyncService m_syncService;
 
@@ -21,8 +19,6 @@
             IDialogService dialogService,
             IResourceManager resourceManager,
             ConnectionMonitorService connectionMonitorService,
-            ILocalFileHandler localFileHandler,
-            IGoogleDriveHandler googleDriveHandler,
             IFileSystemService fileSystemService,
             ISyncService syncService)
         {
@@ -33,9 +29,7 @@
 
             m_dialogService = dialogService;
             m_resourceManager = resourceManager;
-            m_connectionMonitorService = connectionMonitorService;
-            m_localFileHandler = localFileHandler;
-            m_googleDriveHandler = googleDriveHandler;
+            m_connectionMonitorService = connectionMonitorService; 
             m_fileSystemService = fileSystemService;
             m_syncService = syncService;
         }
@@ -59,12 +53,12 @@
                 var gdriveLocation = new GDriveLocation("LeaRoot", filePath, projectName);
 
                 statusCallback?.Invoke("Loading Project from google Drive");
-                return await m_resourceManager.LoadProject(gdriveLocation, m_googleDriveHandler);
+                return await m_resourceManager.LoadProject(gdriveLocation);
             }
 
             statusCallback?.Invoke("Loading Project from File");
 
-            return await m_resourceManager.LoadProject(location, m_localFileHandler);
+            return await m_resourceManager.LoadProject(location);
         }
 
         public async Task SaveProject(Project project, Action<string>? statusCallback)
@@ -86,7 +80,7 @@
                     return;
                 }
 
-                await SaveLocalAsync(project, filePath, m_localFileHandler);
+                await SaveLocalAsync(project, filePath);
 
                 if (!await m_connectionMonitorService.CheckInternetConnection())
                 {
@@ -96,7 +90,7 @@
 
                 if (m_dialogService.EnableSync())
                 {
-                    await SaveToGoogleDriveAsync(project, statusCallback, m_localFileHandler);
+                    await SaveToGoogleDriveAsync(project, statusCallback);
                 }
             }
             catch (Exception e)
@@ -113,9 +107,10 @@
                 var track = new Track();
                 track.OriginFilePath = projectFilePath.Path;
 
-                var audio = m_resourceManager.LoadAudioFile(projectFilePath.Path);
+                var trackLocation = new FileLocation(projectFilePath.Path);
+                var audio = m_resourceManager.ImportTrack(trackLocation);
 
-                track.AddAudioFile(projectFilePath.Path, audio);
+                track.AddAudioFile(projectFilePath.Path, audio.Audio);
                 track.WaveformProvider = ImportWaveform(track);
 
                 return track;
@@ -126,16 +121,17 @@
             }
         }
 
-        private async Task SaveLocalAsync(Project project, string filePath, ILocalFileHandler fileHandler)
+        private async Task SaveLocalAsync(Project project, string filePath)
         {
-            await m_resourceManager.SaveProject(project, new FileLocation(filePath), fileHandler);
+            await m_resourceManager.SaveProject(project, new FileLocation(filePath));
         }
 
-        private async Task SaveToGoogleDriveAsync(Project project, Action<string>? statusCallback, ILocalFileHandler fileHandler)
+        private async Task SaveToGoogleDriveAsync(Project project, Action<string>? statusCallback)
         {
             statusCallback?.Invoke("Start Save Project to Google Drive");
 
-            await m_resourceManager.SaveProject(project, default, m_googleDriveHandler);
+            var gDriveLocation = new GDriveLocation(AppConstants.GoogleDriveRootFolderName, null, project.Name);
+            await m_resourceManager.SaveProject(project, gDriveLocation);
 
             statusCallback?.Invoke("Project successfully saved to GoogleDrive");
         }

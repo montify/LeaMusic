@@ -1,20 +1,16 @@
-﻿using LeaMusic.src.Services.ResourceServices_;
-
-namespace LeaMusic.src.Services.Interfaces
+﻿namespace LeaMusic.src.Services.Interfaces
 {
     using LeaMusic.src.AudioEngine_;
-    using NAudio.Wave;
+    using LeaMusic.src.Services.ResourceServices_;
 
     public interface IResourceManager
     {
-        Task<Project> LoadProject(Location location, IResourceHandler handler);
+        Task<Project> LoadProject(Location location);
 
-        Task SaveProject(Project project, Location projectFilePath, IResourceHandler handler);
+        Task SaveProject(Project project, Location projectFilePath);
 
-        Track ImportTrack(Location trackLocation, ILocalFileHandler handler);
+        Track ImportTrack(Location trackLocation);
 
-        ProjectMetadata? GetProjectMetaData(string projectName, Location location, IResourceHandler handler);
-
-        WaveStream LoadAudioFile(string path);
+        ProjectMetadata? GetProjectMetaData(string projectName, Location location);
     }
 }

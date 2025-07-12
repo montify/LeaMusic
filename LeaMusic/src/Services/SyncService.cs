@@ -9,27 +9,21 @@
         private readonly ConnectionMonitorService m_connectionMonitorService;
         private readonly IDialogService m_dialogService;
 
-        private readonly IGoogleDriveHandler m_googleDriveHandler;
-        private readonly ILocalFileHandler m_localFileHandler;
-
         public SyncService(
             IResourceManager resourceManager,
             ConnectionMonitorService connectionMonitorService,
             IDialogService dialogService,
-            IGoogleDriveHandler googleDriveHandler,
-            ILocalFileHandler localFileHandler)
+            IGoogleDriveHandler googleDriveHandler)
         {
             m_resourceManager = resourceManager;
             m_connectionMonitorService = connectionMonitorService;
             m_dialogService = dialogService;
-            m_localFileHandler = localFileHandler;
-            m_googleDriveHandler = googleDriveHandler;
         }
 
         public async Task<bool> DetermineSyncLocationAsync(string projectName, Location location, Action<string> statusCallback)
         {
-            ProjectMetadata? localMeta = m_resourceManager.GetProjectMetaData($"{projectName}.zip", location, m_localFileHandler);
-            ProjectMetadata? gDriveMeta = await TryGetGoogleDriveMetadataAsync(projectName, m_googleDriveHandler, statusCallback);
+            ProjectMetadata? localMeta = m_resourceManager.GetProjectMetaData($"{projectName}.zip", location);
+            ProjectMetadata? gDriveMeta = await TryGetGoogleDriveMetadataAsync(projectName, statusCallback);
 
             bool shouldUseGDrive = gDriveMeta != null &&
                                    localMeta?.lastSavedAt < gDriveMeta.lastSavedAt &&
@@ -38,7 +32,7 @@
             return shouldUseGDrive;
         }
 
-        private async Task<ProjectMetadata?> TryGetGoogleDriveMetadataAsync(string projectName, IGoogleDriveHandler handler, Action<string>? statusCallback)
+        private async Task<ProjectMetadata?> TryGetGoogleDriveMetadataAsync(string projectName, Action<string>? statusCallback)
         {
             if (!await m_connectionMonitorService.CheckInternetConnection())
             {
@@ -48,7 +42,7 @@
             try
             {
                 var location = new GDriveLocation(AppConstants.GoogleDriveRootFolderName, null, projectName);
-                return m_resourceManager.GetProjectMetaData(projectName, location, handler);
+                return m_resourceManager.GetProjectMetaData(projectName, location);
             }
             catch
             {
@@ -56,6 +50,5 @@
                 return null;
             }
         }
-
     }
 }
