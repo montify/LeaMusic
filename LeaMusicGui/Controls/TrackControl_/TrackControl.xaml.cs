@@ -37,19 +37,6 @@
            typeof(TrackControl),
            new PropertyMetadata(null));
 
-        public static readonly DependencyProperty WaveformDataProperty =
-           DependencyProperty.Register(
-               nameof(WaveformData),
-               typeof(ReadOnlyMemory<float>),
-               typeof(TrackControl),
-               new PropertyMetadata(null));
-
-        public ReadOnlyMemory<float> WaveformData
-        {
-            get => (ReadOnlyMemory<float>)GetValue(WaveformDataProperty);
-            set => SetValue(WaveformDataProperty, value);
-        }
-
         public static readonly DependencyProperty MuteProperty =
         DependencyProperty.Register(
             "Mute",
