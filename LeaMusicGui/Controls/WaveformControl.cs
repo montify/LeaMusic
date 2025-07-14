@@ -122,22 +122,10 @@
             set => SetValue(WaveformDataProperty, value);
         }
 
-        public float Percentage
-        {
-            get => (float)GetValue(PercentageProperty);
-            set => SetValue(PercentageProperty, value);
-        }
-
         public float WaveformHeightMulti
         {
             get => (float)GetValue(WaveformHeightMultiProperty);
             set => SetValue(WaveformHeightMultiProperty, value);
-        }
-
-        public float Zoom
-        {
-            get => (float)GetValue(ZoomProperty);
-            set => SetValue(ZoomProperty, value);
         }
 
         private static void WaveFormRedraw(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -217,20 +205,6 @@
              typeof(ReadOnlyMemory<float>),
              typeof(WaveformControl),
              new FrameworkPropertyMetadata(default(ReadOnlyMemory<float>), FrameworkPropertyMetadataOptions.AffectsRender, WaveFormRedraw));
-
-        public static readonly DependencyProperty PercentageProperty =
-            DependencyProperty.Register(
-            nameof(Percentage),
-            typeof(float),
-            typeof(WaveformControl),
-            new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, null));
-
-        public static readonly DependencyProperty ZoomProperty =
-            DependencyProperty.Register(
-            nameof(Zoom),
-            typeof(float),
-            typeof(WaveformControl),
-            new FrameworkPropertyMetadata(1.0f, FrameworkPropertyMetadataOptions.AffectsRender, null));
 
         public static readonly DependencyProperty RequestWaveformUpdateCommandProperty =
             DependencyProperty.Register(
