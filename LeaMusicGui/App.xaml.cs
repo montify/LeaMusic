@@ -11,19 +11,20 @@
     using Microsoft.Extensions.DependencyInjection;
     using LeaMusic.src.AudioEngine_.Interfaces;
     using LeaMusic.src.AudioEngine_;
+    using LeaMusicGui.Controls.TrackControl_;
 
     /// <summary>
     /// Interaction logic for App.xaml.
     /// </summary>
     public partial class App : Application
     {
-        private readonly IServiceProvider m_serviceProvider;
+        public static IServiceProvider Services;
 
         public App()
         {
             var services = new ServiceCollection();
             services.AddSingleton<IGoogleContext, GoogleContext>();
-            
+            services.AddTransient<TrackControlViewModel>();
             services.AddSingleton<ILocalFileHandler, LocalFileHandler>();
             services.AddSingleton<IGoogleDriveHandler, GoogleDriveHandler>();
             services.AddSingleton<IResourceManager, LeaResourceManager>();
@@ -32,7 +33,7 @@
             services.AddSingleton<TimelineService>();
             services.AddSingleton<IMixer, NaudioMixer>();
             services.AddSingleton<IAudioPlayer, WaveOutAudioPlayer>();
-            services.AddSingleton<AudioEngine>();          
+            services.AddSingleton<AudioEngine>();
             services.AddSingleton<TimelineCalculator>();
             services.AddSingleton<ISyncService, SyncService>();
             services.AddSingleton<LoopService>();
@@ -46,15 +47,15 @@
             services.AddSingleton<IFileSystemService, LocalFileSystemService>();
             services.AddSingleton<IZipService, ZipService>();
             services.AddSingleton<IBinaryWriter, WaveformBinaryWriter>();
-           
-            m_serviceProvider = services.BuildServiceProvider();
+
+            Services = services.BuildServiceProvider();
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
             var mainWindow = new MainWindow
             {
-                DataContext = m_serviceProvider.GetRequiredService<MainViewModel>(),
+                DataContext = Services.GetRequiredService<MainViewModel>(),
             };
 
             mainWindow.Show();

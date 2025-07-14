@@ -7,9 +7,11 @@
     xmlns:local="clr-namespace:LeaMusicGui.Controls.TrackControl_"
     xmlns:local1="clr-namespace:LeaMusicGui.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:LeaMusicGui.Controls.TrackControl_"
     d:DesignHeight="450"
     d:DesignWidth="1250"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    d:DataContext="{d:DesignInstance Type=vm:TrackControlViewModel, IsDesignTimeCreatable=True}">
 
     <UserControl.Resources>
         <local1:SubtractConverter x:Key="SubtractConverter" />
@@ -23,7 +25,7 @@
                         Width="20"
                         Height="20"
                         Padding="0"
-                        Command="{Binding DataContext.MuteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        Command="{Binding MuteCommand}"
                         CommandParameter="{Binding}"
                         Content="M"
                         FontSize="10" />
@@ -31,10 +33,10 @@
                         Width="20"
                         Height="20"
                         Padding="0"
-                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        Command="{Binding DeleteCommand}"
                         CommandParameter="{Binding}"
                         Content="D" />
-                    <TextBlock  Foreground="White" HorizontalAlignment="Center" Text="{Binding TrackID}" />
+                    <TextBlock  Foreground="White" HorizontalAlignment="Center" Text="{Binding TrackId}" />
                     <TextBlock
                         Foreground="White"
                         Width="90"
@@ -48,9 +50,10 @@
             <controls:WaveformControl
                 Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}"
                 Height="120"
-                WaveformData="{Binding WaveformData, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                WaveformHeightMulti="{Binding HeightScaleFactor, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                RequestWaveformUpdateCommand="{Binding DataContext.RequestWaveformUpdateCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                WaveformData="{Binding Waveform}"
+                WaveformHeightMulti="{Binding HeightScaleFactor, RelativeSource={RelativeSource AncestorType=UserControl}}"  
+                RequestWaveformUpdateCommand="{Binding DataContext.RequestWaveformUpdateCommand,RelativeSource={RelativeSource AncestorType=Window}}"
+                />
         </StackPanel>
     </Grid>
 </UserControl>

@@ -1,6 +1,7 @@
 ﻿namespace LeaMusicGui
 {
     using System.Collections.ObjectModel;
+    using System.Windows;
     using System.Windows.Media;
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.Mvvm.Input;
@@ -11,6 +12,7 @@
     using LeaMusic.Src.Services;
     using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
+    using LeaMusicGui.Controls.TrackControl_;
     using Point = System.Windows.Point;
 
     public partial class MainViewModel : ObservableObject
@@ -72,9 +74,10 @@
 
         public bool IsMarkerMoving { get; set; }
 
-        public ObservableCollection<TrackDTO> WaveformWrappers { get; set; } =[];
-
         public ObservableCollection<MarkerDTO> BeatMarkers { get; set; } =[];
+
+        public ObservableCollection<TrackControlViewModel> Tracks { get; set; }
+
 
         public bool IsProjectLoaded => Project != null && Project.Duration > TimeSpan.FromSeconds(1);
 
@@ -88,7 +91,6 @@
         private readonly ProjectService m_projectService;
         private readonly TimelineCalculator m_timelineCalculator;
         private readonly LoopService m_loopService;
-        private readonly ConnectionMonitorService m_connectionMonitorService;
         private readonly IDialogService m_dialogService;
         private readonly Action<string> m_updateStatus;
 
@@ -103,7 +105,6 @@
                              AudioEngine audioEngine,
                              TimelineCalculator timelineCalculator,
                              LoopService loopService,
-                             ConnectionMonitorService connectionMonitorService,
                              IDialogService dialogService)
         {
             m_projectService = projectService;
@@ -113,8 +114,9 @@
             m_dialogService = dialogService;
             m_timelineCalculator = timelineCalculator;
             m_loopService = loopService;
-            m_connectionMonitorService = connectionMonitorService;
             statusMessages = string.Empty;
+
+            Tracks = new ObservableCollection<TrackControlViewModel>();
 
             // Create Empty Project for StartUp
             Project = Project.CreateEmptyProject("TEST");
@@ -134,18 +136,6 @@
             };
         }
 
-        public void UpdateWaveformDTO(double newWidth)
-        {
-            var trackDTOList = new List<Memory<float>>();
-
-            for (int i = 0; i < Project.Tracks.Count; i++)
-            {
-                trackDTOList.Add(m_timelineService.RequestSample(i, (int)newWidth));
-            }
-
-            UpdateTrackDTO(trackDTOList);
-        }
-
         public void MoveMarker(Point position, int renderWidth)
         {
             var marker = m_audioEngine.Project.BeatMarkers.Where(marker => marker.ID == m_currentMarkerID).FirstOrDefault();
@@ -158,29 +148,29 @@
             UpdateMarkers();
         }
 
-        public void LoopSelection(double startPixel, double endPixel, double renderWidth)
+        public async Task LoopSelection(double startPixel, double endPixel, double renderWidth)
         {
             var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
             var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
-            SetOrAdjustLoop(startSec, endSec);
+            await SetOrAdjustLoop(startSec, endSec);
         }
 
-        public void LoopSelectionStart(double startPixel, double renderWidth)
+        public async Task LoopSelectionStart(double startPixel, double renderWidth)
         {
             var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
-            SetOrAdjustLoop(startSec, null); // Only proposing a new start
+            await SetOrAdjustLoop(startSec, null); // Only proposing a new start
         }
 
-        public void LoopSelectionEnd(double endPixel, double renderWidth)
+        public async Task LoopSelectionEnd(double endPixel, double renderWidth)
         {
             var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
-            SetOrAdjustLoop(null, endSec); // Only proposing a new end
+            await SetOrAdjustLoop(null, endSec); // Only proposing a new end
         }
 
-        public void ZoomWaveformMouse(Point p, double width)
+        public async Task ZoomWaveformMouse(Point p, double width)
         {
             var point = new System.Drawing.Point((int)p.X, (int)p.Y);
 
@@ -194,18 +184,18 @@
 
             m_audioEngine.ZoomViewWindowRelative(newZoomFactor, zoomStartPosition);
 
-            UpdateWaveformDTO(RenderWidth);
+            await UpdateWaveformDTOAsync(RenderWidth);
             CreateMarkerDTO();
         }
 
         [RelayCommand]
-        public void ZoomFromSlider(double value)
+        public async Task ZoomFromSlider(double value)
         {
             Zoom = value;
 
             m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
 
-            UpdateWaveformDTO(RenderWidth);
+            await UpdateWaveformDTOAsync(RenderWidth);
         }
 
         [RelayCommand]
@@ -215,7 +205,7 @@
         }
 
         [RelayCommand]
-        public void FitLoopToView()
+        public async Task FitLoopToView()
         {
             var (paddedStart, paddedEnd, zoomFactor) = m_timelineCalculator.FitLoopToView(m_audioEngine.LoopStart, m_audioEngine.LoopEnd, m_audioEngine.TotalDuration);
 
@@ -227,7 +217,7 @@
                 trackDTOList.Add(m_timelineService.RequestSample(i, RenderWidth, paddedStart, paddedEnd));
             }
 
-            UpdateTrackDTO(trackDTOList);
+            await UpdateWaveformDTOAsync(RenderWidth);
             CreateMarkerDTO();
 
             Zoom = zoomFactor;
@@ -286,7 +276,7 @@
         }
 
         [RelayCommand]
-        public void AddTrack()
+        public async Task AddTrack()
         {
             var filePath = m_dialogService.OpenFile("Mp3 (*.mp3)|*.mp3");
 
@@ -312,7 +302,7 @@
                 }
 
                 Project.SetTempo(Speed);
-                UpdateWaveformDTO(RenderWidth);
+                await UpdateWaveformDTOAsync(RenderWidth);
 
                 // Check if audioengine is playing while addTrack, when true continue playing
                 m_audioEngine.MountProject(Project);
@@ -347,27 +337,33 @@
             }
         }
 
-        [RelayCommand]
-        public void Delete(object param)
+        private void OnMuteRequest(TrackControlViewModel trackToMute)
         {
-            if (param is TrackDTO wrapper)
+            if (!IsProjectLoaded)
             {
-                var track = m_audioEngine.Project.Tracks.Where(t => t.ID == wrapper.TrackID).FirstOrDefault();
+                StatusMessages = "Pleas load a Project...";
+                return;
+            }
+            m_audioEngine.MuteTrack(trackToMute.TrackId);
+        }
 
-                if (track != null)
-                {
-                    m_audioEngine.Project.Tracks.Remove(track);
-                    WaveformWrappers.Remove(wrapper);
+        private void OnDeleteTrackRequested(TrackControlViewModel trackToDelete)
+        {
+            var track = m_audioEngine.Project.Tracks.Where(t => t.ID == trackToDelete.TrackId).FirstOrDefault();
 
-                    m_audioEngine.ReloadMixerInputs();
+            if (track != null)
+            {
+                m_audioEngine.Project.Tracks.Remove(track);
+                Tracks.Remove(trackToDelete);
 
-                    StatusMessages = $"Track: {track.Name} deleted!";
-                }
+                m_audioEngine.ReloadMixerInputs();
+
+                StatusMessages = $"Track: {track.Name} deleted!";
             }
         }
 
         [RelayCommand]
-        public void JumpToSec()
+        private void JumpToSec()
         {
             if (TimeSpan.FromSeconds(JumpToPositionInSec) < TimeSpan.Zero)
             {
@@ -379,7 +375,7 @@
         }
 
         [RelayCommand]
-        public void JumpToLoopStart()
+        private void JumpToLoopStart()
         {
             if (m_audioEngine.LoopStart > TimeSpan.Zero)
             {
@@ -404,10 +400,10 @@
         }
 
         [RelayCommand]
-        public void RequestWaveformUpdate(double newWidth) // Parameter type should match what you pass
+        public async Task RequestWaveformUpdate(double newWidth)
         {
             RenderWidth = (int)newWidth;
-            UpdateWaveformDTO(newWidth);
+            await UpdateWaveformDTOAsync(newWidth);
         }
 
         internal void SetTextMarker()
@@ -446,7 +442,7 @@
             m_audioEngine.MountProject(Project);
             m_audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
 
-            UpdateWaveformDTO(RenderWidth);
+            await UpdateWaveformDTOAsync(RenderWidth);
             CreateMarkerDTO();
 
             // Prevent when user doubleclick, that WPF register as a mouseclick
@@ -471,7 +467,7 @@
             ProjectBpm = m_audioEngine.CalculateBpm(beatsPerMeasure: 4);
         }
 
-        private void SetOrAdjustLoop(TimeSpan? proposedStart, TimeSpan? proposedEnd)
+        private async Task SetOrAdjustLoop(TimeSpan? proposedStart, TimeSpan? proposedEnd)
         {
             // Determine the actual start and end for the loop operation
             // Use existing LoopStart/LoopEnd if not explicitly provided
@@ -518,23 +514,8 @@
                 m_audioEngine.AudioJumpToSec(loopAction.jumpToPosition);
             }
 
-            UpdateWaveformDTO(RenderWidth);
+            await UpdateWaveformDTOAsync(RenderWidth);
             CreateMarkerDTO();
-        }
-
-        private void UpdateTrackDTO(List<Memory<float>> waveforms)
-        {
-            for (int i = 0; i < waveforms.Count; i++)
-            {
-                if (WaveformWrappers.Count < waveforms.Count)
-                {
-                    WaveformWrappers.Add(new TrackDTO());
-                }
-
-                WaveformWrappers[i].Waveform = waveforms[i];
-                WaveformWrappers[i].Name = m_audioEngine.Project.Tracks[i].Name ?? "No Name Set";
-                WaveformWrappers[i].TrackID = m_audioEngine.Project.Tracks[i].ID;
-            }
         }
 
         // Maybe Create if the Marker Count > WrapperCount?!
@@ -575,8 +556,50 @@
             if (m_audioEngine.CurrentPosition >= m_audioEngine.ViewEndTime)
             {
                 m_audioEngine.ZoomViewWindow(Zoom, m_audioEngine.CurrentPosition + m_audioEngine.HalfViewWindow);
-                UpdateWaveformDTO(RenderWidth);
+                UpdateWaveformDTOAsync(RenderWidth);
             }
+        }
+
+        private async Task UpdateWaveformDTOAsync(double newWidth)
+        {
+            var projectTracks = m_audioEngine.Project.Tracks;
+
+            var waveformGenerationTasks = projectTracks.Select(async (projectTrack, index) =>
+            {
+                var existingTrackVM = Tracks.FirstOrDefault(t => t.TrackId == projectTrack.ID);
+                if (existingTrackVM == null)
+                {
+                    existingTrackVM = new TrackControlViewModel(OnDeleteTrackRequested, OnMuteRequest);
+                    existingTrackVM.TrackId = projectTrack.ID;
+                    existingTrackVM.Name = projectTrack.Name;
+                }
+
+                var waveform = await Task.Run(() => m_timelineService.RequestSample(index, (int)newWidth));
+                existingTrackVM.Waveform = waveform;
+
+                return existingTrackVM;
+            }).ToList();
+
+            var updatedViewModels = await Task.WhenAll(waveformGenerationTasks);
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                for (int i = Tracks.Count - 1; i >= 0; i--)
+                {
+                    if (!projectTracks.Any(pt => pt.ID == Tracks[i].TrackId))
+                    {
+                        Tracks.RemoveAt(i);
+                    }
+                }
+
+                foreach (var vm in updatedViewModels.OrderBy(v => v.TrackId))
+                {
+                    if (!Tracks.Contains(vm))
+                    {
+                        Tracks.Add(vm);
+                    }
+                }
+            });
         }
 
         private void AudioEngine_OnLoopChange(TimeSpan startSec, TimeSpan endSec)
@@ -606,7 +629,7 @@
         {
             m_audioEngine.ScrollWaveForm(value);
 
-            UpdateWaveformDTO(RenderWidth);
+            _ = UpdateWaveformDTOAsync(RenderWidth);
         }
 
         partial void OnSpeedChanged(double value)
@@ -621,7 +644,7 @@
             if (value != -1)
             {
                 m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
-                UpdateWaveformDTO(RenderWidth);
+                _ = UpdateWaveformDTOAsync(RenderWidth);
             }
         }
     }

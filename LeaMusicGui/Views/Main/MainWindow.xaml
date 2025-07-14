@@ -62,22 +62,19 @@
                 Background="#424651">
 
                 <!--  WaveForm  -->
-                <ItemsControl Margin="0,30,0,0"  ItemsSource="{Binding WaveformWrappers}">
+                <ItemsControl Margin="0,30,0,0"  ItemsSource="{Binding Tracks}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
-
+                    
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
-                                <trackcontrol_:TrackControl
-                                    Delete="{Binding PlayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    HeightScaleFactor="{Binding ElementName=HeightMultiSlider, Path=Value}"
-                                    Mute="{Binding MuteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    TrackID="{Binding TrackID}"
-                                    WaveformData="{Binding Waveform}" />
+                                <trackcontrol_:TrackControl 
+                                    HeightScaleFactor="{Binding ElementName=HeightMultiSlider, Path=Value}">
+                                </trackcontrol_:TrackControl>
                                 <Separator />
                             </StackPanel>
                         </DataTemplate>
