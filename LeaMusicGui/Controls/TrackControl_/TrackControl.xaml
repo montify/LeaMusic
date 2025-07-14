@@ -52,7 +52,7 @@
                 Height="120"
                 WaveformData="{Binding Waveform}"
                 WaveformHeightMulti="{Binding HeightScaleFactor, RelativeSource={RelativeSource AncestorType=UserControl}}"  
-                RequestWaveformUpdateCommand="{Binding DataContext.RequestWaveformUpdateCommand,RelativeSource={RelativeSource AncestorType=Window}}"
+                RequestWaveformUpdateCommand="{Binding RequestWaveformUpdateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 />
         </StackPanel>
     </Grid>

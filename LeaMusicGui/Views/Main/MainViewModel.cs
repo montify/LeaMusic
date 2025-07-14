@@ -337,31 +337,6 @@
             }
         }
 
-        private void OnMuteRequest(TrackControlViewModel trackToMute)
-        {
-            if (!IsProjectLoaded)
-            {
-                StatusMessages = "Pleas load a Project...";
-                return;
-            }
-            m_audioEngine.MuteTrack(trackToMute.TrackId);
-        }
-
-        private void OnDeleteTrackRequested(TrackControlViewModel trackToDelete)
-        {
-            var track = m_audioEngine.Project.Tracks.Where(t => t.ID == trackToDelete.TrackId).FirstOrDefault();
-
-            if (track != null)
-            {
-                m_audioEngine.Project.Tracks.Remove(track);
-                Tracks.Remove(trackToDelete);
-
-                m_audioEngine.ReloadMixerInputs();
-
-                StatusMessages = $"Track: {track.Name} deleted!";
-            }
-        }
-
         [RelayCommand]
         private void JumpToSec()
         {
@@ -447,6 +422,32 @@
 
             // Prevent when user doubleclick, that WPF register as a mouseclick
             await Task.Delay(100);
+        }
+
+        private void OnMuteRequest(TrackControlViewModel trackToMute)
+        {
+            if (!IsProjectLoaded)
+            {
+                StatusMessages = "Pleas load a Project...";
+                return;
+            }
+
+            m_audioEngine.MuteTrack(trackToMute.TrackId);
+        }
+
+        private void OnDeleteTrackRequested(TrackControlViewModel trackToDelete)
+        {
+            var track = m_audioEngine.Project.Tracks.Where(t => t.ID == trackToDelete.TrackId).FirstOrDefault();
+
+            if (track != null)
+            {
+                m_audioEngine.Project.Tracks.Remove(track);
+                Tracks.Remove(trackToDelete);
+
+                m_audioEngine.ReloadMixerInputs();
+
+                StatusMessages = $"Track: {track.Name} deleted!";
+            }
         }
 
         private void UpdateMarkers()
@@ -556,7 +557,7 @@
             if (m_audioEngine.CurrentPosition >= m_audioEngine.ViewEndTime)
             {
                 m_audioEngine.ZoomViewWindow(Zoom, m_audioEngine.CurrentPosition + m_audioEngine.HalfViewWindow);
-                UpdateWaveformDTOAsync(RenderWidth);
+                _ = UpdateWaveformDTOAsync(RenderWidth);
             }
         }
 

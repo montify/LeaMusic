@@ -37,30 +37,44 @@
            typeof(TrackControl),
            new PropertyMetadata(null));
 
-        public static readonly DependencyProperty MuteProperty =
-        DependencyProperty.Register(
-            "Mute",
-            typeof(ICommand),
-            typeof(TrackControl),
-            new UIPropertyMetadata(null));
-
         public ICommand Mute
         {
             get { return (ICommand)GetValue(MuteProperty); }
             set { SetValue(MuteProperty, value); }
         }
 
-        public static readonly DependencyProperty DeleteProperty =
-      DependencyProperty.Register(
-          "Delete",
-          typeof(ICommand),
-          typeof(TrackControl),
-          new UIPropertyMetadata(null));
-
         public ICommand Delete
         {
             get { return (ICommand)GetValue(DeleteProperty); }
             set { SetValue(DeleteProperty, value); }
         }
+
+        public static readonly DependencyProperty DeleteProperty =
+        DependencyProperty.Register(
+        "Delete",
+        typeof(ICommand),
+        typeof(TrackControl),
+        new UIPropertyMetadata(null));
+
+        public static readonly DependencyProperty MuteProperty =
+          DependencyProperty.Register(
+          "Mute",
+          typeof(ICommand),
+          typeof(TrackControl),
+          new UIPropertyMetadata(null));
+
+        public static readonly DependencyProperty RequestWaveformUpdateCommandProperty =
+           DependencyProperty.Register(
+           nameof(RequestWaveformUpdateCommand),
+           typeof(ICommand),
+           typeof(TrackControl),
+           new PropertyMetadata(null)); // No callback needed for the command itself
+
+        public ICommand RequestWaveformUpdateCommand
+        {
+            get => (ICommand)GetValue(RequestWaveformUpdateCommandProperty);
+            set => SetValue(RequestWaveformUpdateCommandProperty, value);
+        }
+
     }
 }

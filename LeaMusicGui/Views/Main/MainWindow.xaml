@@ -73,7 +73,8 @@
                         <DataTemplate>
                             <StackPanel>
                                 <trackcontrol_:TrackControl 
-                                    HeightScaleFactor="{Binding ElementName=HeightMultiSlider, Path=Value}">
+                                    HeightScaleFactor="{Binding ElementName=HeightMultiSlider, Path=Value}"
+                                    RequestWaveformUpdateCommand="{Binding DataContext.RequestWaveformUpdateCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                                 </trackcontrol_:TrackControl>
                                 <Separator />
                             </StackPanel>
@@ -91,9 +92,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     Background="Transparent"
-                    IsHitTestVisible="True"
-                
-                    SizeChanged="MainCanvas_SizeChanged">
+                    IsHitTestVisible="True">
 
                     <i:Interaction.Behaviors>
                         <behaviors:TimelineInteractionBehavior ViewModel="{Binding}" />
