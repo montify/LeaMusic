@@ -1,17 +1,17 @@
 ﻿namespace LeaMusicGui
 {
     using System.Windows;
+    using LeaMusic.src.AudioEngine_;
     using LeaMusic.Src.AudioEngine_;
+    using LeaMusic.src.AudioEngine_.Interfaces;
     using LeaMusic.src.Services;
     using LeaMusic.Src.Services;
     using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
     using LeaMusic.src.Services.ResourceServices_.GoogleDrive_;
+    using LeaMusicGui.Controls.TrackControl_;
     using LeaMusicGui.Views.DialogServices;
     using Microsoft.Extensions.DependencyInjection;
-    using LeaMusic.src.AudioEngine_.Interfaces;
-    using LeaMusic.src.AudioEngine_;
-    using LeaMusicGui.Controls.TrackControl_;
 
     /// <summary>
     /// Interaction logic for App.xaml.
