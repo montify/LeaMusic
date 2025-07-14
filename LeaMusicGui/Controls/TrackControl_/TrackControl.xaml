@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿ <UserControl
     x:Class="LeaMusicGui.Controls.TrackControl_.TrackControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -48,11 +48,9 @@
             <controls:WaveformControl
                 Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}"
                 Height="120"
-                ParentViewModel="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
                 WaveformData="{Binding WaveformData, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                WaveformHeightMulti="{Binding HeightScaleFactor, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-
-
+                WaveformHeightMulti="{Binding HeightScaleFactor, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                RequestWaveformUpdateCommand="{Binding DataContext.RequestWaveformUpdateCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
         </StackPanel>
     </Grid>
 </UserControl>

@@ -75,17 +75,5 @@
             get { return (ICommand)GetValue(DeleteProperty); }
             set { SetValue(DeleteProperty, value); }
         }
-
-        public object ParentViewModel
-        {
-            get { return (object)GetValue(MuteProperty); }
-            set { SetValue(MuteProperty, value); }
-        }
-
-        public static readonly DependencyProperty ParentViewModelProperty =
-            DependencyProperty.Register(
-                nameof(ParentViewModel),
-                typeof(MainViewModel),
-                typeof(TrackControl));
     }
 }

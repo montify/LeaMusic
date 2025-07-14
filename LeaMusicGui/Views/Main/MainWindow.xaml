@@ -76,7 +76,6 @@
                                     Delete="{Binding PlayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                     HeightScaleFactor="{Binding ElementName=HeightMultiSlider, Path=Value}"
                                     Mute="{Binding MuteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    ParentViewModel="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
                                     TrackID="{Binding TrackID}"
                                     WaveformData="{Binding Waveform}" />
                                 <Separator />

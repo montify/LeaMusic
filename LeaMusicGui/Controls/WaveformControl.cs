@@ -2,6 +2,7 @@
 {
     using System.Windows;
     using System.Windows.Controls;
+    using System.Windows.Input;
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
     using System.Windows.Threading;
@@ -55,7 +56,11 @@
             m_canvas = m_surface.Canvas;
             m_canvas.Clear(SKColor.Parse("#424651"));
 
-            // Debug.WriteLine(WaveformData.Length);
+            if (WaveformData.IsEmpty)
+            {
+                return;
+            }
+
             for (int i = 0; i < m_width; i++)
             {
                 m_paint.Style = SKPaintStyle.Stroke;
@@ -146,8 +151,6 @@
             }
         }
 
-        private double m_oldZoom;
-
         private void Resize()
         {
             if (ActualWidth == 0)
@@ -155,29 +158,26 @@
                 return;
             }
 
-            var vm = ParentViewModel as MainViewModel;
-            if (vm != null)
+            // TODO: DOnt destroy Bitmap, just update it!
+            m_surface.Dispose();
+            m_writeableBitmap = null;
+            GC.Collect();
+
+            m_writeableBitmap = CreateImage((int)ActualWidth, 300);
+            m_width = (int)m_writeableBitmap.Width;
+            m_height = (int)m_writeableBitmap.Height;
+
+            var info = new SKImageInfo(m_width, m_height, SKColorType.Bgra8888, SKAlphaType.Premul);
+
+            m_surface = SKSurface.Create(info);
+
+            if (RequestWaveformUpdateCommand != null)
             {
-                m_surface.Dispose();
-                m_writeableBitmap = null;
-                GC.Collect();
-
-                m_writeableBitmap = CreateImage((int)ActualWidth, 300);
-                m_width = (int)m_writeableBitmap.Width;
-                m_height = (int)m_writeableBitmap.Height;
-
-                var info = new SKImageInfo(m_width, m_height, SKColorType.Bgra8888, SKAlphaType.Premul);
-
-                m_surface = SKSurface.Create(info);
-
-                UpdateImage();
-                InvalidateVisual();
-
-                m_oldZoom = vm.SliderZoom;
-
-                vm.SliderZoom = m_oldZoom + 0.1f;
-                vm.SliderZoom = m_oldZoom;
+                RequestWaveformUpdateCommand.Execute(ActualWidth);
             }
+
+            UpdateImage();
+            InvalidateVisual();
         }
 
         private Size m_lastSize;
@@ -204,18 +204,12 @@
             base.OnRenderSizeChanged(sizeInfo);
         }
 
-        public object ParentViewModel
-        {
-            get { return (object)GetValue(ParentViewModelProperty); }
-            set { SetValue(ParentViewModelProperty, value); }
-        }
-
         public static readonly DependencyProperty WaveformHeightMultiProperty =
-            DependencyProperty.Register(
-            nameof(WaveformHeightMulti),
-            typeof(float),
-            typeof(WaveformControl),
-            new FrameworkPropertyMetadata(1.0f, FrameworkPropertyMetadataOptions.AffectsRender, WaveFormRedraw));
+             DependencyProperty.Register(
+             nameof(WaveformHeightMulti),
+             typeof(float),
+             typeof(WaveformControl),
+             new FrameworkPropertyMetadata(1.0f, FrameworkPropertyMetadataOptions.AffectsRender, WaveFormRedraw));
 
         public static readonly DependencyProperty WaveformDataProperty =
              DependencyProperty.Register(
@@ -238,10 +232,17 @@
             typeof(WaveformControl),
             new FrameworkPropertyMetadata(1.0f, FrameworkPropertyMetadataOptions.AffectsRender, null));
 
-        public static readonly DependencyProperty ParentViewModelProperty =
+        public static readonly DependencyProperty RequestWaveformUpdateCommandProperty =
             DependencyProperty.Register(
-            nameof(ParentViewModel),
-            typeof(MainViewModel),
-            typeof(WaveformControl));
+            nameof(RequestWaveformUpdateCommand),
+            typeof(ICommand),
+            typeof(WaveformControl),
+            new PropertyMetadata(null)); // No callback needed for the command itself
+
+        public ICommand RequestWaveformUpdateCommand
+        {
+            get => (ICommand)GetValue(RequestWaveformUpdateCommandProperty);
+            set => SetValue(RequestWaveformUpdateCommandProperty, value);
+        }
     }
 }

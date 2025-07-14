@@ -312,7 +312,7 @@
                 }
 
                 Project.SetTempo(Speed);
-                CreateTrackDTO();
+                UpdateWaveformDTO(RenderWidth);
 
                 // Check if audioengine is playing while addTrack, when true continue playing
                 m_audioEngine.MountProject(Project);
@@ -403,6 +403,13 @@
             throw new NotImplementedException();
         }
 
+        [RelayCommand]
+        public void RequestWaveformUpdate(double newWidth) // Parameter type should match what you pass
+        {
+            RenderWidth = (int)newWidth;
+            UpdateWaveformDTO(newWidth);
+        }
+
         internal void SetTextMarker()
         {
             m_audioEngine.AddMarker(m_audioEngine.CurrentPosition, "B");
@@ -439,7 +446,7 @@
             m_audioEngine.MountProject(Project);
             m_audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
 
-            CreateTrackDTO();
+            UpdateWaveformDTO(RenderWidth);
             CreateMarkerDTO();
 
             // Prevent when user doubleclick, that WPF register as a mouseclick
@@ -528,18 +535,6 @@
                 WaveformWrappers[i].Name = m_audioEngine.Project.Tracks[i].Name ?? "No Name Set";
                 WaveformWrappers[i].TrackID = m_audioEngine.Project.Tracks[i].ID;
             }
-        }
-
-        private void CreateTrackDTO()
-        {
-            var trackDTOList = new List<Memory<float>>();
-
-            for (int i = 0; i < Project.Tracks.Count; i++)
-            {
-                trackDTOList.Add(m_timelineService.RequestSample(i, 1200));
-            }
-
-            UpdateTrackDTO(trackDTOList);
         }
 
         // Maybe Create if the Marker Count > WrapperCount?!
