@@ -30,16 +30,5 @@
                 viewModel.SetTextMarker();
             }
         }
-
-        private void MainCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (DataContext is MainViewModel vm)
-            {
-                if (e.NewSize.Width != vm.RenderWidth)
-                {
-                    vm.RenderWidth = (int)e.NewSize.Width;
-                }
-            }
-        }
     }
 }
