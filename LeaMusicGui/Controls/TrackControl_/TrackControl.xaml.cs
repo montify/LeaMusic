@@ -75,6 +75,5 @@
             get => (ICommand)GetValue(RequestWaveformUpdateCommandProperty);
             set => SetValue(RequestWaveformUpdateCommandProperty, value);
         }
-
     }
 }

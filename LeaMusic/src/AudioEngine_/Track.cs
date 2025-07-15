@@ -45,6 +45,10 @@
 
         public bool IsSolo { get; set; }
 
+        public float Volume { get; set; }
+
+        public float? PreviousVolume { get; set; }
+
         public Track()
         {
         }
@@ -71,7 +75,6 @@
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
@@ -81,9 +84,30 @@
             LoopStream.JumpToSeconds(position.TotalSeconds);
         }
 
-        public void SetVolumte(float volume)
+        public void SetVolume(float volume)
         {
+            Volume = volume;
             VolumeStream.Volume = volume;
+        }
+
+        public void Mute()
+        {
+            if (!IsMuted)
+            {
+                PreviousVolume = Volume;
+                SetVolume(0);
+                IsMuted = true;
+            }
+        }
+
+        public void Unmute()
+        {
+            if (IsMuted)
+            {
+                SetVolume(PreviousVolume ?? Volume);
+                PreviousVolume = null;
+                IsMuted = false;
+            }
         }
 
         public void Dispose()

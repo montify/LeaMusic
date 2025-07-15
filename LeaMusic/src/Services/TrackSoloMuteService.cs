@@ -1,6 +1,5 @@
 ﻿namespace LeaMusic.src.Services
 {
-    using LeaMusic.src.AudioEngine_;
     using LeaMusic.Src.AudioEngine_;
     using LeaMusic.src.Services.Interfaces;
 
@@ -15,8 +14,7 @@
 
         public void MuteTrack(int trackId)
         {
-            var track = m_audioEngine.Project.Tracks.Where(t => t.ID == trackId).FirstOrDefault();
-
+            var track = m_audioEngine.Project.Tracks.FirstOrDefault(t => t.ID == trackId);
             if (track == null)
             {
                 return;
@@ -24,13 +22,11 @@
 
             if (track.IsMuted)
             {
-                track.SetVolumte(1);
-                track.IsMuted = false;
+                track.Unmute();
             }
             else
             {
-                track.SetVolumte(0);
-                track.IsMuted = true;
+                track.Mute();
             }
         }
 
@@ -50,8 +46,7 @@
                 foreach (var track in allTracks)
                 {
                     track.IsSolo = false;
-                    track.IsMuted = false;
-                    track.SetVolumte(1);
+                    track.Unmute();
                 }
             }
             else
@@ -61,14 +56,12 @@
                     if (track.ID == trackId)
                     {
                         track.IsSolo = true;
-                        track.IsMuted = false;
-                        track.SetVolumte(1);
+                        track.Unmute();
                     }
                     else
                     {
                         track.IsSolo = false;
-                        track.IsMuted = true;
-                        track.SetVolumte(0);
+                        track.Mute();
                     }
                 }
             }
@@ -82,7 +75,7 @@
             {
                 foreach (var track in project.Tracks)
                 {
-                    track.SetVolumte(0);
+                    track.SetVolume(0);
                     project.IsAllTracksMuted = true;
                 }
             }
@@ -90,9 +83,19 @@
             {
                 foreach (var track in project.Tracks)
                 {
-                    track.SetVolumte(1);
+                    track.SetVolume(1);
                     project.IsAllTracksMuted = false;
                 }
+            }
+        }
+
+        public void SetTrackVolume(int trackId, float volume)
+        {
+            var track = m_audioEngine.Project.Tracks.Where(t => t.ID == trackId).First();
+
+            if (track != null)
+            {
+                track.SetVolume(volume);
             }
         }
     }

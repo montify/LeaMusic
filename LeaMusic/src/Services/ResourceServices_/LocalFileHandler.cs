@@ -37,7 +37,7 @@
             {
                 var track = new Track();
                 track.OriginFilePath = projectFilePath.Path;
-
+                track.Volume = 1;
                 var audio = LoadAudioFromFile(projectFilePath.Path);
                 track.AddAudioFile(projectFilePath.Path, audio);
 

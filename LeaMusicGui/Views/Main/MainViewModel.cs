@@ -432,6 +432,19 @@
             _ = UpdateWaveformDTOAsync(RenderWidth);
         }
 
+        private void OnVolumeChange(TrackControlViewModel trackViewModel, float volume)
+        {
+            if (!IsProjectLoaded)
+            {
+                StatusMessages = "Pleas load a Project...";
+                return;
+            }
+
+            m_trackSoloMuteService.SetTrackVolume(trackViewModel.TrackId, volume);
+
+            _ = UpdateWaveformDTOAsync(RenderWidth);
+        }
+
         private void OnDeleteTrackRequested(TrackControlViewModel trackViewModel)
         {
             var track = m_audioEngine.Project.Tracks.Where(t => t.ID == trackViewModel.TrackId).FirstOrDefault();
@@ -567,7 +580,7 @@
                 var existingTrackVM = Tracks.FirstOrDefault(t => t.TrackId == projectTrack.ID);
                 if (existingTrackVM == null)
                 {
-                    existingTrackVM = new TrackControlViewModel(OnDeleteTrackRequested, OnMuteRequest, OnSoloRequest);
+                    existingTrackVM = new TrackControlViewModel(OnDeleteTrackRequested, OnMuteRequest, OnSoloRequest, OnVolumeChange);
                     existingTrackVM.TrackId = projectTrack.ID;
                     existingTrackVM.Name = projectTrack.Name;
                 }
@@ -576,6 +589,7 @@
                 existingTrackVM.Waveform = waveform;
                 existingTrackVM.IsSolo = projectTrack.IsSolo;
                 existingTrackVM.IsMuted = projectTrack.IsMuted;
+                existingTrackVM.Volume = projectTrack.Volume;
 
                 return existingTrackVM;
             }).ToList();
@@ -594,7 +608,7 @@
 
                 foreach (var vm in updatedViewModels.OrderBy(v => v.TrackId))
                 {
-                    if (!Tracks.Contains(vm))
+                    if (!Tracks.Any(t => t.TrackId == vm.TrackId))
                     {
                         Tracks.Add(vm);
                     }

@@ -8,7 +8,7 @@
     xmlns:local1="clr-namespace:LeaMusicGui.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:LeaMusicGui.Controls.TrackControl_"
-    d:DesignHeight="450"
+    d:DesignHeight="120"
     d:DesignWidth="1250"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance Type=vm:TrackControlViewModel, IsDesignTimeCreatable=True}">
@@ -20,8 +20,8 @@
     <Grid Height="120">
         <StackPanel Orientation="Horizontal">
             <Grid Width="100" Background="#282B28">
-                <StackPanel>
-                    
+                <StackPanel Orientation="Horizontal" Width="100">
+                    <StackPanel Orientation="Vertical" Width="40" >
                     <Button
                         Width="25"
                         Height="25"
@@ -70,14 +70,33 @@
                         Command="{Binding DeleteCommand}"
                         CommandParameter="{Binding}"
                         Content="D" />
-                    <TextBlock  Foreground="White" HorizontalAlignment="Center" Text="{Binding TrackId}" />
+                    <TextBlock  
+                        Foreground="White" 
+                        HorizontalAlignment="Center" 
+Text="{Binding TrackId}" />
                     <TextBlock
                         Foreground="White"
-                        Width="90"
+                        Width="30"
                         Text="{Binding Name}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="NoWrap"
                         ToolTip="{Binding Name}" />
+
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock 
+                            Foreground="White" 
+                            Text="{Binding ElementName=VolumeSlider, Path=Value, StringFormat={}{0:F1}}" />
+                        <Slider 
+                            Orientation="Vertical"
+                            x:Name="VolumeSlider"
+                            Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Grid}}" 
+                            Margin="10,0,0,0" 
+                            Minimum="0"
+                            Maximum="1"
+                            Value="{Binding Volume}"></Slider>
+                    </StackPanel>
+                  
                 </StackPanel>
             </Grid>
 
