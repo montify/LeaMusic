@@ -91,7 +91,7 @@
         private readonly TimelineCalculator m_timelineCalculator;
         private readonly LoopService m_loopService;
         private readonly IDialogService m_dialogService;
-        private readonly ITrackSoloMuteService m_trackSoloMuteService;
+        private readonly ITrackVolumeService m_trackSoloMuteService;
 
         private readonly Action<string> m_updateStatus;
 
@@ -107,7 +107,7 @@
                              TimelineCalculator timelineCalculator,
                              LoopService loopService,
                              IDialogService dialogService,
-                             ITrackSoloMuteService trackSoloMuteService)
+                             ITrackVolumeService trackSoloMuteService)
         {
             m_projectService = projectService;
             m_resourceManager = resourceManager;

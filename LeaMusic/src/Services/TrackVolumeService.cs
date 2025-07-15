@@ -3,11 +3,11 @@
     using LeaMusic.Src.AudioEngine_;
     using LeaMusic.src.Services.Interfaces;
 
-    public class TrackSoloMuteService : ITrackSoloMuteService
+    public class TrackVolumeService : ITrackVolumeService
     {
         private readonly AudioEngine m_audioEngine;
 
-        public TrackSoloMuteService(AudioEngine audioEngine)
+        public TrackVolumeService(AudioEngine audioEngine)
         {
             m_audioEngine = audioEngine;
         }

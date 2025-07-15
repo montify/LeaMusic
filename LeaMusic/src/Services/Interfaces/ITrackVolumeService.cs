@@ -1,6 +1,6 @@
 ﻿namespace LeaMusic.src.Services.Interfaces
 {
-    public interface ITrackSoloMuteService
+    public interface ITrackVolumeService
     {
         void SoloTrack(int trackId);
 

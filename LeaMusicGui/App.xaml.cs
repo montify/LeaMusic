@@ -47,7 +47,7 @@
             services.AddSingleton<IFileSystemService, LocalFileSystemService>();
             services.AddSingleton<IZipService, ZipService>();
             services.AddSingleton<IBinaryWriter, WaveformBinaryWriter>();
-            services.AddSingleton<ITrackSoloMuteService, TrackSoloMuteService>();
+            services.AddSingleton<ITrackVolumeService, TrackVolumeService>();
 
             Services = services.BuildServiceProvider();
         }
