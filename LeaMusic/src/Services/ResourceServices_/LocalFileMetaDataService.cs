@@ -11,7 +11,7 @@
             m_projectSerializer = projectSerializer;
         }
 
-        public Task<ProjectMetadata?> GetMetaData(Location projectLocation)
+        public async Task<ProjectMetadata?> GetMetaData(Location projectLocation)
         {
             if (projectLocation is FileLocation location)
             {
@@ -36,7 +36,7 @@
 
                 var projectMetadata = new ProjectMetadata(project.Name, project.LastSaveAt);
 
-                return Task.FromResult(projectMetadata);
+                return await Task.FromResult(projectMetadata);
             }
             else
             {
