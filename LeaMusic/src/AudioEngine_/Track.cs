@@ -43,6 +43,8 @@
 
         public bool IsMuted { get; set; }
 
+        public bool IsSolo { get; set; }
+
         public Track()
         {
         }

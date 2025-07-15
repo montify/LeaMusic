@@ -41,7 +41,28 @@
                             </Style>
                         </Button.Style>
                     </Button>
-                    
+
+                    <Button
+                        Width="25"
+                        Height="25"
+                        Padding="0"
+                        Command="{Binding SoloCommand}"
+                        CommandParameter="{Binding}"
+                        Content="S"
+                        FontSize="10">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="LightGray"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSolo }" Value="True">
+                                        <Setter Property="Background" Value="Red"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+
                     <Button
                         Width="25"
                         Height="25"

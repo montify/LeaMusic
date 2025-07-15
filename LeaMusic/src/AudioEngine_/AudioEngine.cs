@@ -292,47 +292,6 @@
             m_audioPlayer.Stop();
         }
 
-        public void MuteTrack(int trackID)
-        {
-            var track = Project.Tracks.Where(t => t.ID == trackID).FirstOrDefault();
-
-            if (track == null)
-            {
-                return;
-            }
-
-            if (track.IsMuted)
-            {
-                track.SetVolumte(1);
-                track.IsMuted = false;
-            }
-            else
-            {
-                track.SetVolumte(0);
-                track.IsMuted = true;
-            }
-        }
-
-        public void MuteAllTracks()
-        {
-            if (Project.IsAllTracksMuted == false)
-            {
-                foreach (var track in Project.Tracks)
-                {
-                    track.SetVolumte(0);
-                    Project.IsAllTracksMuted = true;
-                }
-            }
-            else
-            {
-                foreach (var track in Project.Tracks)
-                {
-                    track.SetVolumte(1);
-                    Project.IsAllTracksMuted = false;
-                }
-            }
-        }
-
         public void AudioJumpToSec(TimeSpan sec)
         {
             if (m_audioPlayer == null)

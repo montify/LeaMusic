@@ -78,7 +78,6 @@
 
         public ObservableCollection<TrackControlViewModel> Tracks { get; set; }
 
-
         public bool IsProjectLoaded => Project != null && Project.Duration > TimeSpan.FromSeconds(1);
 
         private Project Project { get; set; }
@@ -92,6 +91,8 @@
         private readonly TimelineCalculator m_timelineCalculator;
         private readonly LoopService m_loopService;
         private readonly IDialogService m_dialogService;
+        private readonly ITrackSoloMuteService m_trackSoloMuteService;
+
         private readonly Action<string> m_updateStatus;
 
         // currentMarkerID is set when the User click on the marker(Command) in the View,
@@ -105,7 +106,8 @@
                              AudioEngine audioEngine,
                              TimelineCalculator timelineCalculator,
                              LoopService loopService,
-                             IDialogService dialogService)
+                             IDialogService dialogService,
+                             ITrackSoloMuteService trackSoloMuteService)
         {
             m_projectService = projectService;
             m_resourceManager = resourceManager;
@@ -114,6 +116,7 @@
             m_dialogService = dialogService;
             m_timelineCalculator = timelineCalculator;
             m_loopService = loopService;
+            m_trackSoloMuteService = trackSoloMuteService;
             statusMessages = string.Empty;
 
             Tracks = new ObservableCollection<TrackControlViewModel>();
@@ -241,12 +244,6 @@
         public void Replay()
         {
             m_audioEngine.Replay();
-        }
-
-        [RelayCommand]
-        public void MuteAllTracks()
-        {
-            m_audioEngine.MuteAllTracks();
         }
 
         [RelayCommand]
@@ -409,7 +406,7 @@
             await Task.Delay(100);
         }
 
-        private void OnMuteRequest(TrackControlViewModel trackToMute)
+        private void OnMuteRequest(TrackControlViewModel trackViewModel)
         {
             if (!IsProjectLoaded)
             {
@@ -417,18 +414,32 @@
                 return;
             }
 
-            m_audioEngine.MuteTrack(trackToMute.TrackId);
-            trackToMute.IsMuted = !trackToMute.IsMuted;
+            m_trackSoloMuteService.MuteTrack(trackViewModel.TrackId);
+
+            _ = UpdateWaveformDTOAsync(RenderWidth);
         }
 
-        private void OnDeleteTrackRequested(TrackControlViewModel trackToDelete)
+        private void OnSoloRequest(TrackControlViewModel trackViewModel)
         {
-            var track = m_audioEngine.Project.Tracks.Where(t => t.ID == trackToDelete.TrackId).FirstOrDefault();
+            if (!IsProjectLoaded)
+            {
+                StatusMessages = "Pleas load a Project...";
+                return;
+            }
+
+            m_trackSoloMuteService.SoloTrack(trackViewModel.TrackId);
+
+            _ = UpdateWaveformDTOAsync(RenderWidth);
+        }
+
+        private void OnDeleteTrackRequested(TrackControlViewModel trackViewModel)
+        {
+            var track = m_audioEngine.Project.Tracks.Where(t => t.ID == trackViewModel.TrackId).FirstOrDefault();
 
             if (track != null)
             {
                 m_audioEngine.Project.Tracks.Remove(track);
-                Tracks.Remove(trackToDelete);
+                Tracks.Remove(trackViewModel);
 
                 m_audioEngine.ReloadMixerInputs();
 
@@ -556,13 +567,15 @@
                 var existingTrackVM = Tracks.FirstOrDefault(t => t.TrackId == projectTrack.ID);
                 if (existingTrackVM == null)
                 {
-                    existingTrackVM = new TrackControlViewModel(OnDeleteTrackRequested, OnMuteRequest);
+                    existingTrackVM = new TrackControlViewModel(OnDeleteTrackRequested, OnMuteRequest, OnSoloRequest);
                     existingTrackVM.TrackId = projectTrack.ID;
                     existingTrackVM.Name = projectTrack.Name;
                 }
 
                 var waveform = await Task.Run(() => m_timelineService.RequestSample(index, (int)newWidth));
                 existingTrackVM.Waveform = waveform;
+                existingTrackVM.IsSolo = projectTrack.IsSolo;
+                existingTrackVM.IsMuted = projectTrack.IsMuted;
 
                 return existingTrackVM;
             }).ToList();
