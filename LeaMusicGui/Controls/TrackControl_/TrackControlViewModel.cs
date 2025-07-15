@@ -3,6 +3,7 @@
     using System.Windows.Input;
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.Mvvm.Input;
+    using LeaMusic.Src.AudioEngine_;
 
     public partial class TrackControlViewModel : ObservableObject
     {
@@ -25,8 +26,12 @@
 
         public ICommand DeleteCommand { get; set; }
 
-        public TrackControlViewModel(Action<TrackControlViewModel> onDeleteRequested, Action<TrackControlViewModel> onMuteRequested)
+
+        public TrackControlViewModel(
+            Action<TrackControlViewModel> onDeleteRequested,
+            Action<TrackControlViewModel> onMuteRequested)
         {
+
             m_onDeleteRequested = onDeleteRequested;
             m_onMuteRequested = onMuteRequested;
 

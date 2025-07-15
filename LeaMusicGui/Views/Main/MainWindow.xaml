@@ -82,7 +82,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-
                 <!--  Main CANVAS  -->
                 <Canvas
                     x:Name="MainCanvas"

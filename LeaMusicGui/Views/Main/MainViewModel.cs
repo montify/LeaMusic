@@ -323,21 +323,6 @@
         }
 
         [RelayCommand]
-        public void Mute(object param)
-        {
-            if (!IsProjectLoaded)
-            {
-                StatusMessages = "Pleas load a Project...";
-                return;
-            }
-
-            if (param is TrackDTO wrapper)
-            {
-                m_audioEngine.MuteTrack(wrapper.TrackID);
-            }
-        }
-
-        [RelayCommand]
         private void JumpToSec()
         {
             if (TimeSpan.FromSeconds(JumpToPositionInSec) < TimeSpan.Zero)
@@ -433,6 +418,7 @@
             }
 
             m_audioEngine.MuteTrack(trackToMute.TrackId);
+            trackToMute.IsMuted = !trackToMute.IsMuted;
         }
 
         private void OnDeleteTrackRequested(TrackControlViewModel trackToDelete)
