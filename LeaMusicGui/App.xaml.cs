@@ -47,6 +47,7 @@
             services.AddSingleton<IFileSystemService, LocalFileSystemService>();
             services.AddSingleton<IZipService, ZipService>();
             services.AddSingleton<IBinaryWriter, WaveformBinaryWriter>();
+            services.AddSingleton<SnappingService>();
             services.AddSingleton<ITrackVolumeService, TrackVolumeService>();
             services.AddSingleton<IProjectProvider>(sp => sp.GetRequiredService<AudioEngine>());
             services.AddSingleton<IViewWindowProvider>(sp => sp.GetRequiredService<AudioEngine>());

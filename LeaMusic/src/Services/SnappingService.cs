@@ -4,7 +4,7 @@
 
     public class SnappingService
     {
-        public static TimeSpan SnapToMarkers(
+        public TimeSpan SnapToMarkers(
                       TimeSpan originalPosition,
                       IEnumerable<BeatMarker> beatMarkers,
                       TimeSpan viewStartTime,

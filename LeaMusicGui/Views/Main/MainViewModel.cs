@@ -92,6 +92,7 @@
         private readonly LoopService m_loopService;
         private readonly IDialogService m_dialogService;
         private readonly ITrackVolumeService m_trackSoloMuteService;
+        private readonly SnappingService m_snappingService;
 
         private readonly Action<string> m_updateStatus;
 
@@ -107,7 +108,8 @@
                              TimelineCalculator timelineCalculator,
                              LoopService loopService,
                              IDialogService dialogService,
-                             ITrackVolumeService trackSoloMuteService)
+                             ITrackVolumeService trackSoloMuteService,
+                             SnappingService snappingService)
         {
             m_projectService = projectService;
             m_resourceManager = resourceManager;
@@ -117,6 +119,7 @@
             m_timelineCalculator = timelineCalculator;
             m_loopService = loopService;
             m_trackSoloMuteService = trackSoloMuteService;
+            m_snappingService = snappingService;
             statusMessages = string.Empty;
 
             Tracks = new ObservableCollection<TrackControlViewModel>();
@@ -487,7 +490,7 @@
 
             if (proposedStart != null)
             {
-                currentLoopStart = SnappingService.SnapToMarkers(
+                currentLoopStart = m_snappingService.SnapToMarkers(
                 currentLoopStart,
                 m_audioEngine.Project.BeatMarkers,
                 m_audioEngine.ViewStartTime,
@@ -498,7 +501,7 @@
 
             if (proposedEnd != null)
             {
-                currentLoopEnd = SnappingService.SnapToMarkers(
+                currentLoopEnd = m_snappingService.SnapToMarkers(
                 currentLoopEnd,
                 m_audioEngine.Project.BeatMarkers,
                 m_audioEngine.ViewStartTime,
