@@ -1,24 +1,29 @@
 ﻿namespace LeaMusic.src.Services
 {
-    using LeaMusic.Src.AudioEngine_;
+    using LeaMusic.src.AudioEngine_.Interfaces;
 
     public class TimelineService
     {
-        public AudioEngine AudioEngine { get; private set; }
+        private readonly IProjectProvider m_projectProvider;
 
-        public TimelineService(AudioEngine audioEngine)
+        private readonly IViewWindowProvider m_viewWindowProvider;
+
+        public TimelineService(
+            IProjectProvider projectProvider,
+            IViewWindowProvider viewWindowProvider)
         {
-            AudioEngine = audioEngine;
+            m_projectProvider = projectProvider;
+            m_viewWindowProvider = viewWindowProvider;
         }
 
         public Memory<float> RequestSample(int trackId, int renderWidth)
         {
-           return AudioEngine.Project.RequestSample(trackId, AudioEngine.ViewStartTime.TotalSeconds, AudioEngine.ViewEndTime.TotalSeconds, renderWidth);
+           return m_projectProvider.Project.RequestSample(trackId, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewEndTime.TotalSeconds, renderWidth);
         }
 
         public Memory<float> RequestSample(int trackId, int renderWidth, TimeSpan start, TimeSpan end)
         {
-            return AudioEngine.Project.RequestSample(trackId, start.TotalSeconds, end.TotalSeconds, renderWidth);
+            return m_projectProvider.Project.RequestSample(trackId, start.TotalSeconds, end.TotalSeconds, renderWidth);
         }
     }
 }
