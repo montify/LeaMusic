@@ -2,7 +2,7 @@
 {
     using LeaMusic.src.Services.Interfaces;
 
-    public class LocalFileMetaDataService : IMetadataService
+    public class LocalFileMetaDataService : ILocalFileMetaDataService
     {
         private IProjectSerializer m_projectSerializer;
 

@@ -2,7 +2,7 @@
 {
     using LeaMusic.src.Services.Interfaces;
 
-    public class GoogleDriveMetaDataService : IMetadataService
+    public class GoogleDriveMetaDataService : IGoogleDriveMetaDataService
     {
         private readonly IGoogleContext m_googleContext;
 

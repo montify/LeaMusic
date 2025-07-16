@@ -4,8 +4,6 @@
 
     public interface IGoogleContext
     {
-        void CreateDriveService();
-
         File? CreateOrGetFolder(string name);
 
         File CreateOrGetSubfolder(File parentFolder, string subfolderName);

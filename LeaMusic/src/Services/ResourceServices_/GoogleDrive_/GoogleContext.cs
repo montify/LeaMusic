@@ -15,11 +15,24 @@
         private UserCredential? m_credential;
         private DriveService m_driveService = null!;
 
+        public DriveService DriveService
+        {
+            get
+            {
+                if (m_driveService == null)
+                {
+                    CreateDriveService();
+                }
+
+                return m_driveService;
+            }
+        }
+
         public GoogleContext()
         {
         }
 
-        public void CreateDriveService()
+        private void CreateDriveService()
         {
             if (m_driveService != null)
             {
@@ -58,7 +71,7 @@
             }
 
             // Check for an existing folder with the given name
-            var listRequest = m_driveService.Files.List();
+            var listRequest = DriveService.Files.List();
 
             listRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and name = '{name}' and trashed = false";
             listRequest.Fields = "files(id, name)";
@@ -80,7 +93,7 @@
                 MimeType = "application/vnd.google-apps.folder",
             };
 
-            var createRequest = m_driveService.Files.Create(fileMetadata);
+            var createRequest = DriveService.Files.Create(fileMetadata);
             createRequest.Fields = "id, name";
             var folder = createRequest.Execute();
 
@@ -91,7 +104,7 @@
         public File CreateOrGetSubfolder(File parentFolder, string subfolderName)
         {
             // 1. Prüfen, ob Unterordner schon existiert
-            var listRequest = m_driveService.Files.List();
+            var listRequest = DriveService.Files.List();
 
             listRequest.Q = $"mimeType='application/vnd.google-apps.folder' and name='{subfolderName}' and '{parentFolder.Id}' in parents and trashed=false";
             listRequest.Fields = "files(id, name)";
@@ -112,7 +125,7 @@
                     Parents = new List<string> { parentFolder.Id },
                 };
 
-                var createRequest = m_driveService.Files.Create(fileMetadata);
+                var createRequest = DriveService.Files.Create(fileMetadata);
                 createRequest.Fields = "id";
 
                 var folder = createRequest.Execute();
@@ -128,7 +141,7 @@
 
             do
             {
-                var request = m_driveService.Files.List();
+                var request = DriveService.Files.List();
 
                 request.Q = $"'{folderId}' in parents and trashed = false";
                 request.Fields = "nextPageToken, files(id, name)";
@@ -154,7 +167,7 @@
 
         public string? GetFolderIdByName(string folderName)
         {
-            var listRequest = m_driveService.Files.List();
+            var listRequest = DriveService.Files.List();
 
             listRequest.Q = $"name = '{folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
             listRequest.Fields = "files(id, name)";
@@ -178,7 +191,7 @@
 
             foreach (var segment in segments)
             {
-                var listRequest = m_driveService.Files.List();
+                var listRequest = DriveService.Files.List();
                 listRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and name = '{segment}' and '{parentId}' in parents and trashed = false";
                 listRequest.Fields = "files(id, name)";
                 var result = listRequest.Execute();
@@ -204,7 +217,7 @@
                 return null;
             }
 
-            var fileRequest = m_driveService.Files.List();
+            var fileRequest = DriveService.Files.List();
             fileRequest.Q = $"name = '{fileName}' and '{folderId}' in parents and trashed = false";
             fileRequest.Fields = "files(id, name, createdTime)";
 
@@ -231,7 +244,7 @@
                 return null;
             }
 
-            var fileRequest = m_driveService.Files.List();
+            var fileRequest = DriveService.Files.List();
             fileRequest.Q = $"name = '{fileName}' and '{folderId}' in parents and trashed = false";
             fileRequest.Fields = "files(id, name)";
 
@@ -253,7 +266,7 @@
 
             using var stream = new FileStream(filePath, FileMode.Open);
 
-            var updateRequest = m_driveService.Files.Update(new File(), fileId, stream, fileMetadata.MimeType);
+            var updateRequest = DriveService.Files.Update(new File(), fileId, stream, fileMetadata.MimeType);
             updateRequest.Fields = "id, name";
 
             await updateRequest.UploadAsync();
@@ -275,7 +288,7 @@
 
             using var stream = new FileStream(filePath, FileMode.Open);
 
-            request = m_driveService.Files.Create(fileMetadata, stream, "application/zip");
+            request = DriveService.Files.Create(fileMetadata, stream, "application/zip");
             request.ProgressChanged += Request_ProgressChanged;
             request.Fields = "id";
 
@@ -293,7 +306,7 @@
             }
 
             // List files inside the folder
-            var fileRequest = m_driveService.Files.List();
+            var fileRequest = DriveService.Files.List();
             fileRequest.Q = $"name = '{fileName.Replace("'", "\\'")}' and '{folderId}' in parents and trashed = false";
             fileRequest.Fields = "files(id, name)";
             var files = fileRequest.Execute().Files;
@@ -311,7 +324,7 @@
         {
             try
             {
-                m_driveService.Files.Delete(fileId).Execute();
+                DriveService.Files.Delete(fileId).Execute();
                 Console.WriteLine($"File with ID '{fileId}' has been deleted.");
             }
             catch (Exception ex)
@@ -322,7 +335,7 @@
 
         public async Task<Stream> GetZipAsStream(string id)
         {
-            var request = m_driveService.Files.Get(id);
+            var request = DriveService.Files.Get(id);
             var memoryStream = new MemoryStream();
 
             await request.DownloadAsync(memoryStream);

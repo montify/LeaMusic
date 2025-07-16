@@ -1,23 +1,26 @@
 ﻿namespace LeaMusic.src.Services.ResourceServices_.GoogleDrive_
 {
+    using Google.Apis.Drive.v3;
     using LeaMusic.src.AudioEngine_;
     using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
 
     public class GoogleDriveHandler : IGoogleDriveHandler
     {
+        private readonly Lazy<DriveService> _lazyDriveService;
+
         // We Import Database from file, not from Database, we only load Audio from Database
         private readonly ILocalFileHandler m_fileHandler;
         private readonly IFileSystemService m_fileSystemService;
         private readonly IZipService m_zipService;
-        private readonly IMetadataService m_googleDriveMetaDataService;
+        private readonly IGoogleDriveMetaDataService m_googleDriveMetaDataService;
         private IGoogleContext m_driveContext;
 
         public GoogleDriveHandler(
             ILocalFileHandler fileHandler,
             IFileSystemService fileSystemService,
             IZipService zipService,
-            IMetadataService googleDriveMetaDataService,
+            IGoogleDriveMetaDataService googleDriveMetaDataService,
             IGoogleContext googleContext)
         {
             m_fileHandler = fileHandler;
@@ -31,8 +34,6 @@
             {
                 throw new NullReferenceException("Cant create Google Drive Context");
             }
-
-            m_driveContext.CreateDriveService();
         }
 
         public Track ImportTrack(Location trackLocation)

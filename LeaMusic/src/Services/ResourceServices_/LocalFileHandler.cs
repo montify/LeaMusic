@@ -8,14 +8,14 @@
     {
         private readonly IProjectSerializer m_projectSerializer;
         private readonly IWaveformService m_waveformService;
-        private readonly IMetadataService m_localmedatDataService;
+        private readonly ILocalFileMetaDataService m_localmedatDataService;
         private readonly IFileSystemService m_localFileSystemService;
         private readonly IBinaryWriter m_waveformBinaryWriter;
 
         public LocalFileHandler(
             IProjectSerializer serializer,
             IWaveformService waveformService,
-            IMetadataService localmedatDataService,
+            ILocalFileMetaDataService localmedatDataService,
             IFileSystemService localFileSystemService,
             IBinaryWriter waveformBinaryWriter)
         {

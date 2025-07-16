@@ -42,8 +42,8 @@
             services.AddSingleton<ConnectionMonitorService>();
             services.AddSingleton<IProjectSerializer, ProjectJsonSerializer>();
             services.AddSingleton<IWaveformService, WaveformService>();
-            services.AddSingleton<IMetadataService, LocalFileMetaDataService>();
-            services.AddSingleton<GoogleDriveMetaDataService>();
+            services.AddSingleton<ILocalFileMetaDataService, LocalFileMetaDataService>();
+            services.AddSingleton<IGoogleDriveMetaDataService, GoogleDriveMetaDataService>();
             services.AddSingleton<IFileSystemService, LocalFileSystemService>();
             services.AddSingleton<IZipService, ZipService>();
             services.AddSingleton<IBinaryWriter, WaveformBinaryWriter>();
