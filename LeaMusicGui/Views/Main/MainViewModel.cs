@@ -159,21 +159,24 @@
             var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
             var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
-            await SetOrAdjustLoop(startSec, endSec);
+            await m_loopService.SetOrAdjustLoop(startSec, endSec, RenderWidth);
+            await UpdateWaveformDTOAsync(RenderWidth);
         }
 
         public async Task LoopSelectionStart(double startPixel, double renderWidth)
         {
             var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
-            await SetOrAdjustLoop(startSec, null); // Only proposing a new start
+            await m_loopService.SetOrAdjustLoop(startSec, null, RenderWidth);
+            await UpdateWaveformDTOAsync(RenderWidth);
         }
 
         public async Task LoopSelectionEnd(double endPixel, double renderWidth)
         {
             var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
 
-            await SetOrAdjustLoop(null, endSec); // Only proposing a new end
+            await m_loopService.SetOrAdjustLoop(null, endSec, RenderWidth);
+            await UpdateWaveformDTOAsync(RenderWidth);
         }
 
         public async Task ZoomWaveformMouse(Point p, double width)
@@ -479,57 +482,6 @@
             }
 
             ProjectBpm = m_audioEngine.CalculateBpm(beatsPerMeasure: 4);
-        }
-
-        private async Task SetOrAdjustLoop(TimeSpan? proposedStart, TimeSpan? proposedEnd)
-        {
-            // Determine the actual start and end for the loop operation
-            // Use existing LoopStart/LoopEnd if not explicitly provided
-            TimeSpan currentLoopStart = proposedStart ?? m_audioEngine.LoopStart;
-            TimeSpan currentLoopEnd = proposedEnd ?? m_audioEngine.LoopEnd;
-
-            if (proposedStart != null)
-            {
-                currentLoopStart = m_snappingService.SnapToMarkers(
-                currentLoopStart,
-                m_audioEngine.Project.BeatMarkers,
-                m_audioEngine.ViewStartTime,
-                m_audioEngine.ViewDuration,
-                RenderWidth,
-                thresholdInMs: AppConstants.SnappingTreshholdInMs);
-            }
-
-            if (proposedEnd != null)
-            {
-                currentLoopEnd = m_snappingService.SnapToMarkers(
-                currentLoopEnd,
-                m_audioEngine.Project.BeatMarkers,
-                m_audioEngine.ViewStartTime,
-                m_audioEngine.ViewDuration,
-                RenderWidth,
-                thresholdInMs: AppConstants.SnappingTreshholdInMs);
-            }
-
-            // Use the LoopPlaybackService to determine the final action
-            var loopAction = m_loopService.DetermineLoopAction(currentLoopStart, currentLoopEnd);
-
-            if (!loopAction.shouldSetLoop && !loopAction.shouldJump)
-            {
-                return; // Service decided to ignore this input
-            }
-
-            if (loopAction.shouldSetLoop)
-            {
-                m_audioEngine.Loop(loopAction.loopStart, loopAction.loopEnd);
-            }
-
-            if (loopAction.shouldJump)
-            {
-                m_audioEngine.AudioJumpToSec(loopAction.jumpToPosition);
-            }
-
-            await UpdateWaveformDTOAsync(RenderWidth);
-            CreateMarkerDTO();
         }
 
         // Maybe Create if the Marker Count > WrapperCount?!

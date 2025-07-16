@@ -3,6 +3,9 @@
     public interface IViewWindowProvider
     {
         public TimeSpan ViewStartTime { get; }
+
         public TimeSpan ViewEndTime { get; }
+
+        public TimeSpan ViewDuration { get; }
     }
 }
