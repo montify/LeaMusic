@@ -6,12 +6,12 @@
     public class SyncService : ISyncService
     {
         private readonly IResourceManager m_resourceManager;
-        private readonly ConnectionMonitorService m_connectionMonitorService;
+        private readonly IConnectionMonitorService m_connectionMonitorService;
         private readonly IDialogService m_dialogService;
 
         public SyncService(
             IResourceManager resourceManager,
-            ConnectionMonitorService connectionMonitorService,
+            IConnectionMonitorService connectionMonitorService,
             IDialogService dialogService,
             IGoogleDriveHandler googleDriveHandler)
         {

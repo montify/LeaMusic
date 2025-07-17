@@ -1,8 +1,8 @@
-﻿using LeaMusic.Src.AudioEngine_;
-using NAudio.Wave;
-
-namespace LeaMusic.src.AudioEngine_
+﻿namespace LeaMusic.src.AudioEngine_
 {
+    using LeaMusic.Src.AudioEngine_;
+    using NAudio.Wave;
+
     public class Project : IDisposable
     {
         public string Name { get; set; }

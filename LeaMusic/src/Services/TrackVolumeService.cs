@@ -1,20 +1,20 @@
 ﻿namespace LeaMusic.src.Services
 {
-    using LeaMusic.Src.AudioEngine_;
+    using LeaMusic.src.AudioEngine_.Interfaces;
     using LeaMusic.src.Services.Interfaces;
 
     public class TrackVolumeService : ITrackVolumeService
     {
-        private readonly AudioEngine m_audioEngine;
+        private readonly IProjectProvider m_projectProvider;
 
-        public TrackVolumeService(AudioEngine audioEngine)
+        public TrackVolumeService(IProjectProvider projectProvider)
         {
-            m_audioEngine = audioEngine;
+            m_projectProvider = projectProvider;
         }
 
         public void MuteTrack(int trackId)
         {
-            var track = m_audioEngine.Project.Tracks.FirstOrDefault(t => t.ID == trackId);
+            var track = m_projectProvider.Project.Tracks.FirstOrDefault(t => t.ID == trackId);
             if (track == null)
             {
                 return;
@@ -32,7 +32,7 @@
 
         public void SoloTrack(int trackId)
         {
-            var allTracks = m_audioEngine.Project.Tracks;
+            var allTracks = m_projectProvider.Project.Tracks;
             var soloTrack = allTracks.FirstOrDefault(t => t.ID == trackId);
             if (soloTrack == null)
             {
@@ -69,7 +69,7 @@
 
         public void MuteAllTracks()
         {
-            var project = m_audioEngine.Project;
+            var project = m_projectProvider.Project;
 
             if (project.IsAllTracksMuted == false)
             {
@@ -91,7 +91,7 @@
 
         public void SetTrackVolume(int trackId, float volume)
         {
-            var track = m_audioEngine.Project.Tracks.Where(t => t.ID == trackId).First();
+            var track = m_projectProvider.Project.Tracks.Where(t => t.ID == trackId).First();
 
             if (track != null)
             {

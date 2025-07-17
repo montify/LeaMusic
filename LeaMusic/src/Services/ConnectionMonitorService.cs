@@ -1,6 +1,8 @@
-﻿namespace LeaMusic.src.Services
+﻿using LeaMusic.src.Services.Interfaces;
+
+namespace LeaMusic.src.Services
 {
-    public class ConnectionMonitorService
+    public class ConnectionMonitorService : IConnectionMonitorService
     {
         public async Task<bool> CheckInternetConnection()
         {

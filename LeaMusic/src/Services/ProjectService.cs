@@ -7,18 +7,18 @@
     using NAudio.Wave;
     using NAudio.Wave.SampleProviders;
 
-    public class ProjectService
+    public class ProjectService : IProjectService
     {
         private readonly IDialogService m_dialogService;
         private readonly IResourceManager m_resourceManager;
-        private readonly ConnectionMonitorService m_connectionMonitorService;
+        private readonly IConnectionMonitorService m_connectionMonitorService;
         private readonly IFileSystemService m_fileSystemService;
         private readonly ISyncService m_syncService;
 
         public ProjectService(
             IDialogService dialogService,
             IResourceManager resourceManager,
-            ConnectionMonitorService connectionMonitorService,
+            IConnectionMonitorService connectionMonitorService,
             IFileSystemService fileSystemService,
             ISyncService syncService)
         {
@@ -29,7 +29,7 @@
 
             m_dialogService = dialogService;
             m_resourceManager = resourceManager;
-            m_connectionMonitorService = connectionMonitorService; 
+            m_connectionMonitorService = connectionMonitorService;
             m_fileSystemService = fileSystemService;
             m_syncService = syncService;
         }

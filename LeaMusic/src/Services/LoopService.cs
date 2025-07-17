@@ -1,20 +1,20 @@
 ﻿namespace LeaMusic.src.Services
 {
-    using LeaMusic.Src.AudioEngine_;
     using LeaMusic.src.AudioEngine_.Interfaces;
+    using LeaMusic.src.Services.Interfaces;
 
-    public class LoopService
+    public class LoopService : ILoopService
     {
-        private readonly SnappingService m_snappingService;
+        private readonly ISnappingService m_snappingService;
         private readonly IProjectProvider m_projectProvider;
         private readonly IViewWindowProvider m_viewWindowProvider;
-        private readonly AudioEngine m_audioEngine;
+        private readonly IAudioEngine m_audioEngine;
 
         public LoopService(
-            SnappingService snappingService,
-            IProjectProvider projectProvider, 
+            ISnappingService snappingService,
+            IProjectProvider projectProvider,
             IViewWindowProvider viewWindowProvider,
-            AudioEngine audioEngine)
+            IAudioEngine audioEngine)
         {
             m_snappingService = snappingService;
             m_projectProvider = projectProvider;
@@ -48,7 +48,6 @@
                 renderWidth,
                 thresholdInMs: AppConstants.SnappingTreshholdInMs);
             }
-
 
             var loopAction = DetermineLoopAction(currentLoopStart, currentLoopEnd);
 

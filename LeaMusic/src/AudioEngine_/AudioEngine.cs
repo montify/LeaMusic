@@ -8,7 +8,7 @@
     using LeaMusic.src.Services.Interfaces;
     using PlaybackState = LeaMusic.src.AudioEngine_.PlaybackState;
 
-    public class AudioEngine : IViewWindowProvider, IProjectProvider
+    public class AudioEngine : IAudioEngine, IViewWindowProvider, IProjectProvider
     {
         public Project Project { get; private set; }
 

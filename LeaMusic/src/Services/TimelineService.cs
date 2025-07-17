@@ -1,8 +1,9 @@
 ﻿namespace LeaMusic.src.Services
 {
     using LeaMusic.src.AudioEngine_.Interfaces;
+    using LeaMusic.src.Services.Interfaces;
 
-    public class TimelineService
+    public class TimelineService : ITimelineService
     {
         private readonly IProjectProvider m_projectProvider;
 

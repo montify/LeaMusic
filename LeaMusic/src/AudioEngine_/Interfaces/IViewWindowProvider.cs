@@ -7,5 +7,7 @@
         public TimeSpan ViewEndTime { get; }
 
         public TimeSpan ViewDuration { get; }
+
+        public TimeSpan HalfViewWindow { get; }
     }
 }

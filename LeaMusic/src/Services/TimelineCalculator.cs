@@ -1,8 +1,9 @@
 ﻿namespace LeaMusic.Src.Services
 {
+    using LeaMusic.src.Services.Interfaces;
     using Point = System.Drawing.Point;
 
-    public class TimelineCalculator
+    public class TimelineCalculator : ITimelineCalculator
     {
         private TimeSpan m_zoomMouseStartPosition;
         private double m_zoomStartMouseY;

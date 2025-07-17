@@ -23,23 +23,23 @@
         public App()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<IGoogleContext, GoogleContext>();
+            services.AddSingleton<MainViewModel>();
+            services.AddSingleton<LoadProjectViewModel>();
             services.AddTransient<TrackControlViewModel>();
+
+            services.AddSingleton<IGoogleContext, GoogleContext>();
             services.AddSingleton<ILocalFileHandler, LocalFileHandler>();
             services.AddSingleton<IGoogleDriveHandler, GoogleDriveHandler>();
             services.AddSingleton<IResourceManager, LeaResourceManager>();
-            services.AddSingleton<ProjectService>();
-            services.AddSingleton<MainViewModel>();
-            services.AddSingleton<TimelineService>();
+            services.AddSingleton<IProjectService, ProjectService>();
+            services.AddSingleton<ITimelineService, TimelineService>();
             services.AddSingleton<IMixer, NaudioMixer>();
             services.AddSingleton<IAudioPlayer, WaveOutAudioPlayer>();
-            services.AddSingleton<AudioEngine>();
-            services.AddSingleton<TimelineCalculator>();
+            services.AddSingleton<ITimelineCalculator, TimelineCalculator>();
             services.AddSingleton<ISyncService, SyncService>();
-            services.AddSingleton<LoopService>();
+            services.AddSingleton<ILoopService, LoopService>();
             services.AddSingleton<IDialogService, DialogService>();
-            services.AddSingleton<LoadProjectViewModel>();
-            services.AddSingleton<ConnectionMonitorService>();
+            services.AddSingleton<IConnectionMonitorService, ConnectionMonitorService>();
             services.AddSingleton<IProjectSerializer, ProjectJsonSerializer>();
             services.AddSingleton<IWaveformService, WaveformService>();
             services.AddSingleton<ILocalFileMetaDataService, LocalFileMetaDataService>();
@@ -47,10 +47,12 @@
             services.AddSingleton<IFileSystemService, LocalFileSystemService>();
             services.AddSingleton<IZipService, ZipService>();
             services.AddSingleton<IBinaryWriter, WaveformBinaryWriter>();
-            services.AddSingleton<SnappingService>();
+            services.AddSingleton<ISnappingService, SnappingService>();
             services.AddSingleton<ITrackVolumeService, TrackVolumeService>();
-            services.AddSingleton<IProjectProvider>(sp => sp.GetRequiredService<AudioEngine>());
-            services.AddSingleton<IViewWindowProvider>(sp => sp.GetRequiredService<AudioEngine>());
+            services.AddSingleton<IAudioEngine, AudioEngine>();
+            services.AddSingleton<IProjectProvider>(sp => (IProjectProvider)sp.GetRequiredService<IAudioEngine>());
+            services.AddSingleton<IViewWindowProvider>(sp => (IViewWindowProvider)sp.GetRequiredService<IAudioEngine>());
+
             Services = services.BuildServiceProvider();
         }
 

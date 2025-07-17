@@ -1,8 +1,9 @@
 ﻿namespace LeaMusic.src.Services
 {
     using LeaMusic.Src.AudioEngine_;
+    using LeaMusic.src.Services.Interfaces;
 
-    public class SnappingService
+    public class SnappingService : ISnappingService
     {
         public TimeSpan SnapToMarkers(
                       TimeSpan originalPosition,

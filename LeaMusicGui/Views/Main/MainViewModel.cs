@@ -5,11 +5,8 @@
     using System.Windows.Media;
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.Mvvm.Input;
-    using LeaMusic;
     using LeaMusic.src.AudioEngine_;
-    using LeaMusic.Src.AudioEngine_;
-    using LeaMusic.src.Services;
-    using LeaMusic.Src.Services;
+    using LeaMusic.src.AudioEngine_.Interfaces;
     using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
     using LeaMusicGui.Controls.TrackControl_;
@@ -84,15 +81,16 @@
 
         private bool IsSyncEnabled { get; set; } = true;
 
-        private readonly AudioEngine m_audioEngine;
-        private readonly TimelineService m_timelineService;
-        private readonly IResourceManager m_resourceManager;
-        private readonly ProjectService m_projectService;
-        private readonly TimelineCalculator m_timelineCalculator;
-        private readonly LoopService m_loopService;
+        private readonly IAudioEngine m_audioEngine;
+        private readonly ITimelineService m_timelineService;
+        private readonly IProjectService m_projectService;
+        private readonly ITimelineCalculator m_timelineCalculator;
+        private readonly ILoopService m_loopService;
         private readonly IDialogService m_dialogService;
         private readonly ITrackVolumeService m_trackSoloMuteService;
-        private readonly SnappingService m_snappingService;
+
+        private readonly IViewWindowProvider m_viewWindowProvider;
+        private readonly IProjectProvider m_projectProvider;
 
         private readonly Action<string> m_updateStatus;
 
@@ -101,25 +99,26 @@
         private int m_currentMarkerID = 0;
 
         public MainViewModel(
-                             ProjectService projectService,
-                             IResourceManager resourceManager,
-                             TimelineService timelineService,
-                             AudioEngine audioEngine,
-                             TimelineCalculator timelineCalculator,
-                             LoopService loopService,
+                             IProjectService projectService,
+                             ITimelineService timelineService,
+                             IAudioEngine audioEngine,
+                             ITimelineCalculator timelineCalculator,
+                             ILoopService loopService,
                              IDialogService dialogService,
                              ITrackVolumeService trackSoloMuteService,
-                             SnappingService snappingService)
+                             IViewWindowProvider viewWindowProvider,
+                             IProjectProvider projectProvider)
         {
             m_projectService = projectService;
-            m_resourceManager = resourceManager;
             m_timelineService = timelineService;
             m_audioEngine = audioEngine;
             m_dialogService = dialogService;
             m_timelineCalculator = timelineCalculator;
             m_loopService = loopService;
             m_trackSoloMuteService = trackSoloMuteService;
-            m_snappingService = snappingService;
+            m_viewWindowProvider = viewWindowProvider;
+            m_projectProvider = projectProvider;
+
             statusMessages = string.Empty;
 
             Tracks = new ObservableCollection<TrackControlViewModel>();
@@ -144,11 +143,11 @@
 
         public void MoveMarker(Point position, int renderWidth)
         {
-            var marker = m_audioEngine.Project.BeatMarkers.Where(marker => marker.ID == m_currentMarkerID).FirstOrDefault();
+            var marker = m_projectProvider.Project.BeatMarkers.Where(marker => marker.ID == m_currentMarkerID).FirstOrDefault();
 
             if (marker != null)
             {
-                marker.Position = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(position.X, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, renderWidth));
+                marker.Position = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(position.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, renderWidth));
             }
 
             UpdateMarkers();
@@ -156,8 +155,8 @@
 
         public async Task LoopSelection(double startPixel, double endPixel, double renderWidth)
         {
-            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
-            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
+            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
 
             await m_loopService.SetOrAdjustLoop(startSec, endSec, RenderWidth);
             await UpdateWaveformDTOAsync(RenderWidth);
@@ -165,7 +164,7 @@
 
         public async Task LoopSelectionStart(double startPixel, double renderWidth)
         {
-            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
 
             await m_loopService.SetOrAdjustLoop(startSec, null, RenderWidth);
             await UpdateWaveformDTOAsync(RenderWidth);
@@ -173,7 +172,7 @@
 
         public async Task LoopSelectionEnd(double endPixel, double renderWidth)
         {
-            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_audioEngine.ViewStartTime.TotalSeconds, m_audioEngine.ViewDuration.TotalSeconds, (int)renderWidth));
+            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
 
             await m_loopService.SetOrAdjustLoop(null, endSec, RenderWidth);
             await UpdateWaveformDTOAsync(RenderWidth);
@@ -183,7 +182,7 @@
         {
             var point = new System.Drawing.Point((int)p.X, (int)p.Y);
 
-            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformMouse(point, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration, Zoom, width);
+            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformMouse(point, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration, Zoom, width);
 
             Zoom = newZoomFactor;
 
@@ -241,7 +240,7 @@
         [RelayCommand]
         public void MarkerDelete(MarkerDTO marker)
         {
-            m_audioEngine.Project.DeleteMarker(marker.Marker.ID);
+            m_projectProvider.Project.DeleteMarker(marker.Marker.ID);
 
             CreateMarkerDTO();
         }
@@ -453,11 +452,11 @@
 
         private void OnDeleteTrackRequested(TrackControlViewModel trackViewModel)
         {
-            var track = m_audioEngine.Project.Tracks.Where(t => t.ID == trackViewModel.TrackId).FirstOrDefault();
+            var track = m_projectProvider.Project.Tracks.Where(t => t.ID == trackViewModel.TrackId).FirstOrDefault();
 
             if (track != null)
             {
-                m_audioEngine.Project.Tracks.Remove(track);
+                m_projectProvider.Project.Tracks.Remove(track);
                 Tracks.Remove(trackViewModel);
 
                 m_audioEngine.ReloadMixerInputs();
@@ -473,7 +472,7 @@
                 if (IsMarkerVisible(BeatMarkers[i]))
                 {
                     BeatMarkers[i].Visible = true;
-                    BeatMarkers[i].PositionRelativeView = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(BeatMarkers[i].Marker.Position, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration);
+                    BeatMarkers[i].PositionRelativeView = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(BeatMarkers[i].Marker.Position, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
                 }
                 else
                 {
@@ -488,13 +487,13 @@
         private void CreateMarkerDTO()
         {
             BeatMarkers.Clear();
-            for (int i = 0; i < m_audioEngine.Project.BeatMarkers.Count; i++)
+            for (int i = 0; i < m_projectProvider.Project.BeatMarkers.Count; i++)
             {
-                var marker = m_audioEngine.Project.BeatMarkers[i];
+                var marker = m_projectProvider.Project.BeatMarkers[i];
 
                 var w = new MarkerDTO();
                 w.Marker = marker;
-                w.PositionRelativeView = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(marker.Position, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration);
+                w.PositionRelativeView = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(marker.Position, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
                 w.Marker.ID = marker.ID;
                 w.Marker.Description = marker.Description;
                 BeatMarkers.Add(w);
@@ -503,7 +502,7 @@
 
         private bool IsMarkerVisible(MarkerDTO testMarker)
         {
-            if (testMarker.Marker.Position < m_audioEngine.ViewStartTime || testMarker.Marker.Position > m_audioEngine.ViewEndTime)
+            if (testMarker.Marker.Position < m_viewWindowProvider.ViewStartTime || testMarker.Marker.Position > m_viewWindowProvider.ViewEndTime)
             {
                 return false;
             }
@@ -519,16 +518,16 @@
             ProgressInPercentage = (m_audioEngine.CurrentPosition.TotalSeconds / m_audioEngine.TotalDuration.TotalSeconds) * 100;
 
             // scroll view when Playhead reach the end of the view
-            if (m_audioEngine.CurrentPosition >= m_audioEngine.ViewEndTime)
+            if (m_audioEngine.CurrentPosition >= m_viewWindowProvider.ViewEndTime)
             {
-                m_audioEngine.ZoomViewWindow(Zoom, m_audioEngine.CurrentPosition + m_audioEngine.HalfViewWindow);
+                m_audioEngine.ZoomViewWindow(Zoom, m_audioEngine.CurrentPosition + m_viewWindowProvider.HalfViewWindow);
                 _ = UpdateWaveformDTOAsync(RenderWidth);
             }
         }
 
         private async Task UpdateWaveformDTOAsync(double newWidth)
         {
-            var projectTracks = m_audioEngine.Project.Tracks;
+            var projectTracks = m_projectProvider.Project.Tracks;
 
             var waveformGenerationTasks = projectTracks.Select(async (projectTrack, index) =>
             {
@@ -573,13 +572,13 @@
 
         private void AudioEngine_OnLoopChange(TimeSpan startSec, TimeSpan endSec)
         {
-            SelectionStartPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(startSec, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration);
-            SelectionEndPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(endSec, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration);
+            SelectionStartPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(startSec, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
+            SelectionEndPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(endSec, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
         }
 
         private void AudioEngine_OnPlayHeadChange(TimeSpan positionInSeconds)
         {
-            PlayheadPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(positionInSeconds, m_audioEngine.ViewStartTime, m_audioEngine.ViewDuration);
+            PlayheadPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(positionInSeconds, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
             UpdateMarkers();
         }
 
