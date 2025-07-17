@@ -9,6 +9,10 @@ dotnet_diagnostic.SA1101.severity = none
 dotnet_diagnostic.SA1309.severity = none
 dotnet_diagnostic.SA1600.severity = none
 dotnet_diagnostic.SA1308.severity = none
+dotnet_diagnostic.SA1633.severity = none
+dotnet_diagnostic.SA1300.severity = none
+
+
 # Private fields must be m_camelCase
 dotnet_naming_rule.private_fields_m_prefix.severity = warning
 dotnet_naming_rule.private_fields_m_prefix.symbols = private_fields
