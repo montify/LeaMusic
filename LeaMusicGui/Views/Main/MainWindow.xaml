@@ -2,13 +2,13 @@
     x:Class="LeaMusicGui.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="clr-namespace:LeaMusicGui.Behaviors"
     xmlns:control="clr-namespace:LeaMusicGui.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:LeaMusicGui"
     xmlns:local1="clr-namespace:LeaMusicGui.Converters"
-    xmlns:behaviors="clr-namespace:LeaMusicGui.Behaviors"
-    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:trackcontrol_="clr-namespace:LeaMusicGui.Controls.TrackControl_"
     Title="{Binding ProjectName}"
@@ -16,9 +16,9 @@
     Height="800"
     MinWidth="1334"
     MinHeight="800"
+    d:DataContext="{d:DesignInstance local:MainViewModel}"
     KeyDown="Window_KeyDown"
-    mc:Ignorable="d"
-     d:DataContext="{d:DesignInstance local:MainViewModel}">
+    mc:Ignorable="d">
 
     <Window.Resources>
         <local1:LoopWidthPercentageConverter x:Key="LoopWidthPercentageConverter" />
@@ -54,7 +54,7 @@
             Grid.Row="1"
             Margin="0,40,0,0"
             VerticalScrollBarVisibility="Auto">
-            
+
             <!--  Waveform CANVAS  -->
             <Grid
                 x:Name="WaveformCanvas"
@@ -62,20 +62,17 @@
                 Background="#424651">
 
                 <!--  WaveForm  -->
-                <ItemsControl Margin="0,30,0,0"  ItemsSource="{Binding Tracks}">
+                <ItemsControl Margin="0,30,0,0" ItemsSource="{Binding Tracks}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
-                    
+
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
-                                <trackcontrol_:TrackControl 
-                                    HeightScaleFactor="{Binding ElementName=HeightMultiSlider, Path=Value}"
-                                    RequestWaveformUpdateCommand="{Binding DataContext.RequestWaveformUpdateCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                                </trackcontrol_:TrackControl>
+                                <trackcontrol_:TrackControl HeightScaleFactor="{Binding ElementName=HeightMultiSlider, Path=Value}" RequestWaveformUpdateCommand="{Binding DataContext.RequestWaveformUpdateCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 <Separator />
                             </StackPanel>
                         </DataTemplate>
@@ -94,21 +91,23 @@
                     IsHitTestVisible="True">
 
                     <i:Interaction.Behaviors>
-                        <behaviors:TimelineInteractionBehavior 
-                            ViewModel="{Binding}"
+                        <behaviors:TimelineInteractionBehavior
+                            IsBeatMarkerMoving="{Binding IsBeatMarkerMoving, Mode=TwoWay}"
+                            IsLoopBeginDragLeftHandle="{Binding IsLoopBeginDragLeftHandle, Mode=TwoWay}"
+                            IsLoopBeginDragRightHandle="{Binding IsLoopBeginDragRightHandle, Mode=TwoWay}"
+                            LoopCommand="{Binding LoopSelectionCommand}"
+                            LoopEndCommand="{Binding LoopSelectionEndCommand}"
                             LoopStartCommand="{Binding LoopSelectionStartCommand}"
-                            LoopEndCommand="{Binding LoopSelectionEndCommand }"
-                            LoopCommand="{Binding LoopSelectionCommand}"/>
+                            MoveBeatMarkerCommand="{Binding MoveBeatMarkerCommand}"
+                            ResetZoomParameterCommand="{Binding ResetZoomParameterCommand}"
+                            ZoomWaveformMouseCommand="{Binding ZoomWaveformMouseCommand}" />
                     </i:Interaction.Behaviors>
 
                     <!--  LOOP  -->
-                    <control:LoopControl
-                        Width="1"
-                        IsHitTestVisible="True">
+                    <control:LoopControl Width="1" IsHitTestVisible="True">
 
                         <i:Interaction.Behaviors>
-                            <behaviors:LoopBehavior 
-                                ViewModel="{Binding}"/>
+                            <behaviors:LoopBehavior ViewModel="{Binding}" />
                         </i:Interaction.Behaviors>
 
                         <control:LoopControl.RenderTransform>
@@ -174,7 +173,7 @@
                                         Visibility="{Binding Visible, Converter={StaticResource BoolToVis}}">
 
                                         <i:Interaction.Behaviors>
-                                            <behaviors:BeatMarkerBehavior ViewModel="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"/>
+                                            <behaviors:BeatMarkerBehavior ViewModel="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
                                         </i:Interaction.Behaviors>
 
                                         <Button.InputBindings>
@@ -231,19 +230,20 @@
             </Grid.RowDefinitions>
 
 
-            <StackPanel >
+            <StackPanel>
                 <Grid HorizontalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Margin="0,0,30,0"
-                      HorizontalAlignment="Center"
-                      FontSize="30"
-                      Foreground="WhiteSmoke"
-                    Text="{Binding CurrentPlayTime, StringFormat='{}{0:0.00} Sec'}" />
                         <TextBlock
-                      HorizontalAlignment="Center"
-                      FontSize="30"
-                      Foreground="WhiteSmoke"
-                    Text="{Binding ProjectBpm, StringFormat=' {0} BPM'}"/>
+                            Margin="0,0,30,0"
+                            HorizontalAlignment="Center"
+                            FontSize="30"
+                            Foreground="WhiteSmoke"
+                            Text="{Binding CurrentPlayTime, StringFormat='{}{0:0.00} Sec'}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="30"
+                            Foreground="WhiteSmoke"
+                            Text="{Binding ProjectBpm, StringFormat=' {0} BPM'}" />
                     </StackPanel>
                 </Grid>
                 <StackPanel
@@ -263,53 +263,62 @@
                             Content="Play"
                             Style="{StaticResource ButtonSuccess}" />
                         <Button
-                             Margin="0,0,50,0"
+                            Margin="0,0,50,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Top"
                             Command="{Binding Path=PauseCommand}"
                             Content="Pause"
                             Style="{StaticResource ButtonDanger}" />
                         <Button
-                             Margin="0,0,50,0"
-                             HorizontalAlignment="Left"
-                             VerticalAlignment="Top"
-                             Command="{Binding Path=JumpToLoopStartCommand}"
-                             Content="LoopStart"
-                             Style="{StaticResource ButtonPrimary}" />
-                        <Button  
-                               Margin="0,0,50,0"
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Top"
-                               Command="{Binding Path=FitLoopToViewCommand}"
-                               Content="Fit Loop" />
+                            Margin="0,0,50,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Command="{Binding Path=JumpToLoopStartCommand}"
+                            Content="LoopStart"
+                            Style="{StaticResource ButtonPrimary}" />
+                        <Button
+                            Margin="0,0,50,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Command="{Binding Path=FitLoopToViewCommand}"
+                            Content="Fit Loop" />
                         <TextBox
-                             Width="40"
-                             VerticalAlignment="Top"
-                             Text="{Binding JumpToPositionInSec}" />
-                        <Button 
+                            Width="40"
+                            VerticalAlignment="Top"
+                            Text="{Binding JumpToPositionInSec}" />
+                        <Button
                             Width="50"
-                             Margin="0,0,50,0"
-                             HorizontalAlignment="Left"
-                             VerticalAlignment="Top"
-                             Command="{Binding Path=JumpToSecCommand}"
-                             Content="Jump" />
+                            Margin="0,0,50,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Command="{Binding Path=JumpToSecCommand}"
+                            Content="Jump" />
                     </StackPanel>
 
                     <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
-                        <TextBlock Foreground="White" HorizontalAlignment="Center" Text="{Binding ElementName=HeightMultiSlider, Path=Value, StringFormat={}{0:0.00}}" />
-                        <Slider   
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="White"
+                            Text="{Binding ElementName=HeightMultiSlider, Path=Value, StringFormat={}{0:0.00}}" />
+                        <Slider
                             x:Name="HeightMultiSlider"
                             Width="120"
                             Margin="100,0,0,0"
                             HorizontalAlignment="Left"
                             Minimum="1"
                             Value="1" />
-                        <TextBlock Foreground="White" HorizontalAlignment="Center" Text="Height Multiplier" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="White"
+                            Text="Height Multiplier" />
                     </StackPanel>
                     <!--  Zoom Slider  -->
 
                     <StackPanel Grid.Row="1" HorizontalAlignment="Center">
-                        <TextBlock Foreground="White" HorizontalAlignment="Center" Text="{Binding Zoom, Mode=TwoWay, StringFormat={}{0:0.00}}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="White"
+                            Text="{Binding Zoom, Mode=TwoWay, StringFormat={}{0:0.00}}" />
                         <Slider
                             Width="120"
                             HorizontalAlignment="Left"
@@ -318,10 +327,16 @@
                             Minimum="1"
                             TickFrequency="0.1"
                             Value="{Binding SliderZoom}" />
-                        <TextBlock Foreground="White" HorizontalAlignment="Center" Text="Zoom" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="White"
+                            Text="Zoom" />
                     </StackPanel>
                     <StackPanel Grid.Row="5" HorizontalAlignment="Center">
-                        <TextBlock Foreground="White" HorizontalAlignment="Center" Text="{Binding Speed, StringFormat={}{0:0.00}}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="White"
+                            Text="{Binding Speed, StringFormat={}{0:0.00}}" />
                         <Slider
                             Width="120"
                             HorizontalAlignment="Left"
@@ -329,10 +344,16 @@
                             SmallChange="1"
                             TickFrequency="0.1"
                             Value="{Binding Speed}" />
-                        <TextBlock Foreground="White"  HorizontalAlignment="Center" Text="Speed" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="White"
+                            Text="Speed" />
                     </StackPanel>
                     <StackPanel Grid.Row="5" HorizontalAlignment="Center">
-                        <TextBlock Foreground="White"  HorizontalAlignment="Center" Text="{Binding Pitch}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="White"
+                            Text="{Binding Pitch}" />
                         <Slider
                             Width="120"
                             HorizontalAlignment="Left"
@@ -340,22 +361,28 @@
                             Minimum="-8"
                             SmallChange="1"
                             Value="{Binding Pitch}" />
-                        <TextBlock Foreground="White" HorizontalAlignment="Center" Text="Pitch" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="White"
+                            Text="Pitch" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel HorizontalAlignment="Center">
                     <ProgressBar
-                         Style="{StaticResource ProgressBarInfo}" 
                         Width="600"
                         Height="18"
                         Margin="0,20,0,0"
+                        Style="{StaticResource ProgressBarInfo}"
                         Value="{Binding Path=ProgressInPercentage}" />
                 </StackPanel>
             </StackPanel>
         </Grid>
 
         <StackPanel Grid.Row="3" VerticalAlignment="Center">
-            <TextBlock HorizontalAlignment="Center" Foreground="White" Text="{Binding StatusMessages}" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                Foreground="White"
+                Text="{Binding StatusMessages}" />
         </StackPanel>
 
     </Grid>

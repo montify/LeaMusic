@@ -2,13 +2,13 @@
 {
     using Point = System.Windows.Point;
 
-    public class LoopDataStartEnd
+    public class MousePositionData
     {
         public Point MousePosition { get; set; }
 
         public double ControlActualWidth { get; set; }
 
-        public LoopDataStartEnd(Point mousePosition, double controlActualWidth)
+        public MousePositionData(Point mousePosition, double controlActualWidth)
         {
             MousePosition = mousePosition;
             ControlActualWidth = controlActualWidth;

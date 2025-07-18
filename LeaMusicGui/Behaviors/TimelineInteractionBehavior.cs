@@ -48,7 +48,7 @@
             var control = sender as FrameworkElement;
 
             Point mousePosition = e.GetPosition(control);
-            var loopData = new LoopDataStartEnd(mousePosition, control.ActualWidth);
+            var loopData = new MousePositionData(mousePosition, control.ActualWidth);
 
             if (m_isZoom)
             {
@@ -57,23 +57,23 @@
                     return;
                 }
 
-                ViewModel.ZoomWaveformMouse(mousePosition, control.ActualWidth);
+                ZoomWaveformMouseCommand?.Execute(new MousePositionData(mousePosition, control.ActualWidth));
             }
 
             // resize loop
-            if (ViewModel.IsLoopBeginDragLeftHandle)
+            if (IsLoopBeginDragLeftHandle)
             {
                 LoopStartCommand?.Execute(loopData);
             }
 
-            if (ViewModel.IsLoopBeginDragRightHandle)
+            if (IsLoopBeginDragRightHandle)
             {
                 LoopEndCommand?.Execute(loopData);
             }
 
-            if (ViewModel.IsMarkerMoving)
+            if (IsBeatMarkerMoving)
             {
-                ViewModel.MoveMarker(Mouse.GetPosition(control), (int)control!.ActualWidth);
+                MoveBeatMarkerCommand?.Execute(loopData);
             }
         }
 
@@ -94,10 +94,9 @@
                 LoopCommand?.Execute(loopData);
             }
 
-            // Loop
-            if (ViewModel.IsLoopBeginDragRightHandle)
+            if (IsLoopBeginDragRightHandle)
             {
-                var loopData = new LoopDataStartEnd(mousePosition, control.ActualWidth);
+                var loopData = new MousePositionData(mousePosition, control.ActualWidth);
             }
         }
 
@@ -112,7 +111,7 @@
 
             if (m_isZoom)
             {
-                ViewModel.ResetZoomParameter();
+                ResetZoomParameterCommand?.Execute(control);
                 m_isZoom = false;
             }
 
@@ -121,20 +120,19 @@
                 Helpers.DraggedElement.ReleaseMouseCapture();
                 Helpers.DraggedElement = null;
 
-                // ReleaseLoopHandle
-                if (ViewModel.IsLoopBeginDragLeftHandle)
+                if (IsLoopBeginDragLeftHandle)
                 {
-                    ViewModel.IsLoopBeginDragLeftHandle = false;
+                    IsLoopBeginDragLeftHandle = false;
                 }
 
-                if (ViewModel.IsLoopBeginDragRightHandle)
+                if (IsLoopBeginDragRightHandle)
                 {
-                    ViewModel.IsLoopBeginDragRightHandle = false;
+                    IsLoopBeginDragRightHandle = false;
                 }
 
-                if (ViewModel.IsMarkerMoving)
+                if (IsBeatMarkerMoving)
                 {
-                    ViewModel.IsMarkerMoving = false;
+                    IsBeatMarkerMoving = false;
                 }
             }
         }
@@ -169,38 +167,92 @@
             set => SetValue(LoopEndCommandProperty, value);
         }
 
+        public ICommand ResetZoomParameterCommand
+        {
+            get => (ICommand)GetValue(ResetZoomParameterCommandProperty);
+            set => SetValue(ResetZoomParameterCommandProperty, value);
+        }
+
+        public ICommand ZoomWaveformMouseCommand
+        {
+            get => (ICommand)GetValue(ZoomWaveformMouseCommandProperty);
+            set => SetValue(ZoomWaveformMouseCommandProperty, value);
+        }
+
+        public ICommand MoveBeatMarkerCommand
+        {
+            get => (ICommand)GetValue(MoveBeatMarkerCommandProperty);
+            set => SetValue(MoveBeatMarkerCommandProperty, value);
+        }
+
+        public bool IsLoopBeginDragLeftHandle
+        {
+            get => (bool)GetValue(IsLoopBeginDragLeftHandleProperty);
+            set => SetValue(IsLoopBeginDragLeftHandleProperty, value);
+        }
+
+        public bool IsLoopBeginDragRightHandle
+        {
+            get => (bool)GetValue(IsLoopBeginDragRightHandleProperty);
+            set => SetValue(IsLoopBeginDragRightHandleProperty, value);
+        }
+
+        public bool IsBeatMarkerMoving
+        {
+            get => (bool)GetValue(IsBeatMarkerMovingProperty);
+            set => SetValue(IsBeatMarkerMovingProperty, value);
+        }
+
+        public static readonly DependencyProperty ResetZoomParameterCommandProperty = DependencyProperty.Register(
+           nameof(ResetZoomParameterCommand),
+           typeof(ICommand),
+           typeof(TimelineInteractionBehavior));
+
         public static readonly DependencyProperty LoopCommandProperty = DependencyProperty.Register(
             nameof(LoopCommand),
             typeof(ICommand),
-            typeof(TimelineInteractionBehavior)
-        );
+            typeof(TimelineInteractionBehavior));
 
         public static readonly DependencyProperty LoopStartCommandProperty =
             DependencyProperty.Register(
                 nameof(LoopStartCommand),
                 typeof(ICommand),
-                typeof(TimelineInteractionBehavior)
-            );
+                typeof(TimelineInteractionBehavior));
 
         public static readonly DependencyProperty LoopEndCommandProperty =
             DependencyProperty.Register(
                 nameof(LoopEndCommand),
                 typeof(ICommand),
-                typeof(TimelineInteractionBehavior)
-            );
+                typeof(TimelineInteractionBehavior));
 
-        // Delete
-        public MainViewModel ViewModel
-        {
-            get { return (MainViewModel)GetValue(ViewModelProperty); }
-            set { SetValue(ViewModelProperty, value); }
-        }
+        public static readonly DependencyProperty ZoomWaveformMouseCommandProperty =
+           DependencyProperty.Register(
+               nameof(ZoomWaveformMouseCommand),
+               typeof(ICommand),
+               typeof(TimelineInteractionBehavior));
 
-        public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register(
-            "ViewModel",
-            typeof(MainViewModel),
-            typeof(TimelineInteractionBehavior),
-            new PropertyMetadata(null)
-        );
+        public static readonly DependencyProperty MoveBeatMarkerCommandProperty =
+          DependencyProperty.Register(
+              nameof(MoveBeatMarkerCommand),
+              typeof(ICommand),
+              typeof(TimelineInteractionBehavior));
+
+        public static readonly DependencyProperty IsLoopBeginDragLeftHandleProperty =
+            DependencyProperty.Register(
+          nameof(IsLoopBeginDragLeftHandle),
+          typeof(bool),
+          typeof(TimelineInteractionBehavior));
+
+        public static readonly DependencyProperty IsLoopBeginDragRightHandleProperty =
+            DependencyProperty.Register(
+          nameof(IsLoopBeginDragRightHandle),
+          typeof(bool),
+          typeof(TimelineInteractionBehavior));
+
+        public static readonly DependencyProperty IsBeatMarkerMovingProperty =
+          DependencyProperty.Register(
+        nameof(IsBeatMarkerMoving),
+        typeof(bool),
+        typeof(TimelineInteractionBehavior));
     }
 }

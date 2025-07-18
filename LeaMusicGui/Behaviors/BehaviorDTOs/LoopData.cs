@@ -1,7 +1,5 @@
 ﻿namespace LeaMusicGui.Behaviors.BehaviorDTOs
 {
-    using Point = System.Windows.Point;
-
     public class LoopData
     {
         public float MousePositionStart { get; set; }

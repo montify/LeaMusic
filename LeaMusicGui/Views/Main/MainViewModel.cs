@@ -67,11 +67,14 @@
         [ObservableProperty]
         private bool isProjectLoading;
 
-        public bool IsLoopBeginDragLeftHandle { get; set; }
+        [ObservableProperty]
+        private bool isLoopBeginDragLeftHandle;
 
-        public bool IsLoopBeginDragRightHandle { get; set; }
+        [ObservableProperty]
+        private bool isLoopBeginDragRightHandle;
 
-        public bool IsMarkerMoving { get; set; }
+        [ObservableProperty]
+        private bool isBeatMarkerMoving;
 
         public ObservableCollection<BeatMarkerViewModel> BeatMarkers { get; set; } =[];
 
@@ -141,10 +144,11 @@
             };
         }
 
-        public void MoveMarker(Point position, int renderWidth)
+        [RelayCommand]
+        public void MoveBeatMarker(MousePositionData mouseData)
         {
-            var p = new System.Drawing.Point((int)position.X, (int)position.Y);
-            m_beatMarkerService.MoveMarker(p, renderWidth);
+            var p = new System.Drawing.Point((int)mouseData.MousePosition.X, (int)mouseData.MousePosition.Y);
+            m_beatMarkerService.MoveMarker(p, (int)mouseData.ControlActualWidth);
 
             UpdateBeatMarkerVM();
         }
@@ -159,26 +163,27 @@
         }
 
         [RelayCommand]
-        public async Task LoopSelectionStart(LoopDataStartEnd loopData)
+        public async Task LoopSelectionStart(MousePositionData mouseData)
         {
-            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(loopData.MousePosition.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)loopData.ControlActualWidth));
+            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(mouseData.MousePosition.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)mouseData.ControlActualWidth));
 
             await m_loopService.SetOrAdjustLoop(startSec, null, RenderWidth);
         }
 
         [RelayCommand]
-        public async Task LoopSelectionEnd(LoopDataStartEnd loopData)
+        public async Task LoopSelectionEnd(MousePositionData mouseData)
         {
-            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(loopData.MousePosition.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)loopData.ControlActualWidth));
+            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(mouseData.MousePosition.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)mouseData.ControlActualWidth));
 
             await m_loopService.SetOrAdjustLoop(null, endSec, RenderWidth);
         }
 
-        public async Task ZoomWaveformMouse(Point p, double width)
+        [RelayCommand]
+        public async Task ZoomWaveformMouse(MousePositionData mouseData)
         {
-            var point = new System.Drawing.Point((int)p.X, (int)p.Y);
+            var point = new System.Drawing.Point((int)mouseData.MousePosition.X, (int)mouseData.MousePosition.Y);
 
-            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformMouse(point, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration, Zoom, width);
+            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformMouse(point, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration, Zoom, mouseData.ControlActualWidth);
 
             Zoom = newZoomFactor;
 
@@ -369,6 +374,7 @@
             UpdateBeatMarkerVM();
         }
 
+        [RelayCommand]
         internal void ResetZoomParameter()
         {
             m_timelineCalculator.ResetZoomParameter();

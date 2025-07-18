@@ -24,7 +24,7 @@
             Helpers.DraggedElement = control;
             Helpers.DraggedElement.CaptureMouse();
 
-            ViewModel.IsMarkerMoving = true;
+            ViewModel.IsBeatMarkerMoving = true;
         }
 
         public MainViewModel ViewModel
