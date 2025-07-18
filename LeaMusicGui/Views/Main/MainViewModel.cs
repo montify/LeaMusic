@@ -154,7 +154,6 @@
             var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
 
             await m_loopService.SetOrAdjustLoop(startSec, endSec, RenderWidth);
-            await UpdateTrackVMAsync(RenderWidth);
         }
 
         public async Task LoopSelectionStart(double startPixel, double renderWidth)
@@ -162,7 +161,6 @@
             var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
 
             await m_loopService.SetOrAdjustLoop(startSec, null, RenderWidth);
-            await UpdateTrackVMAsync(RenderWidth);
         }
 
         public async Task LoopSelectionEnd(double endPixel, double renderWidth)
@@ -170,7 +168,6 @@
             var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
 
             await m_loopService.SetOrAdjustLoop(null, endSec, RenderWidth);
-            await UpdateTrackVMAsync(RenderWidth);
         }
 
         public async Task ZoomWaveformMouse(Point p, double width)
