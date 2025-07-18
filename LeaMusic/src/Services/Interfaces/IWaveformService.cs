@@ -5,9 +5,5 @@
     public interface IWaveformService
     {
         WaveformProvider GenerateFromAudio(Track track);
-
-        byte[] GetWaveformData(WaveformProvider provider);
-
-        WaveformProvider LoadFromData(byte[] data);
     }
 }
