@@ -52,6 +52,7 @@
             services.AddSingleton<IAudioEngine, AudioEngine>();
             services.AddSingleton<IProjectProvider>(sp => (IProjectProvider)sp.GetRequiredService<IAudioEngine>());
             services.AddSingleton<IViewWindowProvider>(sp => (IViewWindowProvider)sp.GetRequiredService<IAudioEngine>());
+            services.AddSingleton<IBeatMarkerService, BeatMarkerService>();
 
             Services = services.BuildServiceProvider();
         }

@@ -7,6 +7,7 @@
     using CommunityToolkit.Mvvm.Input;
     using LeaMusic.src.AudioEngine_;
     using LeaMusic.src.AudioEngine_.Interfaces;
+    using LeaMusic.src.Services;
     using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
     using LeaMusicGui.Controls.TrackControl_;
@@ -71,7 +72,7 @@
 
         public bool IsMarkerMoving { get; set; }
 
-        public ObservableCollection<MarkerDTO> BeatMarkers { get; set; } =[];
+        public ObservableCollection<BeatMarkerViewModel> BeatMarkers { get; set; } =[];
 
         public ObservableCollection<TrackControlViewModel> Tracks { get; set; }
 
@@ -88,15 +89,11 @@
         private readonly ILoopService m_loopService;
         private readonly IDialogService m_dialogService;
         private readonly ITrackVolumeService m_trackSoloMuteService;
-
         private readonly IViewWindowProvider m_viewWindowProvider;
         private readonly IProjectProvider m_projectProvider;
+        private readonly IBeatMarkerService m_beatMarkerService;
 
         private readonly Action<string> m_updateStatus;
-
-        // currentMarkerID is set when the User click on the marker(Command) in the View,
-        // after that OnRightMouseDown() invoke this Method and currentMarkerID is used to find the Marker the User clicked on.
-        private int m_currentMarkerID = 0;
 
         public MainViewModel(
                              IProjectService projectService,
@@ -107,7 +104,8 @@
                              IDialogService dialogService,
                              ITrackVolumeService trackSoloMuteService,
                              IViewWindowProvider viewWindowProvider,
-                             IProjectProvider projectProvider)
+                             IProjectProvider projectProvider,
+                             IBeatMarkerService beatMarkerService)
         {
             m_projectService = projectService;
             m_timelineService = timelineService;
@@ -118,6 +116,7 @@
             m_trackSoloMuteService = trackSoloMuteService;
             m_viewWindowProvider = viewWindowProvider;
             m_projectProvider = projectProvider;
+            m_beatMarkerService = beatMarkerService;
 
             statusMessages = string.Empty;
 
@@ -143,14 +142,10 @@
 
         public void MoveMarker(Point position, int renderWidth)
         {
-            var marker = m_projectProvider.Project.BeatMarkers.Where(marker => marker.ID == m_currentMarkerID).FirstOrDefault();
+            var p = new System.Drawing.Point((int)position.X, (int)position.Y);
+            m_beatMarkerService.MoveMarker(p, renderWidth);
 
-            if (marker != null)
-            {
-                marker.Position = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(position.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, renderWidth));
-            }
-
-            UpdateMarkers();
+            UpdateBeatMarkerVM();
         }
 
         public async Task LoopSelection(double startPixel, double endPixel, double renderWidth)
@@ -193,7 +188,7 @@
             m_audioEngine.ZoomViewWindowRelative(newZoomFactor, zoomStartPosition);
 
             await UpdateWaveformDTOAsync(RenderWidth);
-            CreateMarkerDTO();
+            UpdateBeatMarkerVM();
         }
 
         [RelayCommand]
@@ -226,23 +221,22 @@
             }
 
             await UpdateWaveformDTOAsync(RenderWidth);
-            CreateMarkerDTO();
+            UpdateBeatMarkerVM();
 
             Zoom = zoomFactor;
         }
 
         [RelayCommand]
-        public void MarkerClick(MarkerDTO marker)
+        public void MarkerClick(BeatMarkerViewModel marker)
         {
-            m_currentMarkerID = marker.Marker.ID;
+            m_beatMarkerService.MarkerClick(marker.Id);
         }
 
         [RelayCommand]
-        public void MarkerDelete(MarkerDTO marker)
+        public void MarkerDelete(BeatMarkerViewModel marker)
         {
-            m_projectProvider.Project.DeleteMarker(marker.Marker.ID);
-
-            CreateMarkerDTO();
+            m_beatMarkerService.MarkerDelete(marker.Id);
+            UpdateBeatMarkerVM();
         }
 
         [RelayCommand]
@@ -368,10 +362,10 @@
             await UpdateWaveformDTOAsync(newWidth);
         }
 
-        internal void SetTextMarker()
+        internal void AddBeatMarker()
         {
-            m_audioEngine.AddMarker(m_audioEngine.CurrentPosition, "B");
-            CreateMarkerDTO();
+            m_audioEngine.AddBeatMarker(m_audioEngine.CurrentPosition, "B");
+            UpdateBeatMarkerVM();
         }
 
         internal void ResetZoomParameter()
@@ -405,7 +399,7 @@
             m_audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
 
             await UpdateWaveformDTOAsync(RenderWidth);
-            CreateMarkerDTO();
+            UpdateBeatMarkerVM();
 
             // Prevent when user doubleclick, that WPF register as a mouseclick
             await Task.Delay(100);
@@ -465,49 +459,37 @@
             }
         }
 
-        private void UpdateMarkers()
+        private void UpdateBeatMarkerVM()
         {
-            for (int i = 0; i < BeatMarkers.Count; i++)
+            var newMarkerDtos = m_beatMarkerService.UpdateMarkersVisibility().ToList();
+            var existingViewModels = BeatMarkers.ToDictionary(vm => vm.Id);
+            var viewModelsToRemove = new List<BeatMarkerViewModel>(BeatMarkers);
+
+            foreach (var newDto in newMarkerDtos)
             {
-                if (IsMarkerVisible(BeatMarkers[i]))
+                if (existingViewModels.TryGetValue(newDto.Id, out var existingViewModel))
                 {
-                    BeatMarkers[i].Visible = true;
-                    BeatMarkers[i].PositionRelativeView = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(BeatMarkers[i].Marker.Position, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
+                    existingViewModel.Visible = newDto.Visible;
+                    existingViewModel.PositionRelativeView = newDto.PositionRelativeView;
+
+                    viewModelsToRemove.Remove(existingViewModel);
                 }
                 else
                 {
-                    BeatMarkers[i].Visible = false;
+                    var newViewModel = new BeatMarkerViewModel
+                    {
+                        Id = newDto.Id,
+                        Visible = newDto.Visible,
+                        PositionRelativeView = newDto.PositionRelativeView,
+                    };
+                    BeatMarkers.Add(newViewModel);
                 }
             }
 
-            ProjectBpm = m_audioEngine.CalculateBpm(beatsPerMeasure: 4);
-        }
-
-        // Maybe Create if the Marker Count > WrapperCount?!
-        private void CreateMarkerDTO()
-        {
-            BeatMarkers.Clear();
-            for (int i = 0; i < m_projectProvider.Project.BeatMarkers.Count; i++)
+            foreach (var vm in viewModelsToRemove)
             {
-                var marker = m_projectProvider.Project.BeatMarkers[i];
-
-                var w = new MarkerDTO();
-                w.Marker = marker;
-                w.PositionRelativeView = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(marker.Position, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
-                w.Marker.ID = marker.ID;
-                w.Marker.Description = marker.Description;
-                BeatMarkers.Add(w);
+                BeatMarkers.Remove(vm);
             }
-        }
-
-        private bool IsMarkerVisible(MarkerDTO testMarker)
-        {
-            if (testMarker.Marker.Position < m_viewWindowProvider.ViewStartTime || testMarker.Marker.Position > m_viewWindowProvider.ViewEndTime)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private void AudioEngine_OnProgressChange(TimeSpan positionInSec)
@@ -579,7 +561,7 @@
         private void AudioEngine_OnPlayHeadChange(TimeSpan positionInSeconds)
         {
             PlayheadPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(positionInSeconds, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
-            UpdateMarkers();
+            UpdateBeatMarkerVM();
         }
 
         partial void OnPitchChanged(int value)

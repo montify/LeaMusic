@@ -24,7 +24,7 @@ namespace LeaMusic.src.Services.Interfaces
 
         public void ReloadMixerInputs();
 
-        public void AddMarker(TimeSpan position, string text);
+        public void AddBeatMarker(TimeSpan position, string text);
 
         public void ZoomViewWindow(double zoomFactor, TimeSpan start, TimeSpan end);
 

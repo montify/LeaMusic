@@ -27,7 +27,7 @@
 
             if (e.Key == Key.T)
             {
-                viewModel.SetTextMarker();
+                viewModel.AddBeatMarker();
             }
         }
     }
