@@ -107,7 +107,7 @@
                     <control:LoopControl Width="1" IsHitTestVisible="True">
 
                         <i:Interaction.Behaviors>
-                            <behaviors:LoopBehavior ViewModel="{Binding}" />
+                            <behaviors:LoopBehavior IsLoopBeginDragLeftHandle="{Binding IsLoopBeginDragLeftHandle, Mode=TwoWay}" IsLoopBeginDragRightHandle="{Binding IsLoopBeginDragRightHandle, Mode=TwoWay}" />
                         </i:Interaction.Behaviors>
 
                         <control:LoopControl.RenderTransform>

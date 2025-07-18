@@ -46,12 +46,12 @@
 
             if (IsOnLefEdgeLoop(control))
             {
-                ViewModel.IsLoopBeginDragLeftHandle = true;
+                IsLoopBeginDragLeftHandle = true;
             }
 
             if (IsOnRightEdgeLoop(control))
             {
-                ViewModel.IsLoopBeginDragRightHandle = true;
+                IsLoopBeginDragRightHandle = true;
             }
 
             Helpers.DraggedElement = control;
@@ -102,17 +102,28 @@
             return 1.0;
         }
 
-        public static readonly DependencyProperty ViewModelProperty =
-            DependencyProperty.Register(
-            "ViewModel",
-            typeof(MainViewModel),
-            typeof(LoopBehavior),
-            new PropertyMetadata(null));
-
-        public MainViewModel ViewModel
+        public bool IsLoopBeginDragLeftHandle
         {
-            get { return (MainViewModel)GetValue(ViewModelProperty); }
-            set { SetValue(ViewModelProperty, value); }
+            get => (bool)GetValue(IsLoopBeginDragLeftHandleProperty);
+            set => SetValue(IsLoopBeginDragLeftHandleProperty, value);
         }
+
+        public bool IsLoopBeginDragRightHandle
+        {
+            get => (bool)GetValue(IsLoopBeginDragRightHandleProperty);
+            set => SetValue(IsLoopBeginDragRightHandleProperty, value);
+        }
+
+        public static readonly DependencyProperty IsLoopBeginDragLeftHandleProperty =
+          DependencyProperty.Register(
+        nameof(IsLoopBeginDragLeftHandle),
+        typeof(bool),
+        typeof(LoopBehavior));
+
+        public static readonly DependencyProperty IsLoopBeginDragRightHandleProperty =
+            DependencyProperty.Register(
+          nameof(IsLoopBeginDragRightHandle),
+          typeof(bool),
+          typeof(LoopBehavior));
     }
 }
