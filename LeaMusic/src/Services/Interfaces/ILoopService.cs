@@ -2,7 +2,7 @@
 {
     public interface ILoopService
     {
-        public Task SetOrAdjustLoop(TimeSpan? proposedStart, TimeSpan? proposedEnd, int renderWidth);
+        public Task SetOrAdjustLoop(int startPixel, int endPixel, int renderWidth);
 
     }
 }

@@ -156,26 +156,19 @@
         [RelayCommand]
         public async Task LoopSelection(LoopData loopData)
         {
-            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(loopData.MousePositionStart, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)loopData.ControlActualWidth));
-            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(loopData.MousePositionEnd, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)loopData.ControlActualWidth));
-
-            await m_loopService.SetOrAdjustLoop(startSec, endSec, RenderWidth);
+            await m_loopService.SetOrAdjustLoop((int)loopData.MousePositionStart, (int)loopData.MousePositionEnd, (int)loopData.ControlActualWidth);
         }
 
         [RelayCommand]
         public async Task LoopSelectionStart(MousePositionData mouseData)
         {
-            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(mouseData.MousePosition.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)mouseData.ControlActualWidth));
-
-            await m_loopService.SetOrAdjustLoop(startSec, null, RenderWidth);
+            await m_loopService.SetOrAdjustLoop((int)mouseData.MousePosition.X, 0, RenderWidth);
         }
 
         [RelayCommand]
         public async Task LoopSelectionEnd(MousePositionData mouseData)
         {
-            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(mouseData.MousePosition.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)mouseData.ControlActualWidth));
-
-            await m_loopService.SetOrAdjustLoop(null, endSec, RenderWidth);
+            await m_loopService.SetOrAdjustLoop(0, (int)mouseData.MousePosition.X, (int)mouseData.ControlActualWidth);
         }
 
         [RelayCommand]

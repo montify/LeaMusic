@@ -9,21 +9,32 @@
         private readonly IProjectProvider m_projectProvider;
         private readonly IViewWindowProvider m_viewWindowProvider;
         private readonly IAudioEngine m_audioEngine;
+        private readonly ITimelineCalculator m_timelineCalculator;
 
         public LoopService(
             ISnappingService snappingService,
             IProjectProvider projectProvider,
             IViewWindowProvider viewWindowProvider,
-            IAudioEngine audioEngine)
+            IAudioEngine audioEngine,
+            ITimelineCalculator timelineCalculator)
         {
             m_snappingService = snappingService;
             m_projectProvider = projectProvider;
             m_viewWindowProvider = viewWindowProvider;
             m_audioEngine = audioEngine;
+            m_timelineCalculator = timelineCalculator;
         }
 
-        public async Task SetOrAdjustLoop(TimeSpan? proposedStart, TimeSpan? proposedEnd, int renderWidth)
+        public async Task SetOrAdjustLoop(int startPixel, int endPixel, int renderWidth)
         {
+            TimeSpan? proposedStart = startPixel != 0
+                    ? TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, renderWidth))
+                    : null;
+
+            TimeSpan? proposedEnd = endPixel != 0
+                    ? TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, renderWidth))
+                    : null;
+
             TimeSpan currentLoopStart = proposedStart ?? m_audioEngine.LoopStart;
             TimeSpan currentLoopEnd = proposedEnd ?? m_audioEngine.LoopEnd;
 
@@ -53,7 +64,7 @@
 
             if (!loopAction.shouldSetLoop && !loopAction.shouldJump)
             {
-                return; // Service decided to ignore this input
+                return;
             }
 
             if (loopAction.shouldSetLoop)
@@ -69,7 +80,6 @@
 
         private LoopCommand DetermineLoopAction(TimeSpan startSec, TimeSpan endSec)
         {
-            // Your existing logic from the first LoopSelection method
             if (startSec >= endSec || endSec - startSec <= TimeSpan.Zero)
             {
                 return new LoopCommand(TimeSpan.Zero, TimeSpan.Zero, startSec, shouldSetLoop: true, shouldJump: true);
