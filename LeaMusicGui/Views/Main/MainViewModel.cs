@@ -154,7 +154,7 @@
             var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
 
             await m_loopService.SetOrAdjustLoop(startSec, endSec, RenderWidth);
-            await UpdateWaveformDTOAsync(RenderWidth);
+            await UpdateTrackVMAsync(RenderWidth);
         }
 
         public async Task LoopSelectionStart(double startPixel, double renderWidth)
@@ -162,7 +162,7 @@
             var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
 
             await m_loopService.SetOrAdjustLoop(startSec, null, RenderWidth);
-            await UpdateWaveformDTOAsync(RenderWidth);
+            await UpdateTrackVMAsync(RenderWidth);
         }
 
         public async Task LoopSelectionEnd(double endPixel, double renderWidth)
@@ -170,7 +170,7 @@
             var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
 
             await m_loopService.SetOrAdjustLoop(null, endSec, RenderWidth);
-            await UpdateWaveformDTOAsync(RenderWidth);
+            await UpdateTrackVMAsync(RenderWidth);
         }
 
         public async Task ZoomWaveformMouse(Point p, double width)
@@ -187,7 +187,7 @@
 
             m_audioEngine.ZoomViewWindowRelative(newZoomFactor, zoomStartPosition);
 
-            await UpdateWaveformDTOAsync(RenderWidth);
+            await UpdateTrackVMAsync(RenderWidth);
             UpdateBeatMarkerVM();
         }
 
@@ -198,7 +198,7 @@
 
             m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
 
-            await UpdateWaveformDTOAsync(RenderWidth);
+            await UpdateTrackVMAsync(RenderWidth);
         }
 
         [RelayCommand]
@@ -220,7 +220,7 @@
                 trackDTOList.Add(m_timelineService.RequestSample(i, RenderWidth, paddedStart, paddedEnd));
             }
 
-            await UpdateWaveformDTOAsync(RenderWidth);
+            await UpdateTrackVMAsync(RenderWidth);
             UpdateBeatMarkerVM();
 
             Zoom = zoomFactor;
@@ -298,7 +298,7 @@
                 }
 
                 Project.SetTempo(Speed);
-                await UpdateWaveformDTOAsync(RenderWidth);
+                await UpdateTrackVMAsync(RenderWidth);
 
                 // Check if audioengine is playing while addTrack, when true continue playing
                 m_audioEngine.MountProject(Project);
@@ -359,7 +359,7 @@
         public async Task RequestWaveformUpdate(double newWidth)
         {
             RenderWidth = (int)newWidth;
-            await UpdateWaveformDTOAsync(newWidth);
+            await UpdateTrackVMAsync(newWidth);
         }
 
         internal void AddBeatMarker()
@@ -398,7 +398,7 @@
             m_audioEngine.MountProject(Project);
             m_audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
 
-            await UpdateWaveformDTOAsync(RenderWidth);
+            await UpdateTrackVMAsync(RenderWidth);
             UpdateBeatMarkerVM();
 
             // Prevent when user doubleclick, that WPF register as a mouseclick
@@ -415,7 +415,7 @@
 
             m_trackSoloMuteService.MuteTrack(trackViewModel.TrackId);
 
-            _ = UpdateWaveformDTOAsync(RenderWidth);
+            _ = UpdateTrackVMAsync(RenderWidth);
         }
 
         private void OnSoloRequest(TrackControlViewModel trackViewModel)
@@ -428,7 +428,7 @@
 
             m_trackSoloMuteService.SoloTrack(trackViewModel.TrackId);
 
-            _ = UpdateWaveformDTOAsync(RenderWidth);
+            _ = UpdateTrackVMAsync(RenderWidth);
         }
 
         private void OnVolumeChange(TrackControlViewModel trackViewModel, float volume)
@@ -441,7 +441,7 @@
 
             m_trackSoloMuteService.SetTrackVolume(trackViewModel.TrackId, volume);
 
-            _ = UpdateWaveformDTOAsync(RenderWidth);
+            _ = UpdateTrackVMAsync(RenderWidth);
         }
 
         private void OnDeleteTrackRequested(TrackControlViewModel trackViewModel)
@@ -503,11 +503,11 @@
             if (m_audioEngine.CurrentPosition >= m_viewWindowProvider.ViewEndTime)
             {
                 m_audioEngine.ZoomViewWindow(Zoom, m_audioEngine.CurrentPosition + m_viewWindowProvider.HalfViewWindow);
-                _ = UpdateWaveformDTOAsync(RenderWidth);
+                _ = UpdateTrackVMAsync(RenderWidth);
             }
         }
 
-        private async Task UpdateWaveformDTOAsync(double newWidth)
+        private async Task UpdateTrackVMAsync(double newWidth)
         {
             var projectTracks = m_projectProvider.Project.Tracks;
 
@@ -579,7 +579,7 @@
         {
             m_audioEngine.ScrollWaveForm(value);
 
-            _ = UpdateWaveformDTOAsync(RenderWidth);
+            _ = UpdateTrackVMAsync(RenderWidth);
         }
 
         partial void OnSpeedChanged(double value)
@@ -594,7 +594,7 @@
             if (value != -1)
             {
                 m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
-                _ = UpdateWaveformDTOAsync(RenderWidth);
+                _ = UpdateTrackVMAsync(RenderWidth);
             }
         }
     }
