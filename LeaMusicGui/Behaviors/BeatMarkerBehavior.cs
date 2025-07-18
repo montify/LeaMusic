@@ -24,20 +24,19 @@
             Helpers.DraggedElement = control;
             Helpers.DraggedElement.CaptureMouse();
 
-            ViewModel.IsBeatMarkerMoving = true;
+            IsBeatMarkerMoving = true;
         }
 
-        public MainViewModel ViewModel
+        public bool IsBeatMarkerMoving
         {
-            get { return (MainViewModel)GetValue(ViewModelProperty); }
-            set { SetValue(ViewModelProperty, value); }
+            get => (bool)GetValue(IsBeatMarkerMovingProperty);
+            set => SetValue(IsBeatMarkerMovingProperty, value);
         }
 
-        public static readonly DependencyProperty ViewModelProperty =
-           DependencyProperty.Register(
-           "ViewModel",
-           typeof(MainViewModel),
-           typeof(BeatMarkerBehavior),
-           new PropertyMetadata(null));
+        public static readonly DependencyProperty IsBeatMarkerMovingProperty =
+            DependencyProperty.Register(
+            nameof(IsBeatMarkerMoving),
+            typeof(bool),
+            typeof(BeatMarkerBehavior));
     }
 }

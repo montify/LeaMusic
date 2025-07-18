@@ -173,7 +173,7 @@
                                         Visibility="{Binding Visible, Converter={StaticResource BoolToVis}}">
 
                                         <i:Interaction.Behaviors>
-                                            <behaviors:BeatMarkerBehavior ViewModel="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" />
+                                            <behaviors:BeatMarkerBehavior IsBeatMarkerMoving="{Binding DataContext.IsBeatMarkerMoving, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" />
                                         </i:Interaction.Behaviors>
 
                                         <Button.InputBindings>
