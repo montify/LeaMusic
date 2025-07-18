@@ -163,7 +163,7 @@
                                         Canvas.Top="0"
                                         Margin="1,0,0,0"
                                         Background="DarkRed"
-                                        Content="{Binding Marker.Description}"
+                                        Content="{Binding Description}"
                                         Foreground="White"
                                         RenderTransformOrigin="0.5,0"
                                         Visibility="{Binding Visible, Converter={StaticResource BoolToVis}}">

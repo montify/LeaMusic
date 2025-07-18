@@ -468,7 +468,7 @@
                 {
                     existingViewModel.Visible = newDto.Visible;
                     existingViewModel.PositionRelativeView = newDto.PositionRelativeView;
-
+                    existingViewModel.Description = newDto.Description;
                     viewModelsToRemove.Remove(existingViewModel);
                 }
                 else
@@ -478,6 +478,7 @@
                         Id = newDto.Id,
                         Visible = newDto.Visible,
                         PositionRelativeView = newDto.PositionRelativeView,
+                        Description = newDto.Description,
                     };
                     BeatMarkers.Add(newViewModel);
                 }

@@ -11,6 +11,10 @@
         private double positionRelativeView;
 
         [ObservableProperty]
+        private string description;
+
+        [ObservableProperty]
         private bool visible = true;
+
     }
 }
