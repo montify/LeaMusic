@@ -347,21 +347,6 @@
         }
 
         [RelayCommand]
-        public void ShowGdriveExplorer()
-        {
-            var projectName = m_dialogService.ShowGDriveExplorer();
-
-            // var gdriveLocation = new GDriveLocation("LeaRoot", projectName, projectName);
-
-            // var gDriveHandler = new GoogleDriveHandler("LeaRoot", null);
-
-            // var project = await m_resourceManager.LoadProject(gdriveLocation, gDriveHandler);
-
-            // TODO: Implement to load from google Drive from Explorer
-            throw new NotImplementedException();
-        }
-
-        [RelayCommand]
         public async Task RequestWaveformUpdate(double newWidth)
         {
             RenderWidth = (int)newWidth;

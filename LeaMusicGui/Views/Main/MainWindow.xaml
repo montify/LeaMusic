@@ -44,7 +44,6 @@
                     <MenuItem Command="{Binding SaveProjectFileCommand}" Header="_Save Project" />
                     <MenuItem Command="{Binding AddTrackCommand}" Header="_Add Track" />
                     <Separator />
-                    <MenuItem Command="{Binding ShowGdriveExplorerCommand}" Header="_GDrive" />
                     <MenuItem Header="_Exit" />
                 </MenuItem>
             </Menu>
