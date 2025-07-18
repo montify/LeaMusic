@@ -10,6 +10,7 @@
     using LeaMusic.src.Services;
     using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
+    using LeaMusicGui.Behaviors.BehaviorDTOs;
     using LeaMusicGui.Controls.TrackControl_;
     using Point = System.Windows.Point;
 
@@ -148,24 +149,27 @@
             UpdateBeatMarkerVM();
         }
 
-        public async Task LoopSelection(double startPixel, double endPixel, double renderWidth)
+        [RelayCommand]
+        public async Task LoopSelection(LoopData loopData)
         {
-            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
-            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
+            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(loopData.MousePositionStart, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)loopData.ControlActualWidth));
+            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(loopData.MousePositionEnd, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)loopData.ControlActualWidth));
 
             await m_loopService.SetOrAdjustLoop(startSec, endSec, RenderWidth);
         }
 
-        public async Task LoopSelectionStart(double startPixel, double renderWidth)
+        [RelayCommand]
+        public async Task LoopSelectionStart(LoopDataStartEnd loopData)
         {
-            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
+            var startSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(loopData.MousePosition.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)loopData.ControlActualWidth));
 
             await m_loopService.SetOrAdjustLoop(startSec, null, RenderWidth);
         }
 
-        public async Task LoopSelectionEnd(double endPixel, double renderWidth)
+        [RelayCommand]
+        public async Task LoopSelectionEnd(LoopDataStartEnd loopData)
         {
-            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)renderWidth));
+            var endSec = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(loopData.MousePosition.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)loopData.ControlActualWidth));
 
             await m_loopService.SetOrAdjustLoop(null, endSec, RenderWidth);
         }

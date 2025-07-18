@@ -94,7 +94,11 @@
                     IsHitTestVisible="True">
 
                     <i:Interaction.Behaviors>
-                        <behaviors:TimelineInteractionBehavior ViewModel="{Binding}" />
+                        <behaviors:TimelineInteractionBehavior 
+                            ViewModel="{Binding}"
+                            LoopStartCommand="{Binding LoopSelectionStartCommand}"
+                            LoopEndCommand="{Binding LoopSelectionEndCommand }"
+                            LoopCommand="{Binding LoopSelectionCommand}"/>
                     </i:Interaction.Behaviors>
 
                     <!--  LOOP  -->
@@ -103,7 +107,8 @@
                         IsHitTestVisible="True">
 
                         <i:Interaction.Behaviors>
-                            <behaviors:LoopBehavior ViewModel="{Binding}"/>
+                            <behaviors:LoopBehavior 
+                                ViewModel="{Binding}"/>
                         </i:Interaction.Behaviors>
 
                         <control:LoopControl.RenderTransform>

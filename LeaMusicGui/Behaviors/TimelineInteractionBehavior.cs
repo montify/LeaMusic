@@ -2,6 +2,7 @@
 {
     using System.Windows;
     using System.Windows.Input;
+    using LeaMusicGui.Behaviors.BehaviorDTOs;
     using Microsoft.Xaml.Behaviors;
     using Point = System.Windows.Point;
 
@@ -13,7 +14,7 @@
 
     public class TimelineInteractionBehavior : Behavior<FrameworkElement>
     {
-        private SelectionRange m_selectionRange = new ();
+        private SelectionRange m_selectionRange = new();
 
         private bool m_isZoom;
 
@@ -33,18 +34,21 @@
             var childControl = sender as FrameworkElement;
             if (childControl != null)
             {
-                 Point mousePosition = e.GetPosition(childControl);
+                Point mousePosition = e.GetPosition(childControl);
 
-                 if (mousePosition.Y > 30)
-                 {
+                if (mousePosition.Y > 30)
+                {
                     m_isZoom = true;
-                 }
+                }
             }
         }
 
         private void OnMouseMove(object sender, MouseEventArgs e)
         {
             var control = sender as FrameworkElement;
+
+            Point mousePosition = e.GetPosition(control);
+            var loopData = new LoopDataStartEnd(mousePosition, control.ActualWidth);
 
             if (m_isZoom)
             {
@@ -53,19 +57,18 @@
                     return;
                 }
 
-                Point mousePosition = e.GetPosition(control);
                 ViewModel.ZoomWaveformMouse(mousePosition, control.ActualWidth);
             }
 
             // resize loop
             if (ViewModel.IsLoopBeginDragLeftHandle)
             {
-                ViewModel.LoopSelectionStart(Mouse.GetPosition(control).X, control!.ActualWidth);
+                LoopStartCommand?.Execute(loopData);
             }
 
             if (ViewModel.IsLoopBeginDragRightHandle)
             {
-                ViewModel.LoopSelectionEnd(Mouse.GetPosition(control).X, control!.ActualWidth);
+                LoopEndCommand?.Execute(loopData);
             }
 
             if (ViewModel.IsMarkerMoving)
@@ -76,20 +79,25 @@
 
         private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            var childControl = sender as FrameworkElement;
-            if (childControl != null)
+            var control = sender as FrameworkElement;
+            Point mousePosition = e.GetPosition(control);
+
+            if (control != null)
             {
-               Point mousePosition = e.GetPosition(childControl);
+                m_selectionRange.End = (float)mousePosition.X;
 
-               m_selectionRange.End = (float)mousePosition.X;
-
-               ViewModel.LoopSelection(m_selectionRange.Start, m_selectionRange.End, childControl.ActualWidth);
+                var loopData = new LoopData(
+                    m_selectionRange.Start,
+                    m_selectionRange.End,
+                    control.ActualWidth
+                );
+                LoopCommand?.Execute(loopData);
             }
 
             // Loop
             if (ViewModel.IsLoopBeginDragRightHandle)
             {
-                ViewModel.LoopSelectionEnd(Mouse.GetPosition(childControl).X, childControl.ActualWidth);
+                var loopData = new LoopDataStartEnd(mousePosition, control.ActualWidth);
             }
         }
 
@@ -143,17 +151,56 @@
             }
         }
 
+        public ICommand LoopCommand
+        {
+            get => (ICommand)GetValue(LoopCommandProperty);
+            set => SetValue(LoopCommandProperty, value);
+        }
+
+        public ICommand LoopStartCommand
+        {
+            get => (ICommand)GetValue(LoopStartCommandProperty);
+            set => SetValue(LoopStartCommandProperty, value);
+        }
+
+        public ICommand LoopEndCommand
+        {
+            get => (ICommand)GetValue(LoopEndCommandProperty);
+            set => SetValue(LoopEndCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty LoopCommandProperty = DependencyProperty.Register(
+            nameof(LoopCommand),
+            typeof(ICommand),
+            typeof(TimelineInteractionBehavior)
+        );
+
+        public static readonly DependencyProperty LoopStartCommandProperty =
+            DependencyProperty.Register(
+                nameof(LoopStartCommand),
+                typeof(ICommand),
+                typeof(TimelineInteractionBehavior)
+            );
+
+        public static readonly DependencyProperty LoopEndCommandProperty =
+            DependencyProperty.Register(
+                nameof(LoopEndCommand),
+                typeof(ICommand),
+                typeof(TimelineInteractionBehavior)
+            );
+
+        // Delete
         public MainViewModel ViewModel
         {
             get { return (MainViewModel)GetValue(ViewModelProperty); }
             set { SetValue(ViewModelProperty, value); }
         }
 
-        public static readonly DependencyProperty ViewModelProperty =
-            DependencyProperty.Register(
+        public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register(
             "ViewModel",
             typeof(MainViewModel),
             typeof(TimelineInteractionBehavior),
-            new PropertyMetadata(null));
+            new PropertyMetadata(null)
+        );
     }
 }
