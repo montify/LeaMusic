@@ -213,12 +213,6 @@
 
             m_audioEngine.ZoomViewWindow(zoomFactor, paddedStart, paddedEnd);
 
-            var trackDTOList = new List<Memory<float>>();
-            for (int i = 0; i < Project.Tracks.Count; i++)
-            {
-                trackDTOList.Add(m_timelineService.RequestSample(i, RenderWidth, paddedStart, paddedEnd));
-            }
-
             await UpdateTrackVMAsync(RenderWidth);
             UpdateBeatMarkerVM();
 
@@ -444,6 +438,21 @@
             }
         }
 
+        private void AudioEngine_OnProgressChange(TimeSpan positionInSec)
+        {
+            TotalProjectDuration = Project.Duration.TotalSeconds;
+            CurrentPlayTime = positionInSec.TotalSeconds;
+
+            ProgressInPercentage = (m_audioEngine.CurrentPosition.TotalSeconds / m_audioEngine.TotalDuration.TotalSeconds) * 100;
+
+            // scroll view when Playhead reach the end of the view
+            if (m_audioEngine.CurrentPosition >= m_viewWindowProvider.ViewEndTime)
+            {
+                m_audioEngine.ZoomViewWindow(Zoom, m_audioEngine.CurrentPosition + m_viewWindowProvider.HalfViewWindow);
+                _ = UpdateTrackVMAsync(RenderWidth);
+            }
+        }
+
         private void UpdateBeatMarkerVM()
         {
             var newMarkerDtos = m_beatMarkerService.UpdateMarkersVisibility().ToList();
@@ -475,21 +484,6 @@
             foreach (var vm in viewModelsToRemove)
             {
                 BeatMarkers.Remove(vm);
-            }
-        }
-
-        private void AudioEngine_OnProgressChange(TimeSpan positionInSec)
-        {
-            TotalProjectDuration = Project.Duration.TotalSeconds;
-            CurrentPlayTime = positionInSec.TotalSeconds;
-
-            ProgressInPercentage = (m_audioEngine.CurrentPosition.TotalSeconds / m_audioEngine.TotalDuration.TotalSeconds) * 100;
-
-            // scroll view when Playhead reach the end of the view
-            if (m_audioEngine.CurrentPosition >= m_viewWindowProvider.ViewEndTime)
-            {
-                m_audioEngine.ZoomViewWindow(Zoom, m_audioEngine.CurrentPosition + m_viewWindowProvider.HalfViewWindow);
-                _ = UpdateTrackVMAsync(RenderWidth);
             }
         }
 
