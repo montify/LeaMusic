@@ -99,6 +99,7 @@
 
         private readonly Action<string> m_updateStatus;
 
+        // TODO: Prevent unnecessary waveform reloads in UpdateTrackVM when only properties (e.g. volume, Buttons) change.
         public MainViewModel(
                              IProjectService projectService,
                              ITimelineService timelineService,
@@ -132,7 +133,7 @@
 
             audioEngine.MountProject(Project);
 
-            audioEngine.OnUpdate += AudioEngine_OnPlayHeadChange;
+            audioEngine.OnUpdate += AudioEngine_OnUpdate;
             audioEngine.OnProgressChange += AudioEngine_OnProgressChange;
             audioEngine.OnLoopChange += AudioEngine_OnLoopChange;
 
@@ -198,6 +199,7 @@
             m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
 
             await UpdateTrackVMAsync(RenderWidth);
+            UpdateBeatMarkerVM();
         }
 
         [RelayCommand]
@@ -538,7 +540,7 @@
             SelectionEndPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(endSec, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
         }
 
-        private void AudioEngine_OnPlayHeadChange(TimeSpan positionInSeconds)
+        private void AudioEngine_OnUpdate(TimeSpan positionInSeconds)
         {
             PlayheadPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(positionInSeconds, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
             UpdateBeatMarkerVM();
