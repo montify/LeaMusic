@@ -10,7 +10,8 @@
     xmlns:local="clr-namespace:LeaMusicGui"
     xmlns:local1="clr-namespace:LeaMusicGui.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:trackcontrol_="clr-namespace:LeaMusicGui.Controls.TrackControl_"
+    xmlns:trackcontrol_="clr-namespace:LeaMusicGui.Controls.TrackControl_" 
+    xmlns:timecontrol="clr-namespace:LeaMusicGui.Controls.TimeControl"
     Title="{Binding ProjectName}"
     Width="1334"
     Height="800"
@@ -30,7 +31,7 @@
     <Grid Background="#424651">
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
-
+            <RowDefinition Height="30" />
             <RowDefinition Height="*" />
             <RowDefinition Height="150" />
             <RowDefinition Height="30" />
@@ -49,9 +50,18 @@
             </Menu>
 
         </DockPanel>
+        
+        <!-- RULER -->
+        <timecontrol:TimeControl Grid.Row="1"
+                              Margin="100,0,0,0"
+                              Height="30"
+                              ViewModel="{Binding TimeControlViewModel}"
+                              Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}">
+            </timecontrol:TimeControl>
+        
         <ScrollViewer
-            Grid.Row="1"
-            Margin="0,40,0,0"
+            Grid.Row="2"
+            Margin="0,0,0,0"
             VerticalScrollBarVisibility="Auto">
 
             <!--  Waveform CANVAS  -->
@@ -61,7 +71,7 @@
                 Background="#424651">
 
                 <!--  WaveForm  -->
-                <ItemsControl Margin="0,30,0,0" ItemsSource="{Binding Tracks}">
+                <ItemsControl Margin="0,0,0,0" ItemsSource="{Binding Tracks}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel />
@@ -221,7 +231,7 @@
         </ScrollViewer>
 
 
-        <Grid Grid.Row="2" Background="#424341">
+        <Grid Grid.Row="3" Background="#424341">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -377,7 +387,7 @@
             </StackPanel>
         </Grid>
 
-        <StackPanel Grid.Row="3" VerticalAlignment="Center">
+        <StackPanel Grid.Row="4" VerticalAlignment="Center">
             <TextBlock
                 HorizontalAlignment="Center"
                 Foreground="White"

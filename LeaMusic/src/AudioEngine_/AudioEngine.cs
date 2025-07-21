@@ -34,6 +34,8 @@
 
         public TimeSpan HalfViewWindow { get; private set; }
 
+        public double Zoom => m_zoom;
+
         // private MixingSampleProvider m_mixer;
         private readonly IMixer m_mixer;
 

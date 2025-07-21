@@ -9,5 +9,9 @@
         public TimeSpan ViewDuration { get; }
 
         public TimeSpan HalfViewWindow { get; }
+
+        public TimeSpan TotalDuration { get; }
+
+        public double Zoom { get; }
     }
 }

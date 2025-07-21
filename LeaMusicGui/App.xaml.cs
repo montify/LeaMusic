@@ -12,6 +12,7 @@
     using LeaMusicGui.Controls.TrackControl_;
     using LeaMusicGui.Views.DialogServices;
     using Microsoft.Extensions.DependencyInjection;
+    using LeaMusicGui.Controls.TimeControl;
 
     /// <summary>
     /// Interaction logic for App.xaml.
@@ -25,6 +26,7 @@
             var services = new ServiceCollection();
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<LoadProjectViewModel>();
+            services.AddSingleton<TimeControlViewModel>();
             services.AddTransient<TrackControlViewModel>();
 
             services.AddSingleton<IGoogleContext, GoogleContext>();
@@ -53,7 +55,7 @@
             services.AddSingleton<IProjectProvider>(sp => (IProjectProvider)sp.GetRequiredService<IAudioEngine>());
             services.AddSingleton<IViewWindowProvider>(sp => (IViewWindowProvider)sp.GetRequiredService<IAudioEngine>());
             services.AddSingleton<IBeatMarkerService, BeatMarkerService>();
-
+         
             Services = services.BuildServiceProvider();
         }
 

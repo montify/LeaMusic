@@ -11,6 +11,7 @@
     using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
     using LeaMusicGui.Behaviors.BehaviorDTOs;
+    using LeaMusicGui.Controls.TimeControl;
     using LeaMusicGui.Controls.TrackControl_;
     using Point = System.Windows.Point;
 
@@ -59,7 +60,7 @@
         private double currentPlayTime;
 
         [ObservableProperty]
-        private double totalProjectDuration;
+        private TimeSpan totalProjectDuration;
 
         [ObservableProperty]
         private int projectBpm;
@@ -75,6 +76,10 @@
 
         [ObservableProperty]
         private bool isBeatMarkerMoving;
+
+
+        [ObservableProperty]
+        private TimeControlViewModel timeControlViewModel;
 
         public ObservableCollection<BeatMarkerViewModel> BeatMarkers { get; set; } =[];
 
@@ -110,7 +115,8 @@
                              ITrackVolumeService trackSoloMuteService,
                              IViewWindowProvider viewWindowProvider,
                              IProjectProvider projectProvider,
-                             IBeatMarkerService beatMarkerService)
+                             IBeatMarkerService beatMarkerService,
+                             TimeControlViewModel timeControlVM)
         {
             m_projectService = projectService;
             m_timelineService = timelineService;
@@ -124,6 +130,8 @@
             m_beatMarkerService = beatMarkerService;
 
             statusMessages = string.Empty;
+
+            TimeControlViewModel = timeControlVM;
 
             Tracks = new ObservableCollection<TrackControlViewModel>();
 
@@ -378,7 +386,7 @@
 
             m_audioEngine.MountProject(Project);
             m_audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(0));
-
+            TotalProjectDuration = Project.Duration;
             await UpdateTrackVMAsync(RenderWidth);
             UpdateBeatMarkerVM();
 
@@ -442,7 +450,7 @@
 
         private void AudioEngine_OnProgressChange(TimeSpan positionInSec)
         {
-            TotalProjectDuration = Project.Duration.TotalSeconds;
+            //TotalProjectDuration = Project.Duration.TotalSeconds;
             CurrentPlayTime = positionInSec.TotalSeconds;
 
             ProgressInPercentage = (m_audioEngine.CurrentPosition.TotalSeconds / m_audioEngine.TotalDuration.TotalSeconds) * 100;
@@ -542,6 +550,11 @@
 
         private void AudioEngine_OnUpdate(TimeSpan positionInSeconds)
         {
+            //TimeControlViewModel.ViewStart = m_viewWindowProvider.ViewStartTime;
+            //TimeControlViewModel.ViewEnd = m_viewWindowProvider.ViewEndTime;
+            //TimeControlViewModel.TotalSeconds = m_viewWindowProvider.TotalDuration;
+
+
             PlayheadPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(positionInSeconds, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
             UpdateBeatMarkerVM();
         }
