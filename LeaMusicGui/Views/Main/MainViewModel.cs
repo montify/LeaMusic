@@ -199,12 +199,18 @@
             UpdateBeatMarkerVM();
         }
 
-        [RelayCommand]
-        public async Task ZoomFromSlider(double value)
+       
+        private async Task ZoomFromSlider(double value)
         {
-            Zoom = value;
+            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformSlider(value, RenderWidth);
 
-            m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
+            Zoom = newZoomFactor;
+
+            // Note: use lowerCase sliderZoom to avoid Trigger OnSliderZoomChange()
+            sliderZoom = newZoomFactor;
+            OnPropertyChanged(nameof(SliderZoom));
+
+            m_audioEngine.ZoomViewWindowRelative(newZoomFactor, zoomStartPosition);
 
             await UpdateTrackVMAsync(RenderWidth);
             UpdateBeatMarkerVM();
@@ -585,12 +591,12 @@
         partial void OnSliderZoomChanged(double value)
         {
             Zoom = value;
-
-            if (value != -1)
-            {
-                m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
-                _ = UpdateTrackVMAsync(RenderWidth);
-            }
+            ZoomFromSlider(Zoom);
+            //if (value != -1)
+            //{
+            //    m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
+            //    _ = UpdateTrackVMAsync(RenderWidth);
+            //}
         }
     }
 }

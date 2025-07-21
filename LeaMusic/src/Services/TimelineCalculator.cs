@@ -1,13 +1,26 @@
 ﻿namespace LeaMusic.Src.Services
 {
+    using LeaMusic.src.AudioEngine_.Interfaces;
     using LeaMusic.src.Services.Interfaces;
     using Point = System.Drawing.Point;
 
     public class TimelineCalculator : ITimelineCalculator
     {
+        private readonly IAudioEngine m_audioEngine;
+        private readonly IViewWindowProvider m_viewWindowProvider;
+
         private TimeSpan m_zoomMouseStartPosition;
         private double m_zoomStartMouseY;
         private bool m_zoomStartPositionSetOnce;
+
+
+        public TimelineCalculator(
+            IAudioEngine audioEngine,
+            IViewWindowProvider viewWindowProvider)
+        {
+            m_audioEngine = audioEngine;
+            m_viewWindowProvider = viewWindowProvider;
+        }
 
         public (double newZoomFactor, TimeSpan zoomStartPosition) ZoomWaveformMouse(Point p,  TimeSpan viewStartTime, TimeSpan viewDuration, double zoom, double width)
         {
@@ -36,6 +49,37 @@
             return (newZoomFactor, m_zoomMouseStartPosition);
         }
 
+        public (double newZoomFactor, TimeSpan zoomStartPosition) ZoomWaveformSlider(double zoom, double width)
+        {
+            var pa = ConvertSecondToPixel(m_audioEngine.CurrentPosition.TotalSeconds, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)width);
+
+            Point p = new Point((int)pa, 0);
+
+            if (!m_zoomStartPositionSetOnce)
+            {
+                m_zoomMouseStartPosition = TimeSpan.FromSeconds(ConvertPixelToSecond(p.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, (int)width));
+                m_zoomStartPositionSetOnce = true;
+                m_zoomStartMouseY = p.Y;
+            }
+
+            double zoomSensitivity = AppConstants.ZoomSensitivity;
+            double maxZoom = AppConstants.MaxZoom;
+            double minZoom = AppConstants.MinZoom;
+            double zoomRange = maxZoom - minZoom;
+
+           // var delta = p.Y - m_zoomStartMouseY;
+            double relativeScale = 1 + (zoom * zoomSensitivity);
+
+            // Avoid crazy Zoom :D
+            relativeScale = Math.Clamp(relativeScale, 0.5, 2.0);
+
+            double newZoomFactor = zoom * relativeScale;
+
+            newZoomFactor = Math.Clamp(newZoomFactor, minZoom, maxZoom);
+
+            return (newZoomFactor, m_zoomMouseStartPosition);
+        }
+
         public void ResetZoomParameter()
         {
             m_zoomStartPositionSetOnce = false;
@@ -48,6 +92,16 @@
 
             return timeInSeconds;
         }
+
+        public double ConvertSecondToPixel(double timeInSeconds, double viewStartTimeSec, double viewDurationSec, int renderWidth)
+        {
+            double timeOffset = timeInSeconds - viewStartTimeSec;
+            double timePercentage = timeOffset / viewDurationSec;
+            double pixelPos = timePercentage * renderWidth;
+
+            return pixelPos;
+        }
+
 
         public double CalculateSecRelativeToViewWindowPercentage(TimeSpan positionSec, TimeSpan viewStartTimeSec, TimeSpan viewDurationSec)
         {
