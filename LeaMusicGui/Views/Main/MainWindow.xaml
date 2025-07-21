@@ -10,8 +10,8 @@
     xmlns:local="clr-namespace:LeaMusicGui"
     xmlns:local1="clr-namespace:LeaMusicGui.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:trackcontrol_="clr-namespace:LeaMusicGui.Controls.TrackControl_" 
     xmlns:timecontrol="clr-namespace:LeaMusicGui.Controls.TimeControl"
+    xmlns:trackcontrol_="clr-namespace:LeaMusicGui.Controls.TrackControl_"
     Title="{Binding ProjectName}"
     Width="1334"
     Height="800"
@@ -50,15 +50,15 @@
             </Menu>
 
         </DockPanel>
-        
-        <!-- RULER -->
-        <timecontrol:TimeControl Grid.Row="1"
-                              Margin="100,0,0,0"
-                              Height="30"
-                              ViewModel="{Binding TimeControlViewModel}"
-                              Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}">
-            </timecontrol:TimeControl>
-        
+
+        <!--  RULER  -->
+        <timecontrol:TimeControl
+            Grid.Row="1"
+            Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}"
+            Height="30"
+            Margin="100,0,0,0"
+            ViewModel="{Binding TimeControlViewModel}" />
+
         <ScrollViewer
             Grid.Row="2"
             Margin="0,0,0,0"
@@ -335,7 +335,13 @@
                             Maximum="60"
                             Minimum="1"
                             TickFrequency="0.1"
-                            Value="{Binding SliderZoom}" />
+                            Value="{Binding SliderZoom}">
+
+                            <i:Interaction.Behaviors>
+                                <behaviors:SliderDragCompletedBehavior Command="{Binding ResetZoomParameterCommand}" />
+                            </i:Interaction.Behaviors>
+
+                        </Slider>
                         <TextBlock
                             HorizontalAlignment="Center"
                             Foreground="White"

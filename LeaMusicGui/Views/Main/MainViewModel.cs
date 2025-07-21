@@ -199,7 +199,6 @@
             UpdateBeatMarkerVM();
         }
 
-       
         private async Task ZoomFromSlider(double value)
         {
             var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformSlider(value, RenderWidth);
@@ -362,6 +361,11 @@
             UpdateBeatMarkerVM();
         }
 
+        /// <summary>
+        /// Called when the user finishes interacting with the zoom slider,
+        /// either via the DragCompleted event in SliderDragCompletedBehavior.cs
+        /// or the MouseUp event in TimelineInteractionBehavior.cs.
+        /// </summary>
         [RelayCommand]
         internal void ResetZoomParameter()
         {
@@ -556,11 +560,6 @@
 
         private void AudioEngine_OnUpdate(TimeSpan positionInSeconds)
         {
-            //TimeControlViewModel.ViewStart = m_viewWindowProvider.ViewStartTime;
-            //TimeControlViewModel.ViewEnd = m_viewWindowProvider.ViewEndTime;
-            //TimeControlViewModel.TotalSeconds = m_viewWindowProvider.TotalDuration;
-
-
             PlayheadPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(positionInSeconds, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
             UpdateBeatMarkerVM();
         }
@@ -591,12 +590,7 @@
         partial void OnSliderZoomChanged(double value)
         {
             Zoom = value;
-            ZoomFromSlider(Zoom);
-            //if (value != -1)
-            //{
-            //    m_audioEngine.ZoomViewWindow(value, m_audioEngine.CurrentPosition);
-            //    _ = UpdateTrackVMAsync(RenderWidth);
-            //}
+            _ = ZoomFromSlider(Zoom);
         }
     }
 }
