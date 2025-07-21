@@ -216,12 +216,6 @@
         }
 
         [RelayCommand]
-        public void ZoomFromMouse(double value)
-        {
-            Zoom = value;
-        }
-
-        [RelayCommand]
         public async Task FitLoopToView()
         {
             var (paddedStart, paddedEnd, zoomFactor) = m_timelineCalculator.FitLoopToView(m_audioEngine.LoopStart, m_audioEngine.LoopEnd, m_audioEngine.TotalDuration);
