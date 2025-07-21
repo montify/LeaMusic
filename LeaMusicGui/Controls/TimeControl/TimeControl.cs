@@ -140,71 +140,22 @@
         {
             var control = (TimeControl)d;
             if (e.OldValue is TimeControlViewModel oldVm)
+            {
                 oldVm.PropertyChanged -= control.OnViewModelPropertyChanged;
+            }
 
             if (e.NewValue is TimeControlViewModel newVm)
+            {
                 newVm.PropertyChanged += control.OnViewModelPropertyChanged;
+            }
 
             control.UpdateImage();
         }
 
         private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-          
                 UpdateImage();
-            
         }
-        //public TimeSpan ViewStart
-        //{
-        //    get => (TimeSpan)GetValue(ViewStartProperty);
-        //    set => SetValue(ViewStartProperty, value);
-        //}
-
-        //public TimeSpan ViewEnd
-        //{
-        //    get => (TimeSpan)GetValue(ViewEndProperty);
-        //    set => SetValue(ViewEndProperty, value);
-        //}
-
-        //public TimeSpan TotalLength
-        //{
-        //    get => (TimeSpan)GetValue(TotalLengthProperty);
-        //    set => SetValue(TotalLengthProperty, value);
-        //}
-
-        //public double ZoomFactor
-        //{
-        //    get => (double)GetValue(ZoomFactorProperty);
-        //    set => SetValue(ZoomFactorProperty, value);
-        //}
-
-        //public static readonly DependencyProperty ViewStartProperty =
-        //    DependencyProperty.Register(
-        //    nameof(ViewStart),
-        //    typeof(TimeSpan),
-        //    typeof(TimeControl),
-        //    new FrameworkPropertyMetadata(TimeSpan.Zero, FrameworkPropertyMetadataOptions.AffectsRender, OnRulerControlChange));
-
-        //public static readonly DependencyProperty ViewEndProperty =
-        //   DependencyProperty.Register(
-        //   nameof(ViewEnd),
-        //   typeof(TimeSpan),
-        //   typeof(TimeControl),
-        //   new FrameworkPropertyMetadata(TimeSpan.Zero, FrameworkPropertyMetadataOptions.AffectsRender, OnRulerControlChange));
-
-        //public static readonly DependencyProperty ZoomFactorProperty =
-        // DependencyProperty.Register(
-        // nameof(ZoomFactor),
-        // typeof(double),
-        // typeof(TimeControl),
-        // new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender, OnRulerControlChange));
-
-        //public static readonly DependencyProperty TotalLengthProperty =
-        //    DependencyProperty.Register(
-        //    nameof(TotalLength),
-        //    typeof(TimeSpan),
-        //    typeof(TimeControl),
-        //    new FrameworkPropertyMetadata(TimeSpan.Zero, FrameworkPropertyMetadataOptions.AffectsRender, OnRulerControlChange));
 
         public static readonly DependencyProperty ViewModelProperty =
        DependencyProperty.Register(
