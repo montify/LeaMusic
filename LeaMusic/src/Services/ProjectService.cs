@@ -65,6 +65,7 @@
         {
             if (project.Duration == TimeSpan.FromSeconds(1))
             {
+                statusCallback?.Invoke("Cant save, please Load a Project!");
                 return;
             }
 
