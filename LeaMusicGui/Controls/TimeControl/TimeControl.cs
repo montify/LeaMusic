@@ -45,7 +45,7 @@
             }
 
             m_canvas = m_surface.Canvas;
-            m_canvas.Clear(new SKColor(0, 0, 0, 0));
+            m_canvas.Clear(SKColor.Parse("#7977a3"));
 
             var pixelsPerSecond = m_width / ViewModel.TotalSeconds.TotalSeconds;
             pixelsPerSecond *= ViewModel.ZoomFactor;
@@ -60,7 +60,7 @@
                 float x = (float)((second - startSec) * pixelsPerSecond);
 
                 m_canvas.DrawLine(x, 0, x, 10, m_paint);
-                m_canvas.DrawText($"{second}s", x + 2, 25, m_paint);
+                m_canvas.DrawText($"{second}:0", x + 2, 25, m_paint);
             }
 
             using (SKImage image = m_surface.Snapshot())

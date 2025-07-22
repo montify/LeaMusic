@@ -43,18 +43,16 @@
             m_canvas = m_surface.Canvas;
             m_canvas.Clear(new SKColor(0, 0, 0, 0));
 
-            for (int i = 0; i < m_width; i++)
-            {
-                m_paint.Style = SKPaintStyle.StrokeAndFill;
+            m_paint.Style = SKPaintStyle.StrokeAndFill;
 
-                m_paint.Color = SKColors.Green;
-                var rect = new SKRect(0, 0, m_width, 30);
-                m_canvas.DrawRect(rect, m_paint);
-                m_paint.Color = SKColors.DarkRed.WithAlpha(70);
+            // Upper Bar
+            m_paint.Color = SKColors.Green;
+            var rect = new SKRect(0, 0, m_width, 10);
+            m_canvas.DrawRect(rect, m_paint);
 
-                rect = new SKRect(0, 0, m_width, m_height);
-                m_canvas.DrawRect(rect, m_paint);
-            }
+            m_paint.Color = SKColors.DarkRed.WithAlpha(90);
+            rect = new SKRect(0, 0, m_width, m_height);
+            m_canvas.DrawRect(rect, m_paint);
 
             using (SKImage image = m_surface.Snapshot())
             using (SKPixmap pixmap = image.PeekPixels())

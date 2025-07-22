@@ -333,6 +333,24 @@
         }
 
         [RelayCommand]
+        private void JumpToSecFromMouseClick(Point p)
+        {
+            if (RenderWidth <= 0)
+            {
+                return;
+            }
+
+            var second = m_timelineCalculator.ConvertPixelToSecond(p.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, RenderWidth);
+            if (TimeSpan.FromSeconds(second) < TimeSpan.Zero)
+            {
+                StatusMessages = "Please enter a positive Number";
+                return;
+            }
+
+            m_audioEngine.AudioJumpToSec(TimeSpan.FromSeconds(second));
+        }
+
+        [RelayCommand]
         private void JumpToLoopStart()
         {
             if (m_audioEngine.LoopStart > TimeSpan.Zero)

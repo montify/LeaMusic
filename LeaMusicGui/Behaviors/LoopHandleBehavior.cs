@@ -3,6 +3,7 @@
     using System.Windows;
     using System.Windows.Input;
     using System.Windows.Media;
+    using System.Windows.Shapes;
     using LeaMusicGui.Controls;
     using Microsoft.Xaml.Behaviors;
 
@@ -17,7 +18,7 @@
 
         private void OnMouseMove(object sender, MouseEventArgs e)
         {
-            var control = (LoopControl)sender;
+            var control = (FrameworkElement)sender;
             var parent = VisualTreeHelper.GetParent(control) as FrameworkElement;
 
             if (IsOnLefEdgeLoop(control) || IsOnRightEdgeLoop(control))
@@ -44,7 +45,7 @@
                 return;
             }
 
-            var control = (LoopControl)sender;
+            var control = (FrameworkElement)sender;
 
             if (IsOnLefEdgeLoop(control))
             {
@@ -55,14 +56,11 @@
             {
                 IsLoopBeginDragRightHandle = true;
             }
-
-            Helpers.DraggedElement = control;
-            Helpers.DraggedElement.CaptureMouse();
         }
 
         private bool IsOnLefEdgeLoop(object sender, double edgeThreshold = 20.04f)
         {
-            var control = (LoopControl)sender;
+            var control = (FrameworkElement)sender;
             var mousePos = Mouse.GetPosition(control);
 
             // Because Control is 1px width and we scale based on LoopPercentage it, we need the scaled Width Value with GetScaleX
@@ -75,7 +73,7 @@
 
         private bool IsOnRightEdgeLoop(object sender, double edgeThreshold = 20.04f)
         {
-            var control = (LoopControl)sender;
+            var control = (FrameworkElement)sender;
             var mousePos = Mouse.GetPosition(control);
 
             // Because COntrol is 1px width and we scale based on LoopPercentage it, we need the scaled Width Value with GetScaleX

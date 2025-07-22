@@ -77,15 +77,9 @@
                 m_isZoom = false;
             }
 
-            if (Helpers.DraggedElement != null)
+            if (IsBeatMarkerMoving)
             {
-                Helpers.DraggedElement.ReleaseMouseCapture();
-                Helpers.DraggedElement = null;
-
-                if (IsBeatMarkerMoving)
-                {
-                    IsBeatMarkerMoving = false;
-                }
+                IsBeatMarkerMoving = false;
             }
         }
 

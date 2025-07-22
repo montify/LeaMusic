@@ -90,7 +90,7 @@
             }
             else
             {
-                return new LoopCommand(startSec, endSec, startSec, shouldSetLoop: true, shouldJump: true);
+                return new LoopCommand(startSec, endSec, startSec, shouldSetLoop: true, shouldJump: false);
             }
         }
     }

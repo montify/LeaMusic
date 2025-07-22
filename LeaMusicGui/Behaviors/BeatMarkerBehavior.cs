@@ -21,9 +21,6 @@
 
             var mousePos = Mouse.GetPosition(parent);
 
-            Helpers.DraggedElement = control;
-            Helpers.DraggedElement.CaptureMouse();
-
             IsBeatMarkerMoving = true;
         }
 

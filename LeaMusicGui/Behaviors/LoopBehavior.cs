@@ -30,20 +30,14 @@
         private void OnWindowMouseUp(object sender, MouseButtonEventArgs e)
         {
 
-            if (Helpers.DraggedElement != null)
+            if (IsLoopBeginDragLeftHandle)
             {
-                Helpers.DraggedElement.ReleaseMouseCapture();
-                Helpers.DraggedElement = null;
+                IsLoopBeginDragLeftHandle = false;
+            }
 
-                if (IsLoopBeginDragLeftHandle)
-                {
-                    IsLoopBeginDragLeftHandle = false;
-                }
-
-                if (IsLoopBeginDragRightHandle)
-                {
-                    IsLoopBeginDragRightHandle = false;
-                }
+            if (IsLoopBeginDragRightHandle)
+            {
+                IsLoopBeginDragRightHandle = false;
             }
         }
 
@@ -92,6 +86,7 @@
                     m_selectionRange.End,
                     control.ActualWidth
                 );
+
                 LoopCommand?.Execute(loopData);
             }
         }

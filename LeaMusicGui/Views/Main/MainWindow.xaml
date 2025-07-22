@@ -60,6 +60,7 @@
             Grid.Row="1"
             Panel.ZIndex="9998" >
 
+            
             <i:Interaction.Behaviors>
                 <behaviors:LoopBehavior
                         IsLoopBeginDragLeftHandle="{Binding IsLoopBeginDragLeftHandle, Mode=TwoWay}"
@@ -71,23 +72,16 @@
 
             <!--  RULER  -->
             <timecontrol:TimeControl
-        
-
-Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}"
-Height="30"
-ViewModel="{Binding TimeControlViewModel}" />
-
+      IsHitTestVisible="true"
+      Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}"
+      Height="30"
+      ViewModel="{Binding TimeControlViewModel}" />
 
             <!--  LOOP  -->
             <control:LoopControl 
-              
-                IsHitTestVisible="True"
+              Grid.RowSpan="2"
+                IsHitTestVisible="false"
                 Width="1" Height="500" >
-                   
-                <i:Interaction.Behaviors  >
-                    <behaviors:LoopHandleBehavior IsLoopBeginDragLeftHandle="{Binding IsLoopBeginDragLeftHandle, Mode=TwoWay}" 
-                                          IsLoopBeginDragRightHandle="{Binding IsLoopBeginDragRightHandle, Mode=TwoWay}" />
-                </i:Interaction.Behaviors>
 
                 <control:LoopControl.RenderTransform>
                     <TransformGroup>
@@ -118,8 +112,46 @@ ViewModel="{Binding TimeControlViewModel}" />
                 </control:LoopControl.RenderTransform>
             </control:LoopControl>
 
+            <!--Rectangle for hittest-->
+            <Rectangle Fill="Transparent" Width="1" Height="30" IsHitTestVisible="true">
+                <i:Interaction.Behaviors  >
+                    <behaviors:LoopHandleBehavior IsLoopBeginDragLeftHandle="{Binding IsLoopBeginDragLeftHandle, Mode=TwoWay}" 
+                           IsLoopBeginDragRightHandle="{Binding IsLoopBeginDragRightHandle, Mode=TwoWay}" />
+                </i:Interaction.Behaviors>
 
-         
+
+                <Rectangle.RenderTransform>
+                    <TransformGroup>
+                        <!--  width  -->
+                        <ScaleTransform>
+                            <ScaleTransform.ScaleX>
+                                <MultiBinding Converter="{StaticResource LoopWidthPercentageConverter}">
+                                    <Binding Path="SelectionStartPercentage" />
+                                    <Binding Path="SelectionEndPercentage" />
+                                    <Binding ElementName="MainCanvas" Path="ActualWidth" />
+                                </MultiBinding>
+                            </ScaleTransform.ScaleX>
+                        </ScaleTransform>
+
+                        <!--<ScaleTransform ScaleY="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}, Path=ActualHeight}" />-->
+
+
+                        <!--  Offset StartPosition  -->
+                        <TranslateTransform>
+                            <TranslateTransform.X>
+                                <MultiBinding Converter="{StaticResource PlayheadPercentageOffsetMultiConverter}">
+                                    <Binding Path="SelectionStartPercentage" />
+                                    <Binding ElementName="MainCanvas" Path="ActualWidth" />
+                                </MultiBinding>
+                            </TranslateTransform.X>
+                        </TranslateTransform>
+                    </TransformGroup>
+                </Rectangle.RenderTransform>
+
+            </Rectangle>
+
+
+          
 
         </Canvas>
         <ScrollViewer
@@ -167,8 +199,14 @@ ViewModel="{Binding TimeControlViewModel}" />
                             MoveBeatMarkerCommand="{Binding MoveBeatMarkerCommand}"
                             ResetZoomParameterCommand="{Binding ResetZoomParameterCommand}"
                             ZoomWaveformMouseCommand="{Binding ZoomWaveformMouseCommand}" />
+
+                        <behaviors:PlayheadPositionBehavior
+                            PlayheadPositionCommand="{Binding JumpToSecFromMouseClickCommand}">
+                            
+                        </behaviors:PlayheadPositionBehavior>
                     </i:Interaction.Behaviors>
 
+                    
 
                     <!--  MARKERS  -->
                     <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}" Height="20" />
