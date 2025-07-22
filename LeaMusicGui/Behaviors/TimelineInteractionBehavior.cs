@@ -6,16 +6,8 @@
     using Microsoft.Xaml.Behaviors;
     using Point = System.Windows.Point;
 
-    public record class SelectionRange
-    {
-        public float Start { get; set; }
-        public float End { get; set; }
-    }
-
     public class TimelineInteractionBehavior : Behavior<FrameworkElement>
     {
-        private SelectionRange m_selectionRange = new();
-
         private bool m_isZoom;
 
         protected override void OnAttached()
@@ -60,17 +52,6 @@
                 ZoomWaveformMouseCommand?.Execute(new MousePositionData(mousePosition, control.ActualWidth));
             }
 
-            // resize loop
-            if (IsLoopBeginDragLeftHandle)
-            {
-                LoopStartCommand?.Execute(loopData);
-            }
-
-            if (IsLoopBeginDragRightHandle)
-            {
-                LoopEndCommand?.Execute(loopData);
-            }
-
             if (IsBeatMarkerMoving)
             {
                 MoveBeatMarkerCommand?.Execute(loopData);
@@ -79,25 +60,6 @@
 
         private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            var control = sender as FrameworkElement;
-            Point mousePosition = e.GetPosition(control);
-
-            if (control != null)
-            {
-                m_selectionRange.End = (float)mousePosition.X;
-
-                var loopData = new LoopData(
-                    m_selectionRange.Start,
-                    m_selectionRange.End,
-                    control.ActualWidth
-                );
-                LoopCommand?.Execute(loopData);
-            }
-
-            if (IsLoopBeginDragRightHandle)
-            {
-                var loopData = new MousePositionData(mousePosition, control.ActualWidth);
-            }
         }
 
         private void OnWindowMouseUp(object sender, MouseButtonEventArgs e)
@@ -120,16 +82,6 @@
                 Helpers.DraggedElement.ReleaseMouseCapture();
                 Helpers.DraggedElement = null;
 
-                if (IsLoopBeginDragLeftHandle)
-                {
-                    IsLoopBeginDragLeftHandle = false;
-                }
-
-                if (IsLoopBeginDragRightHandle)
-                {
-                    IsLoopBeginDragRightHandle = false;
-                }
-
                 if (IsBeatMarkerMoving)
                 {
                     IsBeatMarkerMoving = false;
@@ -139,32 +91,6 @@
 
         private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var childControl = sender as UIElement;
-            if (childControl != null)
-            {
-                Point mousePosition = e.GetPosition(childControl);
-
-                m_selectionRange = new SelectionRange();
-                m_selectionRange.Start = (float)mousePosition.X;
-            }
-        }
-
-        public ICommand LoopCommand
-        {
-            get => (ICommand)GetValue(LoopCommandProperty);
-            set => SetValue(LoopCommandProperty, value);
-        }
-
-        public ICommand LoopStartCommand
-        {
-            get => (ICommand)GetValue(LoopStartCommandProperty);
-            set => SetValue(LoopStartCommandProperty, value);
-        }
-
-        public ICommand LoopEndCommand
-        {
-            get => (ICommand)GetValue(LoopEndCommandProperty);
-            set => SetValue(LoopEndCommandProperty, value);
         }
 
         public ICommand ResetZoomParameterCommand
@@ -185,18 +111,6 @@
             set => SetValue(MoveBeatMarkerCommandProperty, value);
         }
 
-        public bool IsLoopBeginDragLeftHandle
-        {
-            get => (bool)GetValue(IsLoopBeginDragLeftHandleProperty);
-            set => SetValue(IsLoopBeginDragLeftHandleProperty, value);
-        }
-
-        public bool IsLoopBeginDragRightHandle
-        {
-            get => (bool)GetValue(IsLoopBeginDragRightHandleProperty);
-            set => SetValue(IsLoopBeginDragRightHandleProperty, value);
-        }
-
         public bool IsBeatMarkerMoving
         {
             get => (bool)GetValue(IsBeatMarkerMovingProperty);
@@ -207,23 +121,6 @@
            nameof(ResetZoomParameterCommand),
            typeof(ICommand),
            typeof(TimelineInteractionBehavior));
-
-        public static readonly DependencyProperty LoopCommandProperty = DependencyProperty.Register(
-            nameof(LoopCommand),
-            typeof(ICommand),
-            typeof(TimelineInteractionBehavior));
-
-        public static readonly DependencyProperty LoopStartCommandProperty =
-            DependencyProperty.Register(
-                nameof(LoopStartCommand),
-                typeof(ICommand),
-                typeof(TimelineInteractionBehavior));
-
-        public static readonly DependencyProperty LoopEndCommandProperty =
-            DependencyProperty.Register(
-                nameof(LoopEndCommand),
-                typeof(ICommand),
-                typeof(TimelineInteractionBehavior));
 
         public static readonly DependencyProperty ZoomWaveformMouseCommandProperty =
            DependencyProperty.Register(
@@ -236,18 +133,6 @@
               nameof(MoveBeatMarkerCommand),
               typeof(ICommand),
               typeof(TimelineInteractionBehavior));
-
-        public static readonly DependencyProperty IsLoopBeginDragLeftHandleProperty =
-            DependencyProperty.Register(
-          nameof(IsLoopBeginDragLeftHandle),
-          typeof(bool),
-          typeof(TimelineInteractionBehavior));
-
-        public static readonly DependencyProperty IsLoopBeginDragRightHandleProperty =
-            DependencyProperty.Register(
-          nameof(IsLoopBeginDragRightHandle),
-          typeof(bool),
-          typeof(TimelineInteractionBehavior));
 
         public static readonly DependencyProperty IsBeatMarkerMovingProperty =
           DependencyProperty.Register(

@@ -1,105 +1,117 @@
 ﻿namespace LeaMusicGui.Behaviors
 {
+    using System;
     using System.Windows;
     using System.Windows.Input;
-    using System.Windows.Media;
-    using LeaMusicGui.Controls;
+    using LeaMusicGui.Behaviors.BehaviorDTOs;
     using Microsoft.Xaml.Behaviors;
+
+    public record class SelectionRange
+    {
+        public float Start { get; set; }
+        public float End { get; set; }
+    }
 
     public class LoopBehavior : Behavior<FrameworkElement>
     {
+        private SelectionRange m_selectionRange = new();
+
         protected override void OnAttached()
         {
-            AssociatedObject.MouseDown += OnMouseDown;
-            AssociatedObject.MouseLeave += OnMouseLeave;
+            base.OnAttached();
+
+            AssociatedObject.MouseLeftButtonDown += OnMouseLeftButtonDown;
+            AssociatedObject.MouseLeftButtonUp += OnMouseLeftButtonUp;
             AssociatedObject.MouseMove += OnMouseMove;
+            //AssociatedObject.MouseRightButtonDown += OnMouseRightButtonDown;
+            Window.GetWindow(AssociatedObject).MouseUp += OnWindowMouseUp;
+        }
+
+        private void OnWindowMouseUp(object sender, MouseButtonEventArgs e)
+        {
+
+            if (Helpers.DraggedElement != null)
+            {
+                Helpers.DraggedElement.ReleaseMouseCapture();
+                Helpers.DraggedElement = null;
+
+                if (IsLoopBeginDragLeftHandle)
+                {
+                    IsLoopBeginDragLeftHandle = false;
+                }
+
+                if (IsLoopBeginDragRightHandle)
+                {
+                    IsLoopBeginDragRightHandle = false;
+                }
+            }
+        }
+
+        private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var control = sender as UIElement;
+            if (control != null)
+            {
+                Point mousePosition = e.GetPosition(control);
+
+                m_selectionRange = new SelectionRange();
+                m_selectionRange.Start = (float)mousePosition.X;
+            }
         }
 
         private void OnMouseMove(object sender, MouseEventArgs e)
         {
-            var control = (LoopControl)sender;
-            var parent = VisualTreeHelper.GetParent(control) as FrameworkElement;
+            var control = sender as FrameworkElement;
 
-            if (IsOnLefEdgeLoop(control) || IsOnRightEdgeLoop(control))
+            Point mousePosition = e.GetPosition(control);
+            var loopData = new MousePositionData(mousePosition, control.ActualWidth);
+
+            // resize loop
+            if (IsLoopBeginDragLeftHandle)
             {
-                Mouse.OverrideCursor = Cursors.SizeWE;
+                LoopStartCommand?.Execute(loopData);
             }
-            else
+
+            if (IsLoopBeginDragRightHandle)
             {
-                Mouse.OverrideCursor = null;
+                LoopEndCommand?.Execute(loopData);
             }
         }
 
-        private void OnMouseLeave(object sender, MouseEventArgs e)
+        private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            Mouse.OverrideCursor = null;
+            var control = sender as FrameworkElement;
+            Point mousePosition = e.GetPosition(control);
+
+            if (control != null)
+            {
+                m_selectionRange.End = (float)mousePosition.X;
+
+                var loopData = new LoopData(
+                    m_selectionRange.Start,
+                    m_selectionRange.End,
+                    control.ActualWidth
+                );
+                LoopCommand?.Execute(loopData);
+            }
         }
 
-        private void OnMouseDown(object sender, MouseButtonEventArgs e)
+        public ICommand LoopCommand
         {
-            if (e.ChangedButton != MouseButton.Right)
-            {
-                return;
-            }
-
-            var control = (LoopControl)sender;
-
-            if (IsOnLefEdgeLoop(control))
-            {
-                IsLoopBeginDragLeftHandle = true;
-            }
-
-            if (IsOnRightEdgeLoop(control))
-            {
-                IsLoopBeginDragRightHandle = true;
-            }
-
-            Helpers.DraggedElement = control;
-            Helpers.DraggedElement.CaptureMouse();
+            get => (ICommand)GetValue(LoopCommandProperty);
+            set => SetValue(LoopCommandProperty, value);
         }
 
-        private bool IsOnLefEdgeLoop(object sender, double edgeThreshold = 20.04f)
+        public ICommand LoopStartCommand
         {
-            var control = (LoopControl)sender;
-            var mousePos = Mouse.GetPosition(control);
-
-            // Because Control is 1px width and we scale based on LoopPercentage it, we need the scaled Width Value with GetScaleX
-            double scaleX = GetScaleX(control);
-
-            var controlWidth = control.ActualWidth * scaleX;
-
-            return mousePos.X * scaleX <= edgeThreshold && mousePos.Y < 30;
+            get => (ICommand)GetValue(LoopStartCommandProperty);
+            set => SetValue(LoopStartCommandProperty, value);
         }
 
-        private bool IsOnRightEdgeLoop(object sender, double edgeThreshold = 20.04f)
+        public ICommand LoopEndCommand
         {
-            var control = (LoopControl)sender;
-            var mousePos = Mouse.GetPosition(control);
-
-            // Because COntrol is 1px width and we scale based on LoopPercentage it, we need the scaled Width Value with GetScaleX
-            double scaleX = GetScaleX(control);
-
-            var controlWidth = control.ActualWidth * scaleX;
-
-            return mousePos.X * scaleX > controlWidth - edgeThreshold && mousePos.Y < 30;
-        }
-
-        private double GetScaleX(UIElement element)
-        {
-            if (element.RenderTransform is TransformGroup tg)
-            {
-                var scale = tg.Children.OfType<ScaleTransform>().FirstOrDefault();
-                if (scale != null)
-                {
-                    return scale.ScaleX;
-                }
-            }
-            else if (element.RenderTransform is ScaleTransform s)
-            {
-                return s.ScaleX;
-            }
-
-            return 1.0;
+            get => (ICommand)GetValue(LoopEndCommandProperty);
+            set => SetValue(LoopEndCommandProperty, value);
         }
 
         public bool IsLoopBeginDragLeftHandle
@@ -114,11 +126,28 @@
             set => SetValue(IsLoopBeginDragRightHandleProperty, value);
         }
 
+        public static readonly DependencyProperty LoopCommandProperty = DependencyProperty.Register(
+         nameof(LoopCommand),
+         typeof(ICommand),
+         typeof(LoopBehavior));
+
+        public static readonly DependencyProperty LoopStartCommandProperty =
+            DependencyProperty.Register(
+                nameof(LoopStartCommand),
+                typeof(ICommand),
+                typeof(LoopBehavior));
+
+        public static readonly DependencyProperty LoopEndCommandProperty =
+            DependencyProperty.Register(
+                nameof(LoopEndCommand),
+                typeof(ICommand),
+                typeof(LoopBehavior));
+
         public static readonly DependencyProperty IsLoopBeginDragLeftHandleProperty =
-          DependencyProperty.Register(
-        nameof(IsLoopBeginDragLeftHandle),
-        typeof(bool),
-        typeof(LoopBehavior));
+            DependencyProperty.Register(
+          nameof(IsLoopBeginDragLeftHandle),
+          typeof(bool),
+          typeof(LoopBehavior));
 
         public static readonly DependencyProperty IsLoopBeginDragRightHandleProperty =
             DependencyProperty.Register(

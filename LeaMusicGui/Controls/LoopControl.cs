@@ -18,7 +18,7 @@
 
         public LoopControl()
         {
-            m_writeableBitmap = new WriteableBitmap(1, 600, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
+            m_writeableBitmap = new WriteableBitmap(1, 300, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
             m_width = (int)m_writeableBitmap.Width;
             m_height = (int)m_writeableBitmap.Height;
 

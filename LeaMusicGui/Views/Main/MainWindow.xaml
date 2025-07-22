@@ -51,14 +51,77 @@
 
         </DockPanel>
 
-        <!--  RULER  -->
-        <timecontrol:TimeControl
-            Grid.Row="1"
+
+        <Canvas
+            IsHitTestVisible="True"
+            HorizontalAlignment="Right"
             Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}"
             Height="30"
-            Margin="100,0,0,0"
-            ViewModel="{Binding TimeControlViewModel}" />
+            Grid.Row="1"
+            Panel.ZIndex="9998" >
 
+            <i:Interaction.Behaviors>
+                <behaviors:LoopBehavior
+                        IsLoopBeginDragLeftHandle="{Binding IsLoopBeginDragLeftHandle, Mode=TwoWay}"
+                        IsLoopBeginDragRightHandle="{Binding IsLoopBeginDragRightHandle, Mode=TwoWay}"
+                        LoopCommand="{Binding LoopSelectionCommand}"
+                        LoopEndCommand="{Binding LoopSelectionEndCommand}"
+                        LoopStartCommand="{Binding LoopSelectionStartCommand}"/>
+            </i:Interaction.Behaviors>
+
+            <!--  RULER  -->
+            <timecontrol:TimeControl
+        
+
+Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}, Converter={StaticResource SubtractConverter}}"
+Height="30"
+ViewModel="{Binding TimeControlViewModel}" />
+
+
+            <!--  LOOP  -->
+            <control:LoopControl 
+              
+                IsHitTestVisible="True"
+                Width="1" Height="500" >
+                   
+                <i:Interaction.Behaviors  >
+                    <behaviors:LoopHandleBehavior IsLoopBeginDragLeftHandle="{Binding IsLoopBeginDragLeftHandle, Mode=TwoWay}" 
+                                          IsLoopBeginDragRightHandle="{Binding IsLoopBeginDragRightHandle, Mode=TwoWay}" />
+                </i:Interaction.Behaviors>
+
+                <control:LoopControl.RenderTransform>
+                    <TransformGroup>
+                        <!--  width  -->
+                        <ScaleTransform>
+                            <ScaleTransform.ScaleX>
+                                <MultiBinding Converter="{StaticResource LoopWidthPercentageConverter}">
+                                    <Binding Path="SelectionStartPercentage" />
+                                    <Binding Path="SelectionEndPercentage" />
+                                    <Binding ElementName="MainCanvas" Path="ActualWidth" />
+                                </MultiBinding>
+                            </ScaleTransform.ScaleX>
+                        </ScaleTransform>
+
+                     <!--<ScaleTransform ScaleY="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}, Path=ActualHeight}" />-->
+
+
+                        <!--  Offset StartPosition  -->
+                        <TranslateTransform>
+                            <TranslateTransform.X>
+                                <MultiBinding Converter="{StaticResource PlayheadPercentageOffsetMultiConverter}">
+                                    <Binding Path="SelectionStartPercentage" />
+                                    <Binding ElementName="MainCanvas" Path="ActualWidth" />
+                                </MultiBinding>
+                            </TranslateTransform.X>
+                        </TranslateTransform>
+                    </TransformGroup>
+                </control:LoopControl.RenderTransform>
+            </control:LoopControl>
+
+
+         
+
+        </Canvas>
         <ScrollViewer
             Grid.Row="2"
             Margin="0,0,0,0"
@@ -69,8 +132,7 @@
                 x:Name="WaveformCanvas"
                 Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Window}}"
                 Background="#424651">
-
-                <!--  WaveForm  -->
+                
                 <ItemsControl Margin="0,0,0,0" ItemsSource="{Binding Tracks}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -102,51 +164,14 @@
                     <i:Interaction.Behaviors>
                         <behaviors:TimelineInteractionBehavior
                             IsBeatMarkerMoving="{Binding IsBeatMarkerMoving, Mode=TwoWay}"
-                            IsLoopBeginDragLeftHandle="{Binding IsLoopBeginDragLeftHandle, Mode=TwoWay}"
-                            IsLoopBeginDragRightHandle="{Binding IsLoopBeginDragRightHandle, Mode=TwoWay}"
-                            LoopCommand="{Binding LoopSelectionCommand}"
-                            LoopEndCommand="{Binding LoopSelectionEndCommand}"
-                            LoopStartCommand="{Binding LoopSelectionStartCommand}"
                             MoveBeatMarkerCommand="{Binding MoveBeatMarkerCommand}"
                             ResetZoomParameterCommand="{Binding ResetZoomParameterCommand}"
                             ZoomWaveformMouseCommand="{Binding ZoomWaveformMouseCommand}" />
                     </i:Interaction.Behaviors>
 
-                    <!--  LOOP  -->
-                    <control:LoopControl Width="1" IsHitTestVisible="True">
 
-                        <i:Interaction.Behaviors>
-                            <behaviors:LoopBehavior IsLoopBeginDragLeftHandle="{Binding IsLoopBeginDragLeftHandle, Mode=TwoWay}" IsLoopBeginDragRightHandle="{Binding IsLoopBeginDragRightHandle, Mode=TwoWay}" />
-                        </i:Interaction.Behaviors>
-
-                        <control:LoopControl.RenderTransform>
-                            <TransformGroup>
-                                <!--  width  -->
-                                <ScaleTransform>
-                                    <ScaleTransform.ScaleX>
-                                        <MultiBinding Converter="{StaticResource LoopWidthPercentageConverter}">
-                                            <Binding Path="SelectionStartPercentage" />
-                                            <Binding Path="SelectionEndPercentage" />
-                                            <Binding ElementName="MainCanvas" Path="ActualWidth" />
-                                        </MultiBinding>
-                                    </ScaleTransform.ScaleX>
-                                </ScaleTransform>
-
-                                <!--  Offset StartPosition  -->
-                                <TranslateTransform>
-                                    <TranslateTransform.X>
-                                        <MultiBinding Converter="{StaticResource PlayheadPercentageOffsetMultiConverter}">
-                                            <Binding Path="SelectionStartPercentage" />
-                                            <Binding ElementName="MainCanvas" Path="ActualWidth" />
-                                        </MultiBinding>
-                                    </TranslateTransform.X>
-                                </TranslateTransform>
-                            </TransformGroup>
-                        </control:LoopControl.RenderTransform>
-                    </control:LoopControl>
-
-                    <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}" Height="20" />
                     <!--  MARKERS  -->
+                    <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}" Height="20" />
                     <ItemsControl ItemsSource="{Binding BeatMarkers}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
