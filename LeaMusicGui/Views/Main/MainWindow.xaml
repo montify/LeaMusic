@@ -220,7 +220,6 @@
                                                 Gesture="LeftClick" />
                                         </Button.InputBindings>
 
-
                                         <Canvas.Left>
                                             <MultiBinding Converter="{StaticResource PlayheadPercentageOffsetMultiConverter}">
                                                 <Binding Path="PositionRelativeView" />
@@ -233,22 +232,11 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <!--  Playhead  -->
-                    <Rectangle
-                        Name="Playhead"
-                        Width="1.3"
-                        Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Fill="Green"
-                        Opacity="0.8">
-                        <Canvas.Left>
-                            <MultiBinding Converter="{StaticResource PlayheadPercentageOffsetMultiConverter}">
-                                <Binding Path="PlayheadPercentage" />
-                                <Binding ElementName="MainCanvas" Path="ActualWidth" />
-                            </MultiBinding>
-                        </Canvas.Left>
-                    </Rectangle>
+                    <control:PlayheadControl
+                        ParentHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}"
+                        ParentWidth="{Binding ActualWidth, ElementName=MainCanvas}"
+                        PlayheadPercentage="{Binding PlayheadPercentage}" />
+                
                 </Canvas>
 
             </Grid>
