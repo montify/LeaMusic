@@ -7,7 +7,7 @@
     using System.Windows.Media.Imaging;
     using SkiaSharp;
 
-    public class LoopControl : UserControl
+    public partial class LoopControl : UserControl
     {
         private WriteableBitmap m_writeableBitmap;
         private SKCanvas m_canvas;
@@ -18,7 +18,16 @@
 
         public LoopControl()
         {
-            m_writeableBitmap = new WriteableBitmap(1, 300, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
+            InitializeComponent();
+
+            m_writeableBitmap = new WriteableBitmap(
+                1,
+                300,
+                96,
+                96,
+                PixelFormats.Bgra32,
+                BitmapPalettes.Halftone256Transparent
+            );
             m_width = (int)m_writeableBitmap.Width;
             m_height = (int)m_writeableBitmap.Height;
 
@@ -65,7 +74,8 @@
                         source: (void*)pixmap.GetPixels(),
                         destination: (void*)m_writeableBitmap.BackBuffer,
                         destinationSizeInBytes: m_writeableBitmap.BackBufferStride * m_height,
-                        sourceBytesToCopy: pixmap.RowBytes * m_height);
+                        sourceBytesToCopy: pixmap.RowBytes * m_height
+                    );
                 }
 
                 m_writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, m_width, m_height));
@@ -92,6 +102,24 @@
             set => SetValue(SelectionEndProperty, value);
         }
 
+        public double MainCanvasWidth
+        {
+            get => (double)GetValue(MainCanvasWidthProperty);
+            set => SetValue(MainCanvasWidthProperty, value);
+        }
+
+        public bool IsLoopBeginDragLeftHandle
+        {
+            get => (bool)GetValue(IsLoopBeginDragLeftHandleProperty);
+            set => SetValue(IsLoopBeginDragLeftHandleProperty, value);
+        }
+
+        public bool IsLoopBeginDragRightHandle
+        {
+            get => (bool)GetValue(IsLoopBeginDragRightHandleProperty);
+            set => SetValue(IsLoopBeginDragRightHandleProperty, value);
+        }
+
         private static void OnLoopChange(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is LoopControl control)
@@ -104,16 +132,60 @@
 
         public static readonly DependencyProperty SelectionStartProperty =
             DependencyProperty.Register(
-            nameof(SelectionStartPercentage),
-            typeof(float),
-            typeof(LoopControl),
-            new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, OnLoopChange));
+                nameof(SelectionStartPercentage),
+                typeof(float),
+                typeof(LoopControl),
+                new FrameworkPropertyMetadata(
+                    0.0f,
+                    FrameworkPropertyMetadataOptions.AffectsRender,
+                    OnLoopChange
+                )
+            );
 
         public static readonly DependencyProperty SelectionEndProperty =
             DependencyProperty.Register(
-            nameof(SelectionEndPercentage),
-            typeof(float),
-            typeof(LoopControl),
-            new FrameworkPropertyMetadata(0.0f, FrameworkPropertyMetadataOptions.AffectsRender, OnLoopChange));
+                nameof(SelectionEndPercentage),
+                typeof(float),
+                typeof(LoopControl),
+                new FrameworkPropertyMetadata(
+                    0.0f,
+                    FrameworkPropertyMetadataOptions.AffectsRender,
+                    OnLoopChange
+                )
+            );
+
+        public static readonly DependencyProperty MainCanvasWidthProperty =
+            DependencyProperty.Register(
+                nameof(MainCanvasWidth),
+                typeof(double),
+                typeof(LoopControl),
+                new FrameworkPropertyMetadata(
+                    0.0,
+                    FrameworkPropertyMetadataOptions.AffectsRender,
+                    OnLoopChange
+                )
+            );
+
+        public static readonly DependencyProperty IsLoopBeginDragLeftHandleProperty =
+            DependencyProperty.Register(
+                nameof(IsLoopBeginDragLeftHandle),
+                typeof(bool),
+                typeof(LoopControl),
+                new FrameworkPropertyMetadata(
+                    false,
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault
+                )
+            );
+
+        public static readonly DependencyProperty IsLoopBeginDragRightHandleProperty =
+            DependencyProperty.Register(
+                nameof(IsLoopBeginDragRightHandle),
+                typeof(bool),
+                typeof(LoopControl),
+                new FrameworkPropertyMetadata(
+                    false,
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault
+                )
+            );
     }
 }

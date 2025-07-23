@@ -1,0 +1,46 @@
+﻿<UserControl
+    x:Class="LeaMusicGui.Controls.LoopControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="clr-namespace:LeaMusicGui.Behaviors"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:local="clr-namespace:LeaMusicGui.Controls"
+    xmlns:local1="clr-namespace:LeaMusicGui.Converters"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="Root"
+    d:DesignHeight="450"
+    d:DesignWidth="20"
+    IsHitTestVisible="False"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <local1:LoopWidthPercentageConverter x:Key="LoopWidthPercentageConverter" />
+        <local1:PlayheadPercentageOffsetMultiConverter x:Key="PlayheadPercentageOffsetMultiConverter" />
+    </UserControl.Resources>
+
+    <UserControl.RenderTransform>
+        <TransformGroup>
+            <!--  width  -->
+            <ScaleTransform>
+                <ScaleTransform.ScaleX>
+                    <MultiBinding Converter="{StaticResource LoopWidthPercentageConverter}">
+                        <Binding ElementName="Root" Path="SelectionStartPercentage" />
+                        <Binding ElementName="Root" Path="SelectionEndPercentage" />
+                        <Binding ElementName="Root" Path="MainCanvasWidth" />
+                    </MultiBinding>
+                </ScaleTransform.ScaleX>
+            </ScaleTransform>
+
+            <!--  Offset StartPosition  -->
+            <TranslateTransform>
+                <TranslateTransform.X>
+                    <MultiBinding Converter="{StaticResource PlayheadPercentageOffsetMultiConverter}">
+                        <Binding ElementName="Root" Path="SelectionStartPercentage" />
+                        <Binding ElementName="Root" Path="MainCanvasWidth" />
+                    </MultiBinding>
+                </TranslateTransform.X>
+            </TranslateTransform>
+        </TransformGroup>
+    </UserControl.RenderTransform>
+</UserControl>
