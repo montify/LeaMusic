@@ -48,9 +48,7 @@
                     <MenuItem Header="_Exit" />
                 </MenuItem>
             </Menu>
-
         </DockPanel>
-
 
         <Canvas
             Grid.Row="1"
@@ -59,7 +57,6 @@
             HorizontalAlignment="Right"
             Panel.ZIndex="9998"
             IsHitTestVisible="True">
-
 
             <i:Interaction.Behaviors>
                 <behaviors:LoopBehavior
@@ -86,6 +83,7 @@
                 SelectionEndPercentage="{Binding SelectionEndPercentage}"
                 SelectionStartPercentage="{Binding SelectionStartPercentage}" />
 
+            <!--  Invisible Rectangle for Loop Left/Right Handle  -->
             <Rectangle
                 Width="1"
                 Height="30"
@@ -117,10 +115,7 @@
                         </TranslateTransform>
                     </TransformGroup>
                 </Rectangle.RenderTransform>
-
             </Rectangle>
-
-
 
         </Canvas>
         <ScrollViewer
@@ -144,7 +139,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
-                                <trackcontrol_:TrackControl HeightScaleFactor="{Binding ElementName=HeightMultiSlider, Path=Value}" RequestWaveformUpdateCommand="{Binding DataContext.RequestWaveformUpdateCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <trackcontrol_:TrackControl HeightScaleFactor="{Binding DataContext.HeightScaleFactor, RelativeSource={RelativeSource AncestorType=Window}}" RequestWaveformUpdateCommand="{Binding DataContext.RequestWaveformUpdateCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
                                 <Separator />
                             </StackPanel>
                         </DataTemplate>
@@ -259,167 +254,8 @@
             </Grid>
         </ScrollViewer>
 
-
         <Grid Grid.Row="3" Background="#424341">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-
-
-            <StackPanel>
-                <Grid HorizontalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock
-                            Margin="0,0,30,0"
-                            HorizontalAlignment="Center"
-                            FontSize="30"
-                            Foreground="WhiteSmoke"
-                            Text="{Binding CurrentPlayTime, StringFormat='{}{0:0.00} Sec'}" />
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            FontSize="30"
-                            Foreground="WhiteSmoke"
-                            Text="{Binding ProjectBpm, StringFormat=' {0} BPM'}" />
-                    </StackPanel>
-                </Grid>
-                <StackPanel
-                    Grid.Row="0"
-                    Margin="0,20,0,0"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Top"
-                    Orientation="Horizontal">
-
-
-                    <StackPanel Orientation="Horizontal">
-                        <Button
-                            Margin="0,0,50,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            Command="{Binding Path=PlayCommand}"
-                            Content="Play"
-                            Style="{StaticResource ButtonSuccess}" />
-                        <Button
-                            Margin="0,0,50,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            Command="{Binding Path=PauseCommand}"
-                            Content="Pause"
-                            Style="{StaticResource ButtonDanger}" />
-                        <Button
-                            Margin="0,0,50,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            Command="{Binding Path=JumpToLoopStartCommand}"
-                            Content="LoopStart"
-                            Style="{StaticResource ButtonPrimary}" />
-                        <Button
-                            Margin="0,0,50,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            Command="{Binding Path=FitLoopToViewCommand}"
-                            Content="Fit Loop" />
-                        <TextBox
-                            Width="40"
-                            VerticalAlignment="Top"
-                            Text="{Binding JumpToPositionInSec}" />
-                        <Button
-                            Width="50"
-                            Margin="0,0,50,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            Command="{Binding Path=JumpToSecCommand}"
-                            Content="Jump" />
-                    </StackPanel>
-
-                    <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Foreground="White"
-                            Text="{Binding ElementName=HeightMultiSlider, Path=Value, StringFormat={}{0:0.00}}" />
-                        <Slider
-                            x:Name="HeightMultiSlider"
-                            Width="120"
-                            Margin="100,0,0,0"
-                            HorizontalAlignment="Left"
-                            Minimum="1"
-                            Value="1" />
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Foreground="White"
-                            Text="Height Multiplier" />
-                    </StackPanel>
-                    <!--  Zoom Slider  -->
-
-                    <StackPanel Grid.Row="1" HorizontalAlignment="Center">
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Foreground="White"
-                            Text="{Binding Zoom, Mode=TwoWay, StringFormat={}{0:0.00}}" />
-                        <Slider
-                            Width="120"
-                            HorizontalAlignment="Left"
-                            LargeChange="0.1"
-                            Maximum="60"
-                            Minimum="1"
-                            TickFrequency="0.1"
-                            Value="{Binding SliderZoom}">
-
-                            <i:Interaction.Behaviors>
-                                <behaviors:SliderDragCompletedBehavior Command="{Binding ResetZoomParameterCommand}" />
-                            </i:Interaction.Behaviors>
-
-                        </Slider>
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Foreground="White"
-                            Text="Zoom" />
-                    </StackPanel>
-                    <StackPanel Grid.Row="5" HorizontalAlignment="Center">
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Foreground="White"
-                            Text="{Binding Speed, StringFormat={}{0:0.00}}" />
-                        <Slider
-                            Width="120"
-                            HorizontalAlignment="Left"
-                            Maximum="1"
-                            SmallChange="1"
-                            TickFrequency="0.1"
-                            Value="{Binding Speed}" />
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Foreground="White"
-                            Text="Speed" />
-                    </StackPanel>
-                    <StackPanel Grid.Row="5" HorizontalAlignment="Center">
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Foreground="White"
-                            Text="{Binding Pitch}" />
-                        <Slider
-                            Width="120"
-                            HorizontalAlignment="Left"
-                            Maximum="8"
-                            Minimum="-8"
-                            SmallChange="1"
-                            Value="{Binding Pitch}" />
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Foreground="White"
-                            Text="Pitch" />
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel HorizontalAlignment="Center">
-                    <ProgressBar
-                        Width="600"
-                        Height="18"
-                        Margin="0,20,0,0"
-                        Style="{StaticResource ProgressBarInfo}"
-                        Value="{Binding Path=ProgressInPercentage}" />
-                </StackPanel>
-            </StackPanel>
+            <control:TransportControl HeightScaleFactor="{Binding HeightScaleFactor}" />
         </Grid>
 
         <StackPanel Grid.Row="4" VerticalAlignment="Center">

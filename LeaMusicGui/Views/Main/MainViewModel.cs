@@ -36,6 +36,9 @@
         private double zoom = 1.0f;
 
         [ObservableProperty]
+        private double heightScaleFactor = 1;
+
+        [ObservableProperty]
         private double sliderZoom = 1.0f;
 
         [ObservableProperty]
