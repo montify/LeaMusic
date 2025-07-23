@@ -118,6 +118,8 @@
             </Rectangle>
 
         </Canvas>
+
+
         <ScrollViewer
             Grid.Row="2"
             Margin="0,0,0,0"
@@ -167,76 +169,23 @@
                         <behaviors:PlayheadPositionBehavior PlayheadPositionCommand="{Binding JumpToSecFromMouseClickCommand}" />
                     </i:Interaction.Behaviors>
 
-
-
-                    <!--  MARKERS  -->
                     <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}" Height="20" />
-                    <ItemsControl ItemsSource="{Binding BeatMarkers}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}" Height="20" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
 
-                                <Canvas Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Canvas}}">
-                                    <!--  Line Marker  -->
-                                    <Rectangle
-                                        Width="1"
-                                        Height="{Binding ActualHeight, ElementName=MainCanvas}"
-                                        Fill="DarkRed"
-                                        Visibility="{Binding Visible, Converter={StaticResource BoolToVis}}">
-                                        <Canvas.Left>
-                                            <MultiBinding Converter="{StaticResource PlayheadPercentageOffsetMultiConverter}">
-                                                <Binding Path="PositionRelativeView" />
-                                                <Binding ElementName="MainCanvas" Path="ActualWidth" />
-                                            </MultiBinding>
-                                        </Canvas.Left>
-                                    </Rectangle>
+                    <control:BeatmarkerControl
+                        Height="20"
+                        BeatMarkers="{Binding BeatMarkers}"
+                        IsBeatMarkerMoving="{Binding IsBeatMarkerMoving, Mode=TwoWay}"
+                        MarkerClickCommand="{Binding MarkerClickCommand}"
+                        MarkerDeleteCommand="{Binding MarkerDeleteCommand}"
+                        ParentHeight="{Binding ElementName=MainCanvas, Path=ActualHeight}"
+                        ParentWidth="{Binding ElementName=MainCanvas, Path=ActualWidth}" />
 
-                                    <!--  Text Marker  -->
-                                    <Button
-                                        Canvas.Top="0"
-                                        Margin="1,0,0,0"
-                                        Background="DarkRed"
-                                        Content="{Binding Description}"
-                                        Foreground="White"
-                                        RenderTransformOrigin="0.5,0"
-                                        Visibility="{Binding Visible, Converter={StaticResource BoolToVis}}">
-
-                                        <i:Interaction.Behaviors>
-                                            <behaviors:BeatMarkerBehavior IsBeatMarkerMoving="{Binding DataContext.IsBeatMarkerMoving, RelativeSource={RelativeSource AncestorType=Window}, Mode=TwoWay}" />
-                                        </i:Interaction.Behaviors>
-
-                                        <Button.InputBindings>
-                                            <MouseBinding
-                                                Command="{Binding DataContext.MarkerClickCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}"
-                                                Gesture="RightClick" />
-                                            <MouseBinding
-                                                Command="{Binding DataContext.MarkerDeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}"
-                                                Gesture="LeftClick" />
-                                        </Button.InputBindings>
-
-                                        <Canvas.Left>
-                                            <MultiBinding Converter="{StaticResource PlayheadPercentageOffsetMultiConverter}">
-                                                <Binding Path="PositionRelativeView" />
-                                                <Binding ElementName="MainCanvas" Path="ActualWidth" />
-                                            </MultiBinding>
-                                        </Canvas.Left>
-                                    </Button>
-                                </Canvas>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
 
                     <control:PlayheadControl
                         ParentHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Canvas}}"
                         ParentWidth="{Binding ActualWidth, ElementName=MainCanvas}"
                         PlayheadPercentage="{Binding PlayheadPercentage}" />
-                
+
                 </Canvas>
 
             </Grid>
