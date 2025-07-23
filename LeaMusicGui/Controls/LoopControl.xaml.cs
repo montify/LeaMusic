@@ -48,7 +48,6 @@
 
         public void UpdateImage()
         {
-            Debug.WriteLine(m_width);
             m_canvas = m_surface.Canvas;
             m_canvas.Clear(new SKColor(0, 0, 0, 0));
 
@@ -124,7 +123,6 @@
         {
             if (d is LoopControl control)
             {
-                Debug.WriteLine($"Loop Redraw");
                 control.InvalidateVisual();
                 control.UpdateImage();
             }

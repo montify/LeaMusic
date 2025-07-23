@@ -355,7 +355,6 @@
                 // if zoom OR LoopStartSelection change
                 if (m_oldZoom != m_zoom || LoopStart.TotalSeconds != m_oldLoopStart.TotalSeconds)
                 {
-                    Debug.WriteLine("AudioEngine.UpdateLoop INVOKE");
                     OnLoopChange?.Invoke(LoopStart, LoopEnd);
                     m_oldLoopStart = LoopStart;
 
