@@ -9,10 +9,10 @@
     using LeaMusic.src.Services.Interfaces;
     using LeaMusic.src.Services.ResourceServices_;
     using LeaMusic.src.Services.ResourceServices_.GoogleDrive_;
+    using LeaMusicGui.Controls.TimeControl;
     using LeaMusicGui.Controls.TrackControl_;
     using LeaMusicGui.Views.DialogServices;
     using Microsoft.Extensions.DependencyInjection;
-    using LeaMusicGui.Controls.TimeControl;
 
     /// <summary>
     /// Interaction logic for App.xaml.
@@ -52,10 +52,14 @@
             services.AddSingleton<ISnappingService, SnappingService>();
             services.AddSingleton<ITrackVolumeService, TrackVolumeService>();
             services.AddSingleton<IAudioEngine, AudioEngine>();
-            services.AddSingleton<IProjectProvider>(sp => (IProjectProvider)sp.GetRequiredService<IAudioEngine>());
-            services.AddSingleton<IViewWindowProvider>(sp => (IViewWindowProvider)sp.GetRequiredService<IAudioEngine>());
+            services.AddSingleton<IProjectProvider>(sp =>
+                (IProjectProvider)sp.GetRequiredService<IAudioEngine>()
+            );
+            services.AddSingleton<IViewWindowProvider>(sp =>
+                (IViewWindowProvider)sp.GetRequiredService<IAudioEngine>()
+            );
             services.AddSingleton<IBeatMarkerService, BeatMarkerService>();
-         
+
             Services = services.BuildServiceProvider();
         }
 

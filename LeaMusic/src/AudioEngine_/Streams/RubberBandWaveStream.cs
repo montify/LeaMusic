@@ -3,7 +3,7 @@ using RubberBand;
 
 namespace LeaMusic.src.AudioEngine_.Streams
 {
-    public class RubberBandWaveStream :IWaveProvider
+    public class RubberBandWaveStream : IWaveProvider
     {
         private IWaveProvider m_source;
         private byte[] m_sourceBuffer;
@@ -21,25 +21,36 @@ namespace LeaMusic.src.AudioEngine_.Streams
         {
             if (source.WaveFormat.BitsPerSample != 16)
             {
-                throw new FormatException("Can't process bit depth of " + source.WaveFormat.BitsPerSample);
+                throw new FormatException(
+                    "Can't process bit depth of " + source.WaveFormat.BitsPerSample
+                );
             }
 
             m_source = source;
-            WaveFormatIEEE = WaveFormat.CreateIeeeFloatWaveFormat(m_source.WaveFormat.SampleRate, m_source.WaveFormat.Channels);
-            m_sourceSamples = Enumerable.Range(1, source.WaveFormat.Channels).Select(channel => new float[16384]).ToArray();
+            WaveFormatIEEE = WaveFormat.CreateIeeeFloatWaveFormat(
+                m_source.WaveFormat.SampleRate,
+                m_source.WaveFormat.Channels
+            );
+            m_sourceSamples = Enumerable
+                .Range(1, source.WaveFormat.Channels)
+                .Select(channel => new float[16384])
+                .ToArray();
             m_sourceBuffer = new byte[m_sourceSamples.Sum(channel => channel.Length) * 2];
-            m_stretchedSamples = Enumerable.Range(1, source.WaveFormat.Channels).Select(channel => new float[16384]).ToArray();
-            m_stretcher = new RubberBandStretcher(m_source.WaveFormat.SampleRate, m_source.WaveFormat.Channels, RubberBandStretcher.Options.ProcessRealTime);
+            m_stretchedSamples = Enumerable
+                .Range(1, source.WaveFormat.Channels)
+                .Select(channel => new float[16384])
+                .ToArray();
+            m_stretcher = new RubberBandStretcher(
+                m_source.WaveFormat.SampleRate,
+                m_source.WaveFormat.Channels,
+                RubberBandStretcher.Options.ProcessRealTime
+            );
             m_tempo = 1.0;
         }
 
         public double Tempo
         {
-            get
-            {
-                return m_tempo;
-            }
-
+            get { return m_tempo; }
             set
             {
                 m_tempo = value;
@@ -111,7 +122,7 @@ namespace LeaMusic.src.AudioEngine_.Streams
             while (true)
             {
                 int stretchedFramesToRead = (count + bytesPerFrame - 1) / bytesPerFrame;
-              
+
                 if (stretchedFramesToRead > m_stretchedSamples[0].Length)
                 {
                     stretchedFramesToRead = m_stretchedSamples[0].Length;
@@ -123,7 +134,8 @@ namespace LeaMusic.src.AudioEngine_.Streams
                     m_tempoChanged = false;
                 }
 
-                int numberOfFramesRead = (int)m_stretcher.Retrieve(m_stretchedSamples, stretchedFramesToRead);
+                int numberOfFramesRead = (int)
+                    m_stretcher.Retrieve(m_stretchedSamples, stretchedFramesToRead);
 
                 if (numberOfFramesRead == 0)
                 {
@@ -135,7 +147,11 @@ namespace LeaMusic.src.AudioEngine_.Streams
                         m_sourceExtraBytes.Clear();
                     }
 
-                    sourceBytesRead += m_source.Read(m_sourceBuffer, sourceBytesRead, m_sourceBuffer.Length - sourceBytesRead);
+                    sourceBytesRead += m_source.Read(
+                        m_sourceBuffer,
+                        sourceBytesRead,
+                        m_sourceBuffer.Length - sourceBytesRead
+                    );
 
                     SourceRead?.Invoke(this, EventArgs.Empty);
 
@@ -151,9 +167,11 @@ namespace LeaMusic.src.AudioEngine_.Streams
                         return numRead;
                     }
 
-                    int numberOfSourceSamplesPerChannel = sourceBytesRead / 2 / m_source.WaveFormat.Channels;
+                    int numberOfSourceSamplesPerChannel =
+                        sourceBytesRead / 2 / m_source.WaveFormat.Channels;
 
-                    int sourceBytesInSamples = numberOfSourceSamplesPerChannel * m_source.WaveFormat.Channels * 2;
+                    int sourceBytesInSamples =
+                        numberOfSourceSamplesPerChannel * m_source.WaveFormat.Channels * 2;
 
                     if (sourceBytesInSamples < sourceBytesRead)
                     {
@@ -179,7 +197,11 @@ namespace LeaMusic.src.AudioEngine_.Streams
                         }
                     }
 
-                    m_stretcher.Process(m_sourceSamples, numberOfSourceSamplesPerChannel, final: false);
+                    m_stretcher.Process(
+                        m_sourceSamples,
+                        numberOfSourceSamplesPerChannel,
+                        final: false
+                    );
                 }
                 else
                 {
@@ -202,7 +224,6 @@ namespace LeaMusic.src.AudioEngine_.Streams
                             channel = 0;
                             i++;
                         }
-
                         unchecked
                         {
                             short sample;
@@ -263,7 +284,6 @@ namespace LeaMusic.src.AudioEngine_.Streams
                             channel = 0;
                             i++;
                         }
-
                         unchecked
                         {
                             short sample;

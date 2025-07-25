@@ -49,9 +49,7 @@
 
         public float? PreviousVolume { get; set; }
 
-        public Track()
-        {
-        }
+        public Track() { }
 
         public void AddAudioFile(string audioFilePath, WaveStream audio)
         {

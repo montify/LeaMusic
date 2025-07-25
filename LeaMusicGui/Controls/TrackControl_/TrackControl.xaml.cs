@@ -11,12 +11,12 @@
             InitializeComponent();
         }
 
-        public static readonly DependencyProperty TrackIDProperty =
-            DependencyProperty.Register(
+        public static readonly DependencyProperty TrackIDProperty = DependencyProperty.Register(
             nameof(TrackID),
             typeof(float),
             typeof(TrackControl),
-            new PropertyMetadata(null));
+            new PropertyMetadata(null)
+        );
 
         public int TrackID
         {
@@ -31,11 +31,12 @@
         }
 
         public static readonly DependencyProperty HeightScaleFactorProperty =
-       DependencyProperty.Register(
-           nameof(HeightScaleFactor),
-           typeof(int),
-           typeof(TrackControl),
-           new PropertyMetadata(null));
+            DependencyProperty.Register(
+                nameof(HeightScaleFactor),
+                typeof(int),
+                typeof(TrackControl),
+                new PropertyMetadata(null)
+            );
 
         public ICommand Mute
         {
@@ -49,26 +50,27 @@
             set { SetValue(DeleteProperty, value); }
         }
 
-        public static readonly DependencyProperty DeleteProperty =
-        DependencyProperty.Register(
-        "Delete",
-        typeof(ICommand),
-        typeof(TrackControl),
-        new UIPropertyMetadata(null));
+        public static readonly DependencyProperty DeleteProperty = DependencyProperty.Register(
+            "Delete",
+            typeof(ICommand),
+            typeof(TrackControl),
+            new UIPropertyMetadata(null)
+        );
 
-        public static readonly DependencyProperty MuteProperty =
-          DependencyProperty.Register(
-          "Mute",
-          typeof(ICommand),
-          typeof(TrackControl),
-          new UIPropertyMetadata(null));
+        public static readonly DependencyProperty MuteProperty = DependencyProperty.Register(
+            "Mute",
+            typeof(ICommand),
+            typeof(TrackControl),
+            new UIPropertyMetadata(null)
+        );
 
         public static readonly DependencyProperty RequestWaveformUpdateCommandProperty =
-           DependencyProperty.Register(
-           nameof(RequestWaveformUpdateCommand),
-           typeof(ICommand),
-           typeof(TrackControl),
-           new PropertyMetadata(null)); // No callback needed for the command itself
+            DependencyProperty.Register(
+                nameof(RequestWaveformUpdateCommand),
+                typeof(ICommand),
+                typeof(TrackControl),
+                new PropertyMetadata(null)
+            ); // No callback needed for the command itself
 
         public ICommand RequestWaveformUpdateCommand
         {

@@ -14,7 +14,10 @@
 
         string? GetFolderIdByPath(string path);
 
-        (string? Id, string? Name, DateTime? CreatedTime)? GetFileMetadataByNameInFolder(string fileName, string folderPath);
+        (string? Id, string? Name, DateTime? CreatedTime)? GetFileMetadataByNameInFolder(
+            string fileName,
+            string folderPath
+        );
 
         string? GetFileIdByNameInFolder(string fileName, string folderPath);
 

@@ -29,8 +29,6 @@
             {
                 Mouse.OverrideCursor = null;
             }
-
-
         }
 
         private void OnMouseLeave(object sender, MouseEventArgs e)
@@ -115,15 +113,17 @@
         }
 
         public static readonly DependencyProperty IsLoopBeginDragLeftHandleProperty =
-          DependencyProperty.Register(
-        nameof(IsLoopBeginDragLeftHandle),
-        typeof(bool),
-        typeof(LoopHandleBehavior));
+            DependencyProperty.Register(
+                nameof(IsLoopBeginDragLeftHandle),
+                typeof(bool),
+                typeof(LoopHandleBehavior)
+            );
 
         public static readonly DependencyProperty IsLoopBeginDragRightHandleProperty =
             DependencyProperty.Register(
-          nameof(IsLoopBeginDragRightHandle),
-          typeof(bool),
-          typeof(LoopHandleBehavior));
+                nameof(IsLoopBeginDragRightHandle),
+                typeof(bool),
+                typeof(LoopHandleBehavior)
+            );
     }
 }

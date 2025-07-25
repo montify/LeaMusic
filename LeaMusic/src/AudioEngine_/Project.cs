@@ -35,9 +35,7 @@
             return project;
         }
 
-        public Project()
-        {
-        }
+        public Project() { }
 
         /// <summary>
         /// Adds a new audio track to the project
@@ -133,7 +131,12 @@
         /// <param name="renderWidth">The width (in pixels) of the rendered waveform image.</param>
         /// <returns>A Memory view of audio samples in the range 0.0–1.0, with a size corresponding to <paramref name="renderWidth"/>.</returns>
         /// <exception cref="Exception"></exception>
-        public Memory<float> RequestSample(int trackId, double viewStartTimeSec, double viewEndTimeSec, int renderWidth)
+        public Memory<float> RequestSample(
+            int trackId,
+            double viewStartTimeSec,
+            double viewEndTimeSec,
+            int renderWidth
+        )
         {
             if (Tracks.Count == 0)
             {
@@ -145,7 +148,8 @@
                 throw new Exception("TrackID is to big");
             }
 
-            return Tracks[trackId].WaveformProvider.RequestSamples(viewStartTimeSec, viewEndTimeSec, renderWidth);
+            return Tracks[trackId]
+                .WaveformProvider.RequestSamples(viewStartTimeSec, viewEndTimeSec, renderWidth);
         }
 
         /// <summary>

@@ -28,10 +28,11 @@
             set => SetValue(PlayheadPositionCommandProperty, value);
         }
 
-        public static readonly DependencyProperty PlayheadPositionCommandProperty = DependencyProperty.Register(
-         nameof(PlayheadPositionCommand),
-         typeof(ICommand),
-         typeof(PlayheadPositionBehavior));
-
+        public static readonly DependencyProperty PlayheadPositionCommandProperty =
+            DependencyProperty.Register(
+                nameof(PlayheadPositionCommand),
+                typeof(ICommand),
+                typeof(PlayheadPositionBehavior)
+            );
     }
 }

@@ -11,7 +11,67 @@ dotnet_diagnostic.SA1600.severity = none
 dotnet_diagnostic.SA1308.severity = none
 dotnet_diagnostic.SA1633.severity = none
 dotnet_diagnostic.SA1300.severity = none
-
+dotnet_diagnostic.IDE0055.severity = none
+dotnet_diagnostic.SA1000.severity = none
+dotnet_diagnostic.SA1009.severity = none
+dotnet_diagnostic.SA1111.severity = none
+dotnet_diagnostic.SA1118.severity = none
+dotnet_diagnostic.SA1137.severity = none
+dotnet_diagnostic.SA1413.severity = none
+dotnet_diagnostic.SA1500.severity = none
+dotnet_diagnostic.SA1501.severity = none
+dotnet_diagnostic.SA1502.severity = none
+dotnet_diagnostic.SA1504.severity = none
+dotnet_diagnostic.SA1515.severity = none
+dotnet_diagnostic.SA1516.severity = none
+dotnet_diagnostic.SA1001.severity = none
+dotnet_diagnostic.SA1002.severity = none
+dotnet_diagnostic.SA1003.severity = none
+dotnet_diagnostic.SA1007.severity = none
+dotnet_diagnostic.SA1008.severity = none
+dotnet_diagnostic.SA1010.severity = none
+dotnet_diagnostic.SA1011.severity = none
+dotnet_diagnostic.SA1012.severity = none
+dotnet_diagnostic.SA1013.severity = none
+dotnet_diagnostic.SA1014.severity = none
+dotnet_diagnostic.SA1015.severity = none
+dotnet_diagnostic.SA1016.severity = none
+dotnet_diagnostic.SA1017.severity = none
+dotnet_diagnostic.SA1018.severity = none
+dotnet_diagnostic.SA1019.severity = none
+dotnet_diagnostic.SA1020.severity = none
+dotnet_diagnostic.SA1021.severity = none
+dotnet_diagnostic.SA1022.severity = none
+dotnet_diagnostic.SA1023.severity = none
+dotnet_diagnostic.SA1024.severity = none
+dotnet_diagnostic.SA1025.severity = none
+dotnet_diagnostic.SA1026.severity = none
+dotnet_diagnostic.SA1027.severity = none
+dotnet_diagnostic.SA1028.severity = none
+dotnet_diagnostic.SA1102.severity = none
+dotnet_diagnostic.SA1103.severity = none
+dotnet_diagnostic.SA1104.severity = none
+dotnet_diagnostic.SA1105.severity = none
+dotnet_diagnostic.SA1107.severity = none
+dotnet_diagnostic.SA1110.severity = none
+dotnet_diagnostic.SA1112.severity = none
+dotnet_diagnostic.SA1113.severity = none
+dotnet_diagnostic.SA1114.severity = none
+dotnet_diagnostic.SA1115.severity = none
+dotnet_diagnostic.SA1116.severity = none
+dotnet_diagnostic.SA1117.severity = none
+dotnet_diagnostic.SA1127.severity = none
+dotnet_diagnostic.SA1128.severity = none
+dotnet_diagnostic.SA1136.severity = none
+dotnet_diagnostic.SA1505.severity = none
+dotnet_diagnostic.SA1506.severity = none
+dotnet_diagnostic.SA1507.severity = none
+dotnet_diagnostic.SA1508.severity = none
+dotnet_diagnostic.SA1509.severity = none
+dotnet_diagnostic.SA1510.severity = none
+dotnet_diagnostic.SA1511.severity = none
+dotnet_diagnostic.SA1517.severity = none
+dotnet_diagnostic.SA1518.severity = none
 
 # Private fields must be m_camelCase
 dotnet_naming_rule.private_fields_m_prefix.severity = warning
@@ -141,13 +201,13 @@ csharp_style_prefer_readonly_struct = true
 csharp_style_prefer_readonly_struct_member = true
 
 # Einstellungen für Codeblöcke
-csharp_prefer_braces = true
-csharp_prefer_simple_using_statement = true
-csharp_prefer_system_threading_lock = true
-csharp_style_namespace_declarations = block_scoped
-csharp_style_prefer_method_group_conversion = true
-csharp_style_prefer_primary_constructors = true
-csharp_style_prefer_top_level_statements = true
+csharp_prefer_braces = true:silent
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_prefer_system_threading_lock = true:suggestion
+csharp_style_namespace_declarations = block_scoped:silent
+csharp_style_prefer_method_group_conversion = true:silent
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_prefer_top_level_statements = true:silent
 
 # Einstellungen für Ausdrucksebene
 csharp_prefer_simple_default_expression = true
@@ -166,7 +226,7 @@ csharp_style_unused_value_assignment_preference = discard_variable
 csharp_style_unused_value_expression_statement_preference = discard_variable
 
 # Einstellungen für using-Anweisungen
-csharp_using_directive_placement = outside_namespace
+csharp_using_directive_placement = outside_namespace:silent
 
 # Einstellungen für neue Zeilen
 csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = true
@@ -274,3 +334,7 @@ dotnet_style_collection_initializer = true:suggestion
 dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_conditional_expression_over_assignment = true:silent
 dotnet_style_prefer_conditional_expression_over_return = true:silent
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+tab_width = 4
+indent_size = 4
+end_of_line = crlf

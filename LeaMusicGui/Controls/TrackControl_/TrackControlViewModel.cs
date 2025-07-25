@@ -41,7 +41,8 @@
             Action<TrackControlViewModel> onDeleteRequested,
             Action<TrackControlViewModel> onMuteRequested,
             Action<TrackControlViewModel> onSoloRequest,
-            Action<TrackControlViewModel, float> onVolumeChangeRequest)
+            Action<TrackControlViewModel, float> onVolumeChangeRequest
+        )
         {
             m_onDeleteRequested = onDeleteRequested;
             m_onMuteRequested = onMuteRequested;
@@ -51,12 +52,10 @@
             MuteCommand = new RelayCommand(OnMute);
             DeleteCommand = new RelayCommand(OnDelete);
             SoloCommand = new RelayCommand(OnSolo);
-           // VolumeChangeCommand = new RelayCommand(OnVolumeChange);
+            // VolumeChangeCommand = new RelayCommand(OnVolumeChange);
         }
 
-        public TrackControlViewModel()
-        {
-        }
+        public TrackControlViewModel() { }
 
         private void OnMute()
         {

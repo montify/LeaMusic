@@ -1,5 +1,5 @@
-﻿using LeaMusic.src.DTOs;
-using System.Drawing;
+﻿using System.Drawing;
+using LeaMusic.src.DTOs;
 
 namespace LeaMusic.src.Services.Interfaces
 {
@@ -12,6 +12,5 @@ namespace LeaMusic.src.Services.Interfaces
         public void MarkerClick(int markerId);
 
         public void MoveMarker(Point position, int renderWidth);
-
     }
 }

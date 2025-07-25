@@ -9,7 +9,10 @@ namespace LeaMusic.src.Services
             try
             {
                 using var client = new HttpClient();
-                using var response = await client.GetAsync("https://www.google.com", HttpCompletionOption.ResponseHeadersRead);
+                using var response = await client.GetAsync(
+                    "https://www.google.com",
+                    HttpCompletionOption.ResponseHeadersRead
+                );
                 return response.IsSuccessStatusCode;
             }
             catch

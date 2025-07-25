@@ -16,7 +16,8 @@
             IProjectProvider projectProvider,
             IViewWindowProvider viewWindowProvider,
             IAudioEngine audioEngine,
-            ITimelineCalculator timelineCalculator)
+            ITimelineCalculator timelineCalculator
+        )
         {
             m_snappingService = snappingService;
             m_projectProvider = projectProvider;
@@ -27,12 +28,28 @@
 
         public async Task SetOrAdjustLoop(int startPixel, int endPixel, int renderWidth)
         {
-            TimeSpan? proposedStart = startPixel != 0
-                    ? TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(startPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, renderWidth))
+            TimeSpan? proposedStart =
+                startPixel != 0
+                    ? TimeSpan.FromSeconds(
+                        m_timelineCalculator.ConvertPixelToSecond(
+                            startPixel,
+                            m_viewWindowProvider.ViewStartTime.TotalSeconds,
+                            m_viewWindowProvider.ViewDuration.TotalSeconds,
+                            renderWidth
+                        )
+                    )
                     : null;
 
-            TimeSpan? proposedEnd = endPixel != 0
-                    ? TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(endPixel, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, renderWidth))
+            TimeSpan? proposedEnd =
+                endPixel != 0
+                    ? TimeSpan.FromSeconds(
+                        m_timelineCalculator.ConvertPixelToSecond(
+                            endPixel,
+                            m_viewWindowProvider.ViewStartTime.TotalSeconds,
+                            m_viewWindowProvider.ViewDuration.TotalSeconds,
+                            renderWidth
+                        )
+                    )
                     : null;
 
             TimeSpan currentLoopStart = proposedStart ?? m_audioEngine.LoopStart;
@@ -41,23 +58,25 @@
             if (proposedStart != null)
             {
                 currentLoopStart = m_snappingService.SnapToMarkers(
-                currentLoopStart,
-                m_projectProvider.Project.BeatMarkers,
-                m_viewWindowProvider.ViewStartTime,
-                m_viewWindowProvider.ViewDuration,
-                renderWidth,
-                thresholdInMs: AppConstants.SnappingTreshholdInMs);
+                    currentLoopStart,
+                    m_projectProvider.Project.BeatMarkers,
+                    m_viewWindowProvider.ViewStartTime,
+                    m_viewWindowProvider.ViewDuration,
+                    renderWidth,
+                    thresholdInMs: AppConstants.SnappingTreshholdInMs
+                );
             }
 
             if (proposedEnd != null)
             {
                 currentLoopEnd = m_snappingService.SnapToMarkers(
-                currentLoopEnd,
-                m_projectProvider.Project.BeatMarkers,
-                m_viewWindowProvider.ViewStartTime,
-                m_viewWindowProvider.ViewDuration,
-                renderWidth,
-                thresholdInMs: AppConstants.SnappingTreshholdInMs);
+                    currentLoopEnd,
+                    m_projectProvider.Project.BeatMarkers,
+                    m_viewWindowProvider.ViewStartTime,
+                    m_viewWindowProvider.ViewDuration,
+                    renderWidth,
+                    thresholdInMs: AppConstants.SnappingTreshholdInMs
+                );
             }
 
             var loopAction = DetermineLoopAction(currentLoopStart, currentLoopEnd);
@@ -82,15 +101,36 @@
         {
             if (startSec >= endSec || endSec - startSec <= TimeSpan.Zero)
             {
-                return new LoopCommand(TimeSpan.Zero, TimeSpan.Zero, startSec, shouldSetLoop: true, shouldJump: true);
+                return new LoopCommand(
+                    TimeSpan.Zero,
+                    TimeSpan.Zero,
+                    startSec,
+                    shouldSetLoop: true,
+                    shouldJump: true
+                );
             }
-            else if (endSec - startSec < TimeSpan.FromMilliseconds(AppConstants.MinimumLoopTimeInMs))
+            else if (
+                endSec - startSec
+                < TimeSpan.FromMilliseconds(AppConstants.MinimumLoopTimeInMs)
+            )
             {
-                return new LoopCommand(TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero, shouldSetLoop: false, shouldJump: false);
+                return new LoopCommand(
+                    TimeSpan.Zero,
+                    TimeSpan.Zero,
+                    TimeSpan.Zero,
+                    shouldSetLoop: false,
+                    shouldJump: false
+                );
             }
             else
             {
-                return new LoopCommand(startSec, endSec, startSec, shouldSetLoop: true, shouldJump: false);
+                return new LoopCommand(
+                    startSec,
+                    endSec,
+                    startSec,
+                    shouldSetLoop: true,
+                    shouldJump: false
+                );
             }
         }
     }

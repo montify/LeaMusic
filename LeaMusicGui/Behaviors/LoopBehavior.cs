@@ -29,7 +29,6 @@
 
         private void OnWindowMouseUp(object sender, MouseButtonEventArgs e)
         {
-
             if (IsLoopBeginDragLeftHandle)
             {
                 IsLoopBeginDragLeftHandle = false;
@@ -122,32 +121,37 @@
         }
 
         public static readonly DependencyProperty LoopCommandProperty = DependencyProperty.Register(
-         nameof(LoopCommand),
-         typeof(ICommand),
-         typeof(LoopBehavior));
+            nameof(LoopCommand),
+            typeof(ICommand),
+            typeof(LoopBehavior)
+        );
 
         public static readonly DependencyProperty LoopStartCommandProperty =
             DependencyProperty.Register(
                 nameof(LoopStartCommand),
                 typeof(ICommand),
-                typeof(LoopBehavior));
+                typeof(LoopBehavior)
+            );
 
         public static readonly DependencyProperty LoopEndCommandProperty =
             DependencyProperty.Register(
                 nameof(LoopEndCommand),
                 typeof(ICommand),
-                typeof(LoopBehavior));
+                typeof(LoopBehavior)
+            );
 
         public static readonly DependencyProperty IsLoopBeginDragLeftHandleProperty =
             DependencyProperty.Register(
-          nameof(IsLoopBeginDragLeftHandle),
-          typeof(bool),
-          typeof(LoopBehavior));
+                nameof(IsLoopBeginDragLeftHandle),
+                typeof(bool),
+                typeof(LoopBehavior)
+            );
 
         public static readonly DependencyProperty IsLoopBeginDragRightHandleProperty =
             DependencyProperty.Register(
-          nameof(IsLoopBeginDragRightHandle),
-          typeof(bool),
-          typeof(LoopBehavior));
+                nameof(IsLoopBeginDragRightHandle),
+                typeof(bool),
+                typeof(LoopBehavior)
+            );
     }
 }

@@ -48,7 +48,14 @@
 
         public WriteableBitmap CreateImage(int width, int height)
         {
-            return new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
+            return new WriteableBitmap(
+                width,
+                height,
+                96,
+                96,
+                PixelFormats.Bgra32,
+                BitmapPalettes.Halftone256Transparent
+            );
         }
 
         public void UpdateImage()
@@ -102,7 +109,8 @@
                         source: (void*)pixmap.GetPixels(),
                         destination: (void*)m_writeableBitmap.BackBuffer,
                         destinationSizeInBytes: m_writeableBitmap.BackBufferStride * m_height,
-                        sourceBytesToCopy: pixmap.RowBytes * m_height);
+                        sourceBytesToCopy: pixmap.RowBytes * m_height
+                    );
                 }
 
                 m_writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, m_width, m_height));
@@ -193,25 +201,36 @@
         }
 
         public static readonly DependencyProperty WaveformHeightMultiProperty =
-             DependencyProperty.Register(
-             nameof(WaveformHeightMulti),
-             typeof(float),
-             typeof(WaveformControl),
-             new FrameworkPropertyMetadata(1.0f, FrameworkPropertyMetadataOptions.AffectsRender, WaveFormRedraw));
+            DependencyProperty.Register(
+                nameof(WaveformHeightMulti),
+                typeof(float),
+                typeof(WaveformControl),
+                new FrameworkPropertyMetadata(
+                    1.0f,
+                    FrameworkPropertyMetadataOptions.AffectsRender,
+                    WaveFormRedraw
+                )
+            );
 
         public static readonly DependencyProperty WaveformDataProperty =
-             DependencyProperty.Register(
-             nameof(WaveformData),
-             typeof(ReadOnlyMemory<float>),
-             typeof(WaveformControl),
-             new FrameworkPropertyMetadata(default(ReadOnlyMemory<float>), FrameworkPropertyMetadataOptions.AffectsRender, WaveFormRedraw));
+            DependencyProperty.Register(
+                nameof(WaveformData),
+                typeof(ReadOnlyMemory<float>),
+                typeof(WaveformControl),
+                new FrameworkPropertyMetadata(
+                    default(ReadOnlyMemory<float>),
+                    FrameworkPropertyMetadataOptions.AffectsRender,
+                    WaveFormRedraw
+                )
+            );
 
         public static readonly DependencyProperty RequestWaveformUpdateCommandProperty =
             DependencyProperty.Register(
-            nameof(RequestWaveformUpdateCommand),
-            typeof(ICommand),
-            typeof(WaveformControl),
-            new PropertyMetadata(null)); // No callback needed for the command itself
+                nameof(RequestWaveformUpdateCommand),
+                typeof(ICommand),
+                typeof(WaveformControl),
+                new PropertyMetadata(null)
+            ); // No callback needed for the command itself
 
         public ICommand RequestWaveformUpdateCommand
         {

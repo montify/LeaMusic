@@ -28,9 +28,7 @@
             }
         }
 
-        public GoogleContext()
-        {
-        }
+        public GoogleContext() { }
 
         private void CreateDriveService()
         {
@@ -40,22 +38,33 @@
             }
 
             // TODO: Store credentials not in GIT
-            using (var stream = new FileStream(AppConstants.GoogleAuthCredentialPath, FileMode.Open, FileAccess.Read))
+            using (
+                var stream = new FileStream(
+                    AppConstants.GoogleAuthCredentialPath,
+                    FileMode.Open,
+                    FileAccess.Read
+                )
+            )
             {
                 string credPath = "credentials.json";
-                m_credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.FromStream(stream).Secrets,
-                    m_scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
+                m_credential = GoogleWebAuthorizationBroker
+                    .AuthorizeAsync(
+                        GoogleClientSecrets.FromStream(stream).Secrets,
+                        m_scopes,
+                        "user",
+                        CancellationToken.None,
+                        new FileDataStore(credPath, true)
+                    )
+                    .Result;
             }
 
-            m_driveService = new DriveService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = m_credential,
-                ApplicationName = AppConstants.GoogleDriveRootFolderName,
-            });
+            m_driveService = new DriveService(
+                new BaseClientService.Initializer()
+                {
+                    HttpClientInitializer = m_credential,
+                    ApplicationName = AppConstants.GoogleDriveRootFolderName,
+                }
+            );
 
             if (m_driveService == null)
             {
@@ -73,7 +82,8 @@
             // Check for an existing folder with the given name
             var listRequest = DriveService.Files.List();
 
-            listRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and name = '{name}' and trashed = false";
+            listRequest.Q =
+                $"mimeType = 'application/vnd.google-apps.folder' and name = '{name}' and trashed = false";
             listRequest.Fields = "files(id, name)";
 
             var result = listRequest.Execute();
@@ -82,7 +92,9 @@
             {
                 // Folder found — return the first match
                 var existingFolder = result.Files.First();
-                Console.WriteLine($"Existing folder found: {existingFolder.Name} (ID: {existingFolder.Id})");
+                Console.WriteLine(
+                    $"Existing folder found: {existingFolder.Name} (ID: {existingFolder.Id})"
+                );
                 return existingFolder;
             }
 
@@ -106,7 +118,8 @@
             // 1. Prüfen, ob Unterordner schon existiert
             var listRequest = DriveService.Files.List();
 
-            listRequest.Q = $"mimeType='application/vnd.google-apps.folder' and name='{subfolderName}' and '{parentFolder.Id}' in parents and trashed=false";
+            listRequest.Q =
+                $"mimeType='application/vnd.google-apps.folder' and name='{subfolderName}' and '{parentFolder.Id}' in parents and trashed=false";
             listRequest.Fields = "files(id, name)";
             var files = listRequest.Execute().Files;
 
@@ -159,8 +172,7 @@
                 }
 
                 pageToken = response.NextPageToken;
-            }
-            while (pageToken != null);
+            } while (pageToken != null);
 
             return result;
         }
@@ -169,7 +181,8 @@
         {
             var listRequest = DriveService.Files.List();
 
-            listRequest.Q = $"name = '{folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
+            listRequest.Q =
+                $"name = '{folderName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
             listRequest.Fields = "files(id, name)";
 
             var folders = listRequest.Execute().Files;
@@ -192,7 +205,8 @@
             foreach (var segment in segments)
             {
                 var listRequest = DriveService.Files.List();
-                listRequest.Q = $"mimeType = 'application/vnd.google-apps.folder' and name = '{segment}' and '{parentId}' in parents and trashed = false";
+                listRequest.Q =
+                    $"mimeType = 'application/vnd.google-apps.folder' and name = '{segment}' and '{parentId}' in parents and trashed = false";
                 listRequest.Fields = "files(id, name)";
                 var result = listRequest.Execute();
 
@@ -208,7 +222,10 @@
             return parentId;
         }
 
-        public (string? Id, string? Name, DateTime? CreatedTime)? GetFileMetadataByNameInFolder(string fileName, string folderPath)
+        public (string? Id, string? Name, DateTime? CreatedTime)? GetFileMetadataByNameInFolder(
+            string fileName,
+            string folderPath
+        )
         {
             string? folderId = GetFolderIdByPath(folderPath);
 
@@ -266,7 +283,12 @@
 
             using var stream = new FileStream(filePath, FileMode.Open);
 
-            var updateRequest = DriveService.Files.Update(new File(), fileId, stream, fileMetadata.MimeType);
+            var updateRequest = DriveService.Files.Update(
+                new File(),
+                fileId,
+                stream,
+                fileMetadata.MimeType
+            );
             updateRequest.Fields = "id, name";
 
             await updateRequest.UploadAsync();
@@ -307,7 +329,8 @@
 
             // List files inside the folder
             var fileRequest = DriveService.Files.List();
-            fileRequest.Q = $"name = '{fileName.Replace("'", "\\'")}' and '{folderId}' in parents and trashed = false";
+            fileRequest.Q =
+                $"name = '{fileName.Replace("'", "\\'")}' and '{folderId}' in parents and trashed = false";
             fileRequest.Fields = "files(id, name)";
             var files = fileRequest.Execute().Files;
 

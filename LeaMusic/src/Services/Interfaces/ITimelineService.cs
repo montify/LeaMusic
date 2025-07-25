@@ -4,6 +4,11 @@
     {
         public Memory<float> RequestSample(int trackId, int renderWidth);
 
-        public Memory<float> RequestSample(int trackId, int renderWidth, TimeSpan start, TimeSpan end);
+        public Memory<float> RequestSample(
+            int trackId,
+            int renderWidth,
+            TimeSpan start,
+            TimeSpan end
+        );
     }
 }

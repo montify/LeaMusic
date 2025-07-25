@@ -80,15 +80,15 @@
         [ObservableProperty]
         private bool isBeatMarkerMoving;
 
-
         [ObservableProperty]
         private TimeControlViewModel timeControlViewModel;
 
-        public ObservableCollection<BeatMarkerViewModel> BeatMarkers { get; set; } =[];
+        public ObservableCollection<BeatMarkerViewModel> BeatMarkers { get; set; } = [];
 
         public ObservableCollection<TrackControlViewModel> Tracks { get; set; }
 
-        public bool IsProjectLoaded => Project != null && Project.Duration > TimeSpan.FromSeconds(1);
+        public bool IsProjectLoaded =>
+            Project != null && Project.Duration > TimeSpan.FromSeconds(1);
 
         private Project Project { get; set; }
 
@@ -109,17 +109,18 @@
 
         // TODO: Prevent unnecessary waveform reloads in UpdateTrackVM when only properties (e.g. volume, Buttons) change.
         public MainViewModel(
-                             IProjectService projectService,
-                             ITimelineService timelineService,
-                             IAudioEngine audioEngine,
-                             ITimelineCalculator timelineCalculator,
-                             ILoopService loopService,
-                             IDialogService dialogService,
-                             ITrackVolumeService trackSoloMuteService,
-                             IViewWindowProvider viewWindowProvider,
-                             IProjectProvider projectProvider,
-                             IBeatMarkerService beatMarkerService,
-                             TimeControlViewModel timeControlVM)
+            IProjectService projectService,
+            ITimelineService timelineService,
+            IAudioEngine audioEngine,
+            ITimelineCalculator timelineCalculator,
+            ILoopService loopService,
+            IDialogService dialogService,
+            ITrackVolumeService trackSoloMuteService,
+            IViewWindowProvider viewWindowProvider,
+            IProjectProvider projectProvider,
+            IBeatMarkerService beatMarkerService,
+            TimeControlViewModel timeControlVM
+        )
         {
             m_projectService = projectService;
             m_timelineService = timelineService;
@@ -159,7 +160,10 @@
         [RelayCommand]
         public void MoveBeatMarker(MousePositionData mouseData)
         {
-            var p = new System.Drawing.Point((int)mouseData.MousePosition.X, (int)mouseData.MousePosition.Y);
+            var p = new System.Drawing.Point(
+                (int)mouseData.MousePosition.X,
+                (int)mouseData.MousePosition.Y
+            );
             m_beatMarkerService.MoveMarker(p, (int)mouseData.ControlActualWidth);
 
             UpdateBeatMarkerVM();
@@ -168,7 +172,11 @@
         [RelayCommand]
         public async Task LoopSelection(LoopData loopData)
         {
-            await m_loopService.SetOrAdjustLoop((int)loopData.MousePositionStart, (int)loopData.MousePositionEnd, (int)loopData.ControlActualWidth);
+            await m_loopService.SetOrAdjustLoop(
+                (int)loopData.MousePositionStart,
+                (int)loopData.MousePositionEnd,
+                (int)loopData.ControlActualWidth
+            );
         }
 
         [RelayCommand]
@@ -180,15 +188,28 @@
         [RelayCommand]
         public async Task LoopSelectionEnd(MousePositionData mouseData)
         {
-            await m_loopService.SetOrAdjustLoop(0, (int)mouseData.MousePosition.X, (int)mouseData.ControlActualWidth);
+            await m_loopService.SetOrAdjustLoop(
+                0,
+                (int)mouseData.MousePosition.X,
+                (int)mouseData.ControlActualWidth
+            );
         }
 
         [RelayCommand]
         public async Task ZoomWaveformMouse(MousePositionData mouseData)
         {
-            var point = new System.Drawing.Point((int)mouseData.MousePosition.X, (int)mouseData.MousePosition.Y);
+            var point = new System.Drawing.Point(
+                (int)mouseData.MousePosition.X,
+                (int)mouseData.MousePosition.Y
+            );
 
-            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformMouse(point, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration, Zoom, mouseData.ControlActualWidth);
+            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformMouse(
+                point,
+                m_viewWindowProvider.ViewStartTime,
+                m_viewWindowProvider.ViewDuration,
+                Zoom,
+                mouseData.ControlActualWidth
+            );
 
             Zoom = newZoomFactor;
 
@@ -204,7 +225,10 @@
 
         private async Task ZoomFromSlider(double value)
         {
-            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformSlider(value, RenderWidth);
+            var (newZoomFactor, zoomStartPosition) = m_timelineCalculator.ZoomWaveformSlider(
+                value,
+                RenderWidth
+            );
 
             Zoom = newZoomFactor;
 
@@ -221,7 +245,11 @@
         [RelayCommand]
         public async Task FitLoopToView()
         {
-            var (paddedStart, paddedEnd, zoomFactor) = m_timelineCalculator.FitLoopToView(m_audioEngine.LoopStart, m_audioEngine.LoopEnd, m_audioEngine.TotalDuration);
+            var (paddedStart, paddedEnd, zoomFactor) = m_timelineCalculator.FitLoopToView(
+                m_audioEngine.LoopStart,
+                m_audioEngine.LoopEnd,
+                m_audioEngine.TotalDuration
+            );
 
             m_audioEngine.ZoomViewWindow(zoomFactor, paddedStart, paddedEnd);
 
@@ -343,7 +371,12 @@
                 return;
             }
 
-            var second = m_timelineCalculator.ConvertPixelToSecond(p.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, RenderWidth);
+            var second = m_timelineCalculator.ConvertPixelToSecond(
+                p.X,
+                m_viewWindowProvider.ViewStartTime.TotalSeconds,
+                m_viewWindowProvider.ViewDuration.TotalSeconds,
+                RenderWidth
+            );
             if (TimeSpan.FromSeconds(second) < TimeSpan.Zero)
             {
                 StatusMessages = "Please enter a positive Number";
@@ -396,7 +429,10 @@
         {
             Project? project = null;
 
-            project = await m_projectService.LoadProjectAsync(isGoogleDriveSync: IsSyncEnabled, m_updateStatus);
+            project = await m_projectService.LoadProjectAsync(
+                isGoogleDriveSync: IsSyncEnabled,
+                m_updateStatus
+            );
 
             if (project == null)
             {
@@ -460,7 +496,9 @@
 
         private void OnDeleteTrackRequested(TrackControlViewModel trackViewModel)
         {
-            var track = m_projectProvider.Project.Tracks.Where(t => t.ID == trackViewModel.TrackId).FirstOrDefault();
+            var track = m_projectProvider
+                .Project.Tracks.Where(t => t.ID == trackViewModel.TrackId)
+                .FirstOrDefault();
 
             if (track != null)
             {
@@ -478,12 +516,19 @@
             //TotalProjectDuration = Project.Duration.TotalSeconds;
             CurrentPlayTime = positionInSec.TotalSeconds;
 
-            ProgressInPercentage = (m_audioEngine.CurrentPosition.TotalSeconds / m_audioEngine.TotalDuration.TotalSeconds) * 100;
+            ProgressInPercentage =
+                (
+                    m_audioEngine.CurrentPosition.TotalSeconds
+                    / m_audioEngine.TotalDuration.TotalSeconds
+                ) * 100;
 
             // scroll view when Playhead reach the end of the view
             if (m_audioEngine.CurrentPosition >= m_viewWindowProvider.ViewEndTime)
             {
-                m_audioEngine.ZoomViewWindow(Zoom, m_audioEngine.CurrentPosition + m_viewWindowProvider.HalfViewWindow);
+                m_audioEngine.ZoomViewWindow(
+                    Zoom,
+                    m_audioEngine.CurrentPosition + m_viewWindowProvider.HalfViewWindow
+                );
                 _ = UpdateTrackVMAsync(RenderWidth);
             }
         }
@@ -526,24 +571,37 @@
         {
             var projectTracks = m_projectProvider.Project.Tracks;
 
-            var waveformGenerationTasks = projectTracks.Select(async (projectTrack, index) =>
-            {
-                var existingTrackVM = Tracks.FirstOrDefault(t => t.TrackId == projectTrack.ID);
-                if (existingTrackVM == null)
-                {
-                    existingTrackVM = new TrackControlViewModel(OnDeleteTrackRequested, OnMuteRequest, OnSoloRequest, OnVolumeChange);
-                    existingTrackVM.TrackId = projectTrack.ID;
-                    existingTrackVM.Name = projectTrack.Name;
-                }
+            var waveformGenerationTasks = projectTracks
+                .Select(
+                    async (projectTrack, index) =>
+                    {
+                        var existingTrackVM = Tracks.FirstOrDefault(t =>
+                            t.TrackId == projectTrack.ID
+                        );
+                        if (existingTrackVM == null)
+                        {
+                            existingTrackVM = new TrackControlViewModel(
+                                OnDeleteTrackRequested,
+                                OnMuteRequest,
+                                OnSoloRequest,
+                                OnVolumeChange
+                            );
+                            existingTrackVM.TrackId = projectTrack.ID;
+                            existingTrackVM.Name = projectTrack.Name;
+                        }
 
-                var waveform = await Task.Run(() => m_timelineService.RequestSample(index, (int)newWidth));
-                existingTrackVM.Waveform = waveform;
-                existingTrackVM.IsSolo = projectTrack.IsSolo;
-                existingTrackVM.IsMuted = projectTrack.IsMuted;
-                existingTrackVM.Volume = projectTrack.Volume;
+                        var waveform = await Task.Run(() =>
+                            m_timelineService.RequestSample(index, (int)newWidth)
+                        );
+                        existingTrackVM.Waveform = waveform;
+                        existingTrackVM.IsSolo = projectTrack.IsSolo;
+                        existingTrackVM.IsMuted = projectTrack.IsMuted;
+                        existingTrackVM.Volume = projectTrack.Volume;
 
-                return existingTrackVM;
-            }).ToList();
+                        return existingTrackVM;
+                    }
+                )
+                .ToList();
 
             var updatedViewModels = await Task.WhenAll(waveformGenerationTasks);
 
@@ -569,13 +627,27 @@
 
         private void AudioEngine_OnLoopChange(TimeSpan startSec, TimeSpan endSec)
         {
-            SelectionStartPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(startSec, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
-            SelectionEndPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(endSec, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
+            SelectionStartPercentage =
+                m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(
+                    startSec,
+                    m_viewWindowProvider.ViewStartTime,
+                    m_viewWindowProvider.ViewDuration
+                );
+            SelectionEndPercentage =
+                m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(
+                    endSec,
+                    m_viewWindowProvider.ViewStartTime,
+                    m_viewWindowProvider.ViewDuration
+                );
         }
 
         private void AudioEngine_OnUpdate(TimeSpan positionInSeconds)
         {
-            PlayheadPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(positionInSeconds, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
+            PlayheadPercentage = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(
+                positionInSeconds,
+                m_viewWindowProvider.ViewStartTime,
+                m_viewWindowProvider.ViewDuration
+            );
             UpdateBeatMarkerVM();
         }
 

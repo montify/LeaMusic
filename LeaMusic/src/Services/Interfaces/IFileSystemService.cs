@@ -4,7 +4,7 @@
     {
         Task<string> ReadAllTextAsync(string path);
 
-        Task WriteAllTextAsync(string path, string contents); 
+        Task WriteAllTextAsync(string path, string contents);
 
         void CopyFile(string sourcePath, string destinationPath, bool overwrite);
 
@@ -14,7 +14,7 @@
 
         DirectoryInfo CreateDirectory(string path);
 
-        DirectoryInfo GetDirectoryInfo(string path); 
+        DirectoryInfo GetDirectoryInfo(string path);
 
         string CombinePaths(params string[] paths);
 

@@ -1,8 +1,6 @@
 ﻿namespace LeaMusic.src.Services.ResourceServices_
 {
-    public class Location
-    {
-    }
+    public class Location { }
 
     public class FileLocation : Location
     {
@@ -25,7 +23,11 @@
 
         public string LocalProjectFilePath { get; set; }
 
-        public GDriveLocation(string gDriveRootFolder, string localProjectFilePath, string projectName)
+        public GDriveLocation(
+            string gDriveRootFolder,
+            string localProjectFilePath,
+            string projectName
+        )
         {
             GDriverootFolderPath = gDriveRootFolder;
             ProjectName = projectName;

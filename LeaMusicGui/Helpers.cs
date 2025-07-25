@@ -1,11 +1,17 @@
-﻿using LeaMusic.Src.AudioEngine_;
-using System.Windows;
+﻿using System.Windows;
+using LeaMusic.Src.AudioEngine_;
 
 namespace LeaMusicGui
 {
     internal class Helpers
     {
-        public static TimeSpan CheckSnapping(AudioEngine audioEngine, double renderWidth, TimeSpan markerPosition, TimeSpan checkPosition, double treshholdInMs)
+        public static TimeSpan CheckSnapping(
+            AudioEngine audioEngine,
+            double renderWidth,
+            TimeSpan markerPosition,
+            TimeSpan checkPosition,
+            double treshholdInMs
+        )
         {
             var beatmarkers = audioEngine.Project.BeatMarkers;
 

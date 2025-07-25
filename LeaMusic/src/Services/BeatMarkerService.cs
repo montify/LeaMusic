@@ -17,7 +17,8 @@
         public BeatMarkerService(
             ITimelineCalculator timelineCalculator,
             IProjectProvider projectProvider,
-            IViewWindowProvider viewWindowProvider)
+            IViewWindowProvider viewWindowProvider
+        )
         {
             m_timelineCalculator = timelineCalculator;
             m_projectProvider = projectProvider;
@@ -34,7 +35,12 @@
             {
                 var dto = new BeatMarkerDTO();
                 dto.Id = beatMarkers[i].ID;
-                dto.PositionRelativeView = m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(beatMarkers[i].Position, m_viewWindowProvider.ViewStartTime, m_viewWindowProvider.ViewDuration);
+                dto.PositionRelativeView =
+                    m_timelineCalculator.CalculateSecRelativeToViewWindowPercentage(
+                        beatMarkers[i].Position,
+                        m_viewWindowProvider.ViewStartTime,
+                        m_viewWindowProvider.ViewDuration
+                    );
                 dto.Visible = IsMarkerVisible(beatMarkers[i]);
                 dto.Description = beatMarkers[i].Description;
 
@@ -56,23 +62,34 @@
 
         public void MoveMarker(Point position, int renderWidth)
         {
-            var marker = m_projectProvider.Project.BeatMarkers.FirstOrDefault(marker => marker.ID == m_currentMarkerID);
+            var marker = m_projectProvider.Project.BeatMarkers.FirstOrDefault(marker =>
+                marker.ID == m_currentMarkerID
+            );
 
             if (marker != null)
             {
-                marker.Position = TimeSpan.FromSeconds(m_timelineCalculator.ConvertPixelToSecond(position.X, m_viewWindowProvider.ViewStartTime.TotalSeconds, m_viewWindowProvider.ViewDuration.TotalSeconds, renderWidth));
+                marker.Position = TimeSpan.FromSeconds(
+                    m_timelineCalculator.ConvertPixelToSecond(
+                        position.X,
+                        m_viewWindowProvider.ViewStartTime.TotalSeconds,
+                        m_viewWindowProvider.ViewDuration.TotalSeconds,
+                        renderWidth
+                    )
+                );
             }
         }
 
         private bool IsMarkerVisible(BeatMarker beatmarker)
         {
-            if (beatmarker.Position < m_viewWindowProvider.ViewStartTime || beatmarker.Position > m_viewWindowProvider.ViewEndTime)
+            if (
+                beatmarker.Position < m_viewWindowProvider.ViewStartTime
+                || beatmarker.Position > m_viewWindowProvider.ViewEndTime
+            )
             {
                 return false;
             }
 
             return true;
         }
-
     }
 }

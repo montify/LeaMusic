@@ -17,7 +17,8 @@
             IWaveformService waveformService,
             ILocalFileMetaDataService localmedatDataService,
             IFileSystemService localFileSystemService,
-            IBinaryWriter waveformBinaryWriter)
+            IBinaryWriter waveformBinaryWriter
+        )
         {
             m_projectSerializer = serializer;
             m_waveformService = waveformService;
@@ -26,7 +27,10 @@
             m_waveformBinaryWriter = waveformBinaryWriter;
         }
 
-        public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location)
+        public async Task<ProjectMetadata?> GetProjectMetadata(
+            string projectName,
+            Location location
+        )
         {
             return await m_localmedatDataService.GetMetaData(location);
         }
@@ -52,7 +56,10 @@
 
         public Track LoadAudio(Track track, string projectPath)
         {
-            var audioFilePath = m_localFileSystemService.CombinePaths(projectPath, track.AudioRelativePath);
+            var audioFilePath = m_localFileSystemService.CombinePaths(
+                projectPath,
+                track.AudioRelativePath
+            );
 
             var audio = LoadAudioFromFile(audioFilePath);
             track.AddAudioFile(audioFilePath, audio);
@@ -97,7 +104,10 @@
                     {
                         var track = project.Tracks[i];
 
-                        var trackPath = m_localFileSystemService.CombinePaths(projectPath, track.AudioRelativePath);
+                        var trackPath = m_localFileSystemService.CombinePaths(
+                            projectPath,
+                            track.AudioRelativePath
+                        );
 
                         track = LoadAudio(track, projectPath);
                     }
@@ -125,31 +135,50 @@
                 // Detect if the user select the project folder or the parentFolder
                 if (pathName == project.Name)
                 {
-                    projectDirectory = m_localFileSystemService.CreateDirectory(projectDirectoryPath.Path);
+                    projectDirectory = m_localFileSystemService.CreateDirectory(
+                        projectDirectoryPath.Path
+                    );
                 }
                 else
                 {
-                    var path = m_localFileSystemService.CombinePaths(projectDirectoryPath.Path, project.Name);
+                    var path = m_localFileSystemService.CombinePaths(
+                        projectDirectoryPath.Path,
+                        project.Name
+                    );
                     projectDirectory = m_localFileSystemService.CreateDirectory(path);
                 }
 
-                var audioFilesDirectory = m_localFileSystemService.CreateDirectory($"{projectDirectory.FullName}/AudioFiles");
-                var waveformDirectory = m_localFileSystemService.CreateDirectory($"{projectDirectory.FullName}/Waveforms");
+                var audioFilesDirectory = m_localFileSystemService.CreateDirectory(
+                    $"{projectDirectory.FullName}/AudioFiles"
+                );
+                var waveformDirectory = m_localFileSystemService.CreateDirectory(
+                    $"{projectDirectory.FullName}/Waveforms"
+                );
 
                 foreach (var track in project.Tracks)
                 {
                     track.AudioRelativePath = $"{audioFilesDirectory.Name}/{track.AudioFileName}";
-                    track.WaveformRelativePath = $"{waveformDirectory.Name}/{track.AudioFileName}.waveformat";
+                    track.WaveformRelativePath =
+                        $"{waveformDirectory.Name}/{track.AudioFileName}.waveformat";
 
                     // only trigger for first time Save
-                    if (!m_localFileSystemService.FileExists(audioFilesDirectory.FullName + "/" + track.AudioFileName))
+                    if (
+                        !m_localFileSystemService.FileExists(
+                            audioFilesDirectory.FullName + "/" + track.AudioFileName
+                        )
+                    )
                     {
-                        m_localFileSystemService.CopyFile(track.OriginFilePath, audioFilesDirectory.FullName + "/" + track.AudioFileName, overwrite: true);
+                        m_localFileSystemService.CopyFile(
+                            track.OriginFilePath,
+                            audioFilesDirectory.FullName + "/" + track.AudioFileName,
+                            overwrite: true
+                        );
                     }
 
                     var waveform = track.WaveformProvider.WaveformBuffer;
 
-                    var waveFormFilePath = waveformDirectory.FullName + $"\\{track.AudioFileName}.waveformat";
+                    var waveFormFilePath =
+                        waveformDirectory.FullName + $"\\{track.AudioFileName}.waveformat";
 
                     if (!m_localFileSystemService.FileExists(waveFormFilePath))
                     {
@@ -159,7 +188,10 @@
 
                 var metaData = m_projectSerializer.Serialize(project);
 
-                m_localFileSystemService.WriteAllTextAsync(Path.Combine(projectDirectory.ToString(), project.Name + ".prj"), metaData);
+                m_localFileSystemService.WriteAllTextAsync(
+                    Path.Combine(projectDirectory.ToString(), project.Name + ".prj"),
+                    metaData
+                );
             }
 
             return Task.CompletedTask;

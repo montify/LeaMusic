@@ -21,7 +21,8 @@
             IFileSystemService fileSystemService,
             IZipService zipService,
             IGoogleDriveMetaDataService googleDriveMetaDataService,
-            IGoogleContext googleContext)
+            IGoogleContext googleContext
+        )
         {
             m_fileHandler = fileHandler;
             m_fileSystemService = fileSystemService;
@@ -53,17 +54,24 @@
             // appRootFolder is the Folder, that LeaMusic sees as root. It must be in Gdrives root
             if (location is GDriveLocation gLocation)
             {
-                var rootFolder = m_driveContext.CreateOrGetFolder(gLocation.GDriverootFolderPath).Id;
+                var rootFolder = m_driveContext
+                    .CreateOrGetFolder(gLocation.GDriverootFolderPath)
+                    .Id;
                 var zipFilePath = AppConstants.TmpDirectoryFilePath;
                 var zipExtractPath = Path.Combine(zipFilePath, gLocation.ProjectName);
 
                 if (string.IsNullOrEmpty(rootFolder))
                 {
-                    throw new Exception($"Cant find root Location with name {gLocation.GDriverootFolderPath}");
+                    throw new Exception(
+                        $"Cant find root Location with name {gLocation.GDriverootFolderPath}"
+                    );
                 }
 
                 // 1) check if file exists in gdrive, if yes delete it
-                string? file = m_driveContext.GetFileIdByNameInFolder(gLocation.ProjectName + ".zip", gLocation.GDriverootFolderPath);
+                string? file = m_driveContext.GetFileIdByNameInFolder(
+                    gLocation.ProjectName + ".zip",
+                    gLocation.GDriverootFolderPath
+                );
 
                 if (string.IsNullOrEmpty(file))
                 {
@@ -72,7 +80,9 @@
 
                 using (var stream = await m_driveContext.GetZipAsStream(file))
                 {
-                    var projectDirectoryPath = m_fileSystemService.GetDirectoryName(gLocation.LocalProjectFilePath);
+                    var projectDirectoryPath = m_fileSystemService.GetDirectoryName(
+                        gLocation.LocalProjectFilePath
+                    );
 
                     m_fileSystemService.DeleteDirectoryRecursive(projectDirectoryPath);
 
@@ -81,7 +91,9 @@
                     m_zipService.ExtractToDirectory(stream, extractTo);
                 }
 
-                var project = await m_fileHandler.LoadProject(new FileLocation(gLocation.LocalProjectFilePath));
+                var project = await m_fileHandler.LoadProject(
+                    new FileLocation(gLocation.LocalProjectFilePath)
+                );
 
                 if (project == null)
                 {
@@ -98,7 +110,8 @@
 
         public async Task SaveProject(Location gDriveProjectLocation, Project project)
         {
-            var localExtractedTmpPath = $"{AppConstants.TmpZipExtractionDirectoryPath}/{project.Name}";
+            var localExtractedTmpPath =
+                $"{AppConstants.TmpZipExtractionDirectoryPath}/{project.Name}";
 
             if (!m_fileSystemService.DirectoryExists(AppConstants.TmpDirectoryFilePath))
             {
@@ -131,10 +144,15 @@
                 throw new Exception($"cant create Zip file for Project: {project.Name}");
             }
 
-            var rootFolderId = m_driveContext.GetFolderIdByName(AppConstants.GoogleDriveRootFolderName);
+            var rootFolderId = m_driveContext.GetFolderIdByName(
+                AppConstants.GoogleDriveRootFolderName
+            );
 
             // check if .zip file on Gdrive exists, delete it
-            var fileId = m_driveContext.GetFileIdFromFolder($"{project.Name}.zip", AppConstants.GoogleDriveRootFolderName);
+            var fileId = m_driveContext.GetFileIdFromFolder(
+                $"{project.Name}.zip",
+                AppConstants.GoogleDriveRootFolderName
+            );
 
             if (!string.IsNullOrEmpty(fileId))
             {
@@ -160,14 +178,19 @@
             }
         }
 
-        public async Task<ProjectMetadata?> GetProjectMetadata(string projectName, Location location)
+        public async Task<ProjectMetadata?> GetProjectMetadata(
+            string projectName,
+            Location location
+        )
         {
             return await m_googleDriveMetaDataService.GetMetaData(location);
         }
 
         public List<string> ListAllProjects()
         {
-            var rootFolderId = m_driveContext.GetFolderIdByName(AppConstants.GoogleDriveRootFolderName);
+            var rootFolderId = m_driveContext.GetFolderIdByName(
+                AppConstants.GoogleDriveRootFolderName
+            );
             var projects = m_driveContext.GetAllProjectsName(rootFolderId);
 
             return projects;

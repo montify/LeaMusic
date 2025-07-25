@@ -5,7 +5,10 @@
 
     public interface IProjectService
     {
-        public Task<Project?> LoadProjectAsync(bool isGoogleDriveSync, Action<string>? statusCallback);
+        public Task<Project?> LoadProjectAsync(
+            bool isGoogleDriveSync,
+            Action<string>? statusCallback
+        );
 
         public Task SaveProject(Project project, Action<string>? statusCallback);
 

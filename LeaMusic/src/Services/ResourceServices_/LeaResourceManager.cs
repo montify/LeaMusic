@@ -11,7 +11,10 @@
         private readonly ILocalFileHandler m_localFileHandler;
         private readonly IGoogleDriveHandler m_googleDriveHandler;
 
-        public LeaResourceManager(ILocalFileHandler localFileHandler, IGoogleDriveHandler googleDriveHandler)
+        public LeaResourceManager(
+            ILocalFileHandler localFileHandler,
+            IGoogleDriveHandler googleDriveHandler
+        )
         {
             m_localFileHandler = localFileHandler;
             m_googleDriveHandler = googleDriveHandler;
@@ -53,7 +56,7 @@
         // So Import copy the AudioFile from Source to Project/audioFolder
         public Track ImportTrack(Location trackLocation)
         {
-           return m_localFileHandler.ImportTrack(trackLocation);
+            return m_localFileHandler.ImportTrack(trackLocation);
         }
 
         public ProjectMetadata? GetProjectMetaData(string projectName, Location location)

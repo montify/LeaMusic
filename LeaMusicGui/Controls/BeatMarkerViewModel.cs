@@ -15,6 +15,5 @@
 
         [ObservableProperty]
         private bool visible = true;
-
     }
 }

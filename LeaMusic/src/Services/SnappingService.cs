@@ -6,12 +6,13 @@
     public class SnappingService : ISnappingService
     {
         public TimeSpan SnapToMarkers(
-                      TimeSpan originalPosition,
-                      IEnumerable<BeatMarker> beatMarkers,
-                      TimeSpan viewStartTime,
-                      TimeSpan viewDuration,
-                      double renderWidth,
-                      int thresholdInMs)
+            TimeSpan originalPosition,
+            IEnumerable<BeatMarker> beatMarkers,
+            TimeSpan viewStartTime,
+            TimeSpan viewDuration,
+            double renderWidth,
+            int thresholdInMs
+        )
         {
             TimeSpan snappedPosition = originalPosition;
 

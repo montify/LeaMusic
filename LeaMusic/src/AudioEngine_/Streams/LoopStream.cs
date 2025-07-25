@@ -14,7 +14,9 @@ namespace LeaMusic.src.AudioEngine_.Streams
             m_sourceStream = source;
             m_startPosition = (long)(startTimeSec * source.WaveFormat.AverageBytesPerSecond);
             m_loopStartBytes = m_startPosition;
-            m_loopEndBytes = m_loopStartBytes + (long)(loopDurationSec * source.WaveFormat.AverageBytesPerSecond);
+            m_loopEndBytes =
+                m_loopStartBytes
+                + (long)(loopDurationSec * source.WaveFormat.AverageBytesPerSecond);
 
             // Ensure we don't exceed file length
             if (m_loopEndBytes > m_sourceStream.Length)
@@ -49,9 +51,11 @@ namespace LeaMusic.src.AudioEngine_.Streams
             }
         }
 
-        public float CurrentPositionInSec => (float)Position / m_sourceStream.WaveFormat.AverageBytesPerSecond;
+        public float CurrentPositionInSec =>
+            (float)Position / m_sourceStream.WaveFormat.AverageBytesPerSecond;
 
-        public float TotalLengthInSec => (float)m_sourceStream.Length / m_sourceStream.WaveFormat.AverageBytesPerSecond;
+        public float TotalLengthInSec =>
+            (float)m_sourceStream.Length / m_sourceStream.WaveFormat.AverageBytesPerSecond;
 
         public override int Read(byte[] buffer, int offset, int count)
         {

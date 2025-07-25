@@ -8,8 +8,11 @@
 
     public class SliderDragCompletedBehavior : Behavior<Slider>
     {
-        public static readonly DependencyProperty CommandProperty =
-            DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(SliderDragCompletedBehavior));
+        public static readonly DependencyProperty CommandProperty = DependencyProperty.Register(
+            nameof(Command),
+            typeof(ICommand),
+            typeof(SliderDragCompletedBehavior)
+        );
 
         public ICommand Command
         {
@@ -25,12 +28,14 @@
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            if (AssociatedObject.Template.FindName("PART_Track", AssociatedObject) is Track track &&
-                track.Thumb is Thumb thumb)
+            if (
+                AssociatedObject.Template.FindName("PART_Track", AssociatedObject) is Track track
+                && track.Thumb is Thumb thumb
+            )
             {
                 thumb.DragCompleted += (s, args) =>
                 {
-                        Command?.Execute(null);
+                    Command?.Execute(null);
                 };
             }
         }

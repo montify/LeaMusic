@@ -78,9 +78,7 @@
             {
                 m_audioPlayer.Init(m_mixer);
             }
-            catch (Exception)
-            {
-            }
+            catch (Exception) { }
         }
 
         public void Update()
@@ -123,7 +121,9 @@
             ViewEndTime = end;
 
             ViewStartTime = TimeSpan.FromSeconds(Math.Max(0, ViewStartTime.TotalSeconds));
-            ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds));
+            ViewEndTime = TimeSpan.FromSeconds(
+                Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds)
+            );
 
             OnLoopChange?.Invoke(LoopStart, LoopEnd);
         }
@@ -142,7 +142,9 @@
                 ViewEndTime = zoomPosition + HalfViewWindow;
 
                 ViewStartTime = TimeSpan.FromSeconds(Math.Max(0, ViewStartTime.TotalSeconds));
-                ViewEndTime = TimeSpan.FromSeconds(Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds));
+                ViewEndTime = TimeSpan.FromSeconds(
+                    Math.Min(TotalDuration.TotalSeconds, ViewEndTime.TotalSeconds)
+                );
             }
             else
             {
@@ -192,7 +194,9 @@
             ViewEndTime += TimeSpan.FromSeconds(diff);
 
             var start = TimeSpan.FromSeconds(Math.Max(ViewStartTime.TotalSeconds, 0));
-            var end = TimeSpan.FromSeconds(Math.Min(ViewEndTime.TotalSeconds, TotalDuration.TotalSeconds));
+            var end = TimeSpan.FromSeconds(
+                Math.Min(ViewEndTime.TotalSeconds, TotalDuration.TotalSeconds)
+            );
 
             ViewStartTime = start;
             ViewEndTime = end;

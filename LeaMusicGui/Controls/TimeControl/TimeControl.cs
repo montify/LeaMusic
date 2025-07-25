@@ -18,7 +18,14 @@
 
         public TimeControl()
         {
-            m_writeableBitmap = new WriteableBitmap(1334, 30, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
+            m_writeableBitmap = new WriteableBitmap(
+                1334,
+                30,
+                96,
+                96,
+                PixelFormats.Bgra32,
+                BitmapPalettes.Halftone256Transparent
+            );
             m_width = (int)m_writeableBitmap.Width;
             m_height = (int)m_writeableBitmap.Height;
 
@@ -55,7 +62,11 @@
 
             double step = CalculateSpacing(pixelsPerSecond);
 
-            for (double second = Math.Floor(startSec / step) * step; second <= Math.Ceiling(endSec); second += step)
+            for (
+                double second = Math.Floor(startSec / step) * step;
+                second <= Math.Ceiling(endSec);
+                second += step
+            )
             {
                 float x = (float)((second - startSec) * pixelsPerSecond);
 
@@ -74,7 +85,8 @@
                         source: (void*)pixmap.GetPixels(),
                         destination: (void*)m_writeableBitmap.BackBuffer,
                         destinationSizeInBytes: m_writeableBitmap.BackBufferStride * m_height,
-                        sourceBytesToCopy: pixmap.RowBytes * m_height);
+                        sourceBytesToCopy: pixmap.RowBytes * m_height
+                    );
                 }
 
                 m_writeableBitmap.AddDirtyRect(new Int32Rect(0, 0, m_width, m_height));
@@ -101,7 +113,14 @@
             m_writeableBitmap = null;
             GC.Collect();
 
-            m_writeableBitmap = new WriteableBitmap(m_width, m_height, 96, 96, PixelFormats.Bgra32, BitmapPalettes.Halftone256Transparent);
+            m_writeableBitmap = new WriteableBitmap(
+                m_width,
+                m_height,
+                96,
+                96,
+                PixelFormats.Bgra32,
+                BitmapPalettes.Halftone256Transparent
+            );
             m_width = (int)m_writeableBitmap.Width;
             m_height = (int)m_writeableBitmap.Height;
 
@@ -136,7 +155,10 @@
             base.OnRenderSizeChanged(sizeInfo);
         }
 
-        private static void OnRulerControlChange(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnRulerControlChange(
+            DependencyObject d,
+            DependencyPropertyChangedEventArgs e
+        )
         {
             var control = (TimeControl)d;
             if (e.OldValue is TimeControlViewModel oldVm)
@@ -154,15 +176,19 @@
 
         private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-                UpdateImage();
+            UpdateImage();
         }
 
-        public static readonly DependencyProperty ViewModelProperty =
-       DependencyProperty.Register(
-           nameof(ViewModel),
-           typeof(TimeControlViewModel),
-           typeof(TimeControl),
-           new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender, OnRulerControlChange));
+        public static readonly DependencyProperty ViewModelProperty = DependencyProperty.Register(
+            nameof(ViewModel),
+            typeof(TimeControlViewModel),
+            typeof(TimeControl),
+            new FrameworkPropertyMetadata(
+                null,
+                FrameworkPropertyMetadataOptions.AffectsRender,
+                OnRulerControlChange
+            )
+        );
 
         public TimeControlViewModel ViewModel
         {

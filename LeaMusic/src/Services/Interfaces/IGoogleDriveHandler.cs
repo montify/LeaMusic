@@ -1,6 +1,4 @@
 ﻿namespace LeaMusic.src.Services.Interfaces
 {
-    public interface IGoogleDriveHandler : IResourceHandler
-    {
-    }
+    public interface IGoogleDriveHandler : IResourceHandler { }
 }

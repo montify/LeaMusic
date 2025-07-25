@@ -49,7 +49,9 @@
                     return;
                 }
 
-                ZoomWaveformMouseCommand?.Execute(new MousePositionData(mousePosition, control.ActualWidth));
+                ZoomWaveformMouseCommand?.Execute(
+                    new MousePositionData(mousePosition, control.ActualWidth)
+                );
             }
 
             if (IsBeatMarkerMoving)
@@ -58,9 +60,7 @@
             }
         }
 
-        private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-        }
+        private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e) { }
 
         private void OnWindowMouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -83,9 +83,7 @@
             }
         }
 
-        private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-        }
+        private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e) { }
 
         public ICommand ResetZoomParameterCommand
         {
@@ -111,27 +109,32 @@
             set => SetValue(IsBeatMarkerMovingProperty, value);
         }
 
-        public static readonly DependencyProperty ResetZoomParameterCommandProperty = DependencyProperty.Register(
-           nameof(ResetZoomParameterCommand),
-           typeof(ICommand),
-           typeof(TimelineInteractionBehavior));
+        public static readonly DependencyProperty ResetZoomParameterCommandProperty =
+            DependencyProperty.Register(
+                nameof(ResetZoomParameterCommand),
+                typeof(ICommand),
+                typeof(TimelineInteractionBehavior)
+            );
 
         public static readonly DependencyProperty ZoomWaveformMouseCommandProperty =
-           DependencyProperty.Register(
-               nameof(ZoomWaveformMouseCommand),
-               typeof(ICommand),
-               typeof(TimelineInteractionBehavior));
+            DependencyProperty.Register(
+                nameof(ZoomWaveformMouseCommand),
+                typeof(ICommand),
+                typeof(TimelineInteractionBehavior)
+            );
 
         public static readonly DependencyProperty MoveBeatMarkerCommandProperty =
-          DependencyProperty.Register(
-              nameof(MoveBeatMarkerCommand),
-              typeof(ICommand),
-              typeof(TimelineInteractionBehavior));
+            DependencyProperty.Register(
+                nameof(MoveBeatMarkerCommand),
+                typeof(ICommand),
+                typeof(TimelineInteractionBehavior)
+            );
 
         public static readonly DependencyProperty IsBeatMarkerMovingProperty =
-          DependencyProperty.Register(
-        nameof(IsBeatMarkerMoving),
-        typeof(bool),
-        typeof(TimelineInteractionBehavior));
+            DependencyProperty.Register(
+                nameof(IsBeatMarkerMoving),
+                typeof(bool),
+                typeof(TimelineInteractionBehavior)
+            );
     }
 }

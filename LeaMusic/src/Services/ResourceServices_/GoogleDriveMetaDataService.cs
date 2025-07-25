@@ -17,21 +17,29 @@
             {
                 try
                 {
-                    var rootFolderId = m_googleContext.GetFolderIdByName(AppConstants.GoogleDriveRootFolderName);
+                    var rootFolderId = m_googleContext.GetFolderIdByName(
+                        AppConstants.GoogleDriveRootFolderName
+                    );
 
                     if (string.IsNullOrEmpty(rootFolderId))
                     {
                         throw new Exception("Cant find rootFolder");
                     }
 
-                    var rawMetaData = m_googleContext.GetFileMetadataByNameInFolder(googleDriveLocation.ProjectName + ".zip", AppConstants.GoogleDriveRootFolderName);
+                    var rawMetaData = m_googleContext.GetFileMetadataByNameInFolder(
+                        googleDriveLocation.ProjectName + ".zip",
+                        AppConstants.GoogleDriveRootFolderName
+                    );
 
                     if (rawMetaData == null)
                     {
                         return await Task.FromResult<ProjectMetadata?>(null);
                     }
 
-                    var metaData = new ProjectMetadata(rawMetaData.Value.Name, rawMetaData.Value.CreatedTime.Value);
+                    var metaData = new ProjectMetadata(
+                        rawMetaData.Value.Name,
+                        rawMetaData.Value.CreatedTime.Value
+                    );
 
                     return await Task.FromResult(metaData);
                 }

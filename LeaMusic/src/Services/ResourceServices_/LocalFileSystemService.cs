@@ -4,11 +4,14 @@ namespace LeaMusic.src.Services.ResourceServices_
 {
     public class LocalFileSystemService : IFileSystemService
     {
-        public async Task<string> ReadAllTextAsync(string path) => await File.ReadAllTextAsync(path);
+        public async Task<string> ReadAllTextAsync(string path) =>
+            await File.ReadAllTextAsync(path);
 
-        public async Task WriteAllTextAsync(string path, string contents) => await File.WriteAllTextAsync(path, contents);
+        public async Task WriteAllTextAsync(string path, string contents) =>
+            await File.WriteAllTextAsync(path, contents);
 
-        public void CopyFile(string sourcePath, string destinationPath, bool overwrite) => File.Copy(sourcePath, destinationPath, overwrite);
+        public void CopyFile(string sourcePath, string destinationPath, bool overwrite) =>
+            File.Copy(sourcePath, destinationPath, overwrite);
 
         public bool FileExists(string path) => File.Exists(path);
 
@@ -22,7 +25,8 @@ namespace LeaMusic.src.Services.ResourceServices_
 
         public string GetFileName(string path) => Path.GetFileName(path);
 
-        public string GetFileNameWithoutExtension(string path) => Path.GetFileNameWithoutExtension(path);
+        public string GetFileNameWithoutExtension(string path) =>
+            Path.GetFileNameWithoutExtension(path);
 
         public string GetDirectoryName(string path) => Path.GetDirectoryName(path);
 

@@ -21,7 +21,12 @@
 
         public bool EnableSync()
         {
-            var result = System.Windows.MessageBox.Show("Do you want to Sync with GoogleDrive?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = System.Windows.MessageBox.Show(
+                "Do you want to Sync with GoogleDrive?",
+                "Confirmation",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
 
             if (result == MessageBoxResult.Yes)
             {
@@ -35,7 +40,12 @@
 
         public bool AskDownloadGoogleDrive(DateTime localDate, DateTime googleDriveDate)
         {
-            var result = System.Windows.MessageBox.Show($"The Project on GoogleDrive is newer, do you want do download it? \n Local: {localDate} \n GoogleDrive: {googleDriveDate}", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = System.Windows.MessageBox.Show(
+                $"The Project on GoogleDrive is newer, do you want do download it? \n Local: {localDate} \n GoogleDrive: {googleDriveDate}",
+                "Confirmation",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question
+            );
 
             if (result == MessageBoxResult.Yes)
             {
@@ -49,10 +59,7 @@
 
         public string ShowGDriveExplorer()
         {
-            var pr = new LoadProjectWindow
-            {
-                DataContext = new LoadProjectViewModel()
-            };
+            var pr = new LoadProjectWindow { DataContext = new LoadProjectViewModel() };
 
             pr.ShowDialog();
 

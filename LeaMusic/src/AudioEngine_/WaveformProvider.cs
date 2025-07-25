@@ -10,7 +10,10 @@ namespace LeaMusic.src.AudioEngine_
 
         public WaveformProvider(ISampleProvider sampleProvider, int totalTimeInSec)
         {
-            int totalSamples = sampleProvider.WaveFormat.SampleRate * sampleProvider.WaveFormat.Channels * totalTimeInSec;
+            int totalSamples =
+                sampleProvider.WaveFormat.SampleRate
+                * sampleProvider.WaveFormat.Channels
+                * totalTimeInSec;
             WaveformBuffer = new float[totalSamples];
 
             sampleProvider.Read(WaveformBuffer, 0, WaveformBuffer.Length);

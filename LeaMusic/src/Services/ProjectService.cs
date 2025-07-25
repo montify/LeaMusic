@@ -20,7 +20,8 @@
             IResourceManager resourceManager,
             IConnectionMonitorService connectionMonitorService,
             IFileSystemService fileSystemService,
-            ISyncService syncService)
+            ISyncService syncService
+        )
         {
             if (dialogService == null || resourceManager == null)
             {
@@ -34,7 +35,10 @@
             m_syncService = syncService;
         }
 
-        public async Task<Project?> LoadProjectAsync(bool isGoogleDriveSync, Action<string>? statusCallback)
+        public async Task<Project?> LoadProjectAsync(
+            bool isGoogleDriveSync,
+            Action<string>? statusCallback
+        )
         {
             var filePath = m_dialogService.OpenFile("Project (*.prj)|*.prj");
 
@@ -46,7 +50,11 @@
             var location = new FileLocation(filePath);
             var projectName = m_fileSystemService.GetFileNameWithoutExtension(location.Path);
 
-            bool shouldUseGDrive = await m_syncService.DetermineSyncLocationAsync(projectName, location, statusCallback);
+            bool shouldUseGDrive = await m_syncService.DetermineSyncLocationAsync(
+                projectName,
+                location,
+                statusCallback
+            );
 
             if (shouldUseGDrive)
             {
@@ -131,7 +139,11 @@
         {
             statusCallback?.Invoke("Start Save Project to Google Drive");
 
-            var gDriveLocation = new GDriveLocation(AppConstants.GoogleDriveRootFolderName, null, project.Name);
+            var gDriveLocation = new GDriveLocation(
+                AppConstants.GoogleDriveRootFolderName,
+                null,
+                project.Name
+            );
             await m_resourceManager.SaveProject(project, gDriveLocation);
 
             statusCallback?.Invoke("Project successfully saved to GoogleDrive");
@@ -139,7 +151,10 @@
 
         private ISampleProvider ResampleWav(WaveStream wavestream)
         {
-            var resampledAudio = new WdlResamplingSampleProvider(wavestream.ToSampleProvider(), 3000);
+            var resampledAudio = new WdlResamplingSampleProvider(
+                wavestream.ToSampleProvider(),
+                3000
+            );
 
             return resampledAudio;
         }
@@ -147,7 +162,10 @@
         private WaveformProvider ImportWaveform(Track track)
         {
             var downsampleAudio = ResampleWav(track.Audio);
-            var waveformProvider = new WaveformProvider(downsampleAudio, (int)track.Audio.TotalTime.TotalSeconds);
+            var waveformProvider = new WaveformProvider(
+                downsampleAudio,
+                (int)track.Audio.TotalTime.TotalSeconds
+            );
 
             Debug.WriteLine($"Create new Waveform from new ImportedTrack: {track.AudioFileName}");
             return waveformProvider;

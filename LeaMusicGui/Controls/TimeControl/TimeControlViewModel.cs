@@ -3,7 +3,7 @@
     using CommunityToolkit.Mvvm.ComponentModel;
     using LeaMusic.src.AudioEngine_.Interfaces;
     using LeaMusic.src.Services.Interfaces;
- 
+
     public partial class TimeControlViewModel : ObservableObject
     {
         private readonly IViewWindowProvider m_viewWindowProvider;
@@ -21,7 +21,10 @@
         [ObservableProperty]
         public double zoomFactor = 1;
 
-        public TimeControlViewModel(IViewWindowProvider viewWindowProvider, IAudioEngine audioEngine)
+        public TimeControlViewModel(
+            IViewWindowProvider viewWindowProvider,
+            IAudioEngine audioEngine
+        )
         {
             m_viewWindowProvider = viewWindowProvider;
             m_audioEngine = audioEngine;

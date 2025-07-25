@@ -3,6 +3,5 @@
     public interface ILoopService
     {
         public Task SetOrAdjustLoop(int startPixel, int endPixel, int renderWidth);
-
     }
 }

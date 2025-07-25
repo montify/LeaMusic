@@ -32,8 +32,9 @@
 
         public static readonly DependencyProperty IsBeatMarkerMovingProperty =
             DependencyProperty.Register(
-            nameof(IsBeatMarkerMoving),
-            typeof(bool),
-            typeof(BeatMarkerBehavior));
+                nameof(IsBeatMarkerMoving),
+                typeof(bool),
+                typeof(BeatMarkerBehavior)
+            );
     }
 }

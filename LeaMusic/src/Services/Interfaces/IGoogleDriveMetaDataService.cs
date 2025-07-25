@@ -1,6 +1,4 @@
 ﻿namespace LeaMusic.src.Services.Interfaces
 {
-    public interface IGoogleDriveMetaDataService : IMetadataService
-    {
-    }
+    public interface IGoogleDriveMetaDataService : IMetadataService { }
 }

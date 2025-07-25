@@ -4,9 +4,9 @@ namespace LeaMusic.src.Services.Interfaces
 {
     public interface IAudioEngine
     {
-        public TimeSpan LoopStart { get;  }
+        public TimeSpan LoopStart { get; }
 
-        public TimeSpan LoopEnd { get;  }
+        public TimeSpan LoopEnd { get; }
 
         public TimeSpan CurrentPosition { get; }
 
@@ -51,7 +51,5 @@ namespace LeaMusic.src.Services.Interfaces
         public void AudioJumpToSec(TimeSpan sec);
 
         public void Loop(TimeSpan startSec, TimeSpan endSec);
-
-
     }
 }
