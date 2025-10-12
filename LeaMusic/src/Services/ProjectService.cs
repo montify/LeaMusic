@@ -36,7 +36,7 @@
         }
 
         public async Task<Project?> LoadProjectAsync(
-            bool isGoogleDriveSync,
+            bool isGoogleDriveSyncEnabled,
             Action<string>? statusCallback
         )
         {
@@ -50,18 +50,20 @@
             var location = new FileLocation(filePath);
             var projectName = m_fileSystemService.GetFileNameWithoutExtension(location.Path);
 
-            bool shouldUseGDrive = await m_syncService.DetermineSyncLocationAsync(
-                projectName,
-                location,
-                statusCallback
-            );
-
-            if (shouldUseGDrive)
+            if (isGoogleDriveSyncEnabled)
             {
-                var gdriveLocation = new GDriveLocation("LeaRoot", filePath, projectName);
+                bool shouldUseGDrive = await m_syncService.DetermineSyncLocationAsync(
+                    projectName,
+                    location,
+                    statusCallback
+                );
+                if (shouldUseGDrive)
+                {
+                    var gdriveLocation = new GDriveLocation("LeaRoot", filePath, projectName);
 
-                statusCallback?.Invoke("Loading Project from google Drive");
-                return await m_resourceManager.LoadProject(gdriveLocation);
+                    statusCallback?.Invoke("Loading Project from google Drive");
+                    return await m_resourceManager.LoadProject(gdriveLocation);
+                }
             }
 
             statusCallback?.Invoke("Loading Project from File");
@@ -69,7 +71,11 @@
             return await m_resourceManager.LoadProject(location);
         }
 
-        public async Task SaveProject(Project project, Action<string>? statusCallback)
+        public async Task SaveProject(
+            Project project,
+            Action<string>? statusCallback,
+            bool isGoogleDriveSync
+        )
         {
             if (project.Duration == TimeSpan.FromSeconds(1))
             {
@@ -97,7 +103,7 @@
                     return;
                 }
 
-                if (m_dialogService.EnableSync())
+                if (isGoogleDriveSync && m_dialogService.EnableSync())
                 {
                     await SaveToGoogleDriveAsync(project, statusCallback);
                 }

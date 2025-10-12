@@ -92,7 +92,7 @@
 
         private Project Project { get; set; }
 
-        private bool IsSyncEnabled { get; set; } = true;
+        public bool IsSyncEnabled { get; set; } = true;
 
         private readonly IAudioEngine m_audioEngine;
         private readonly ITimelineService m_timelineService;
@@ -422,7 +422,11 @@
 
         private async Task SaveProject()
         {
-            await m_projectService.SaveProject(Project, m_updateStatus);
+            await m_projectService.SaveProject(
+                Project,
+                m_updateStatus,
+                isGoogleDriveSync: IsSyncEnabled
+            );
         }
 
         private async Task LoadProject()

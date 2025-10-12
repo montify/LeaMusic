@@ -10,7 +10,11 @@
             Action<string>? statusCallback
         );
 
-        public Task SaveProject(Project project, Action<string>? statusCallback);
+        public Task SaveProject(
+            Project project,
+            Action<string>? statusCallback,
+            bool isGoogleDriveSync
+        );
 
         public Track? ImportTrack(Location location);
     }

@@ -44,7 +44,12 @@
                     <MenuItem Command="{Binding LoadProjectFileCommand}" Header="_Open Project" />
                     <MenuItem Command="{Binding SaveProjectFileCommand}" Header="_Save Project" />
                     <MenuItem Command="{Binding AddTrackCommand}" Header="_Add Track" />
+                    <MenuItem
+                        Header="Sync"
+                        IsCheckable="True"
+                        IsChecked="{Binding IsSyncEnabled}" />
                     <Separator />
+
                     <MenuItem Header="_Exit" />
                 </MenuItem>
             </Menu>
